@@ -1,9 +1,5 @@
 # Rag_Admissions_consulting
 
-<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
-    <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
-</a>
-
 A RAG-based chatbot system for admissions consulting, leveraging advanced language models and retrieval-augmented generation to provide accurate and contextual responses to admission-related queries.
 
 ## Project Organization
