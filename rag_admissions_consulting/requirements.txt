@@ -5,7 +5,7 @@ python-dotenv
 ruff
 tqdm
 typer
-sentence-transformers==2.2.2
+sentence-transformers==2.4.0
 langchain
 flask
 pypdf

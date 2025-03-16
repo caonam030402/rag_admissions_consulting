@@ -1,0 +1,432 @@
+[
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "tqdm",
+        "importPath": "tqdm",
+        "description": "tqdm",
+        "isExtraImport": true,
+        "detail": "tqdm",
+        "documentation": {}
+    },
+    {
+        "label": "typer",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "typer",
+        "description": "typer",
+        "detail": "typer",
+        "documentation": {}
+    },
+    {
+        "label": "MODELS_DIR",
+        "importPath": "src.config",
+        "description": "src.config",
+        "isExtraImport": true,
+        "detail": "src.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROCESSED_DATA_DIR",
+        "importPath": "src.config",
+        "description": "src.config",
+        "isExtraImport": true,
+        "detail": "src.config",
+        "documentation": {}
+    },
+    {
+        "label": "MODELS_DIR",
+        "importPath": "src.config",
+        "description": "src.config",
+        "isExtraImport": true,
+        "detail": "src.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROCESSED_DATA_DIR",
+        "importPath": "src.config",
+        "description": "src.config",
+        "isExtraImport": true,
+        "detail": "src.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROCESSED_DATA_DIR",
+        "importPath": "src.config",
+        "description": "src.config",
+        "isExtraImport": true,
+        "detail": "src.config",
+        "documentation": {}
+    },
+    {
+        "label": "RAW_DATA_DIR",
+        "importPath": "src.config",
+        "description": "src.config",
+        "isExtraImport": true,
+        "detail": "src.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROCESSED_DATA_DIR",
+        "importPath": "src.config",
+        "description": "src.config",
+        "isExtraImport": true,
+        "detail": "src.config",
+        "documentation": {}
+    },
+    {
+        "label": "FIGURES_DIR",
+        "importPath": "src.config",
+        "description": "src.config",
+        "isExtraImport": true,
+        "detail": "src.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROCESSED_DATA_DIR",
+        "importPath": "src.config",
+        "description": "src.config",
+        "isExtraImport": true,
+        "detail": "src.config",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
+        "documentation": {}
+    },
+    {
+        "label": "setup",
+        "importPath": "setuptools",
+        "description": "setuptools",
+        "isExtraImport": true,
+        "detail": "setuptools",
+        "documentation": {}
+    },
+    {
+        "label": "find_packages",
+        "importPath": "setuptools",
+        "description": "setuptools",
+        "isExtraImport": true,
+        "detail": "setuptools",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.modeling.predict",
+        "description": "rag_admissions_consulting.src.modeling.predict",
+        "peekOfCode": "def main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    features_path: Path = PROCESSED_DATA_DIR / \"test_features.csv\",\n    model_path: Path = MODELS_DIR / \"model.pkl\",\n    predictions_path: Path = PROCESSED_DATA_DIR / \"test_predictions.csv\",\n    # -----------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----\n    logger.info(\"Performing inference for model...\")\n    for i in tqdm(range(10), total=10):",
+        "detail": "rag_admissions_consulting.src.modeling.predict",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.modeling.predict",
+        "description": "rag_admissions_consulting.src.modeling.predict",
+        "peekOfCode": "app = typer.Typer()\n@app.command()\ndef main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    features_path: Path = PROCESSED_DATA_DIR / \"test_features.csv\",\n    model_path: Path = MODELS_DIR / \"model.pkl\",\n    predictions_path: Path = PROCESSED_DATA_DIR / \"test_predictions.csv\",\n    # -----------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----",
+        "detail": "rag_admissions_consulting.src.modeling.predict",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.modeling.train",
+        "description": "rag_admissions_consulting.src.modeling.train",
+        "peekOfCode": "def main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    features_path: Path = PROCESSED_DATA_DIR / \"features.csv\",\n    labels_path: Path = PROCESSED_DATA_DIR / \"labels.csv\",\n    model_path: Path = MODELS_DIR / \"model.pkl\",\n    # -----------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----\n    logger.info(\"Training some model...\")\n    for i in tqdm(range(10), total=10):",
+        "detail": "rag_admissions_consulting.src.modeling.train",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.modeling.train",
+        "description": "rag_admissions_consulting.src.modeling.train",
+        "peekOfCode": "app = typer.Typer()\n@app.command()\ndef main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    features_path: Path = PROCESSED_DATA_DIR / \"features.csv\",\n    labels_path: Path = PROCESSED_DATA_DIR / \"labels.csv\",\n    model_path: Path = MODELS_DIR / \"model.pkl\",\n    # -----------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----",
+        "detail": "rag_admissions_consulting.src.modeling.train",
+        "documentation": {}
+    },
+    {
+        "label": "PROJ_ROOT",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "PROJ_ROOT = Path(__file__).resolve().parents[1]\nlogger.info(f\"PROJ_ROOT path is: {PROJ_ROOT}\")\nDATA_DIR = PROJ_ROOT / \"data\"\nRAW_DATA_DIR = DATA_DIR / \"raw\"\nINTERIM_DATA_DIR = DATA_DIR / \"interim\"\nPROCESSED_DATA_DIR = DATA_DIR / \"processed\"\nEXTERNAL_DATA_DIR = DATA_DIR / \"external\"\nMODELS_DIR = PROJ_ROOT / \"models\"\nREPORTS_DIR = PROJ_ROOT / \"reports\"\nFIGURES_DIR = REPORTS_DIR / \"figures\"",
+        "detail": "rag_admissions_consulting.src.config",
+        "documentation": {}
+    },
+    {
+        "label": "DATA_DIR",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "DATA_DIR = PROJ_ROOT / \"data\"\nRAW_DATA_DIR = DATA_DIR / \"raw\"\nINTERIM_DATA_DIR = DATA_DIR / \"interim\"\nPROCESSED_DATA_DIR = DATA_DIR / \"processed\"\nEXTERNAL_DATA_DIR = DATA_DIR / \"external\"\nMODELS_DIR = PROJ_ROOT / \"models\"\nREPORTS_DIR = PROJ_ROOT / \"reports\"\nFIGURES_DIR = REPORTS_DIR / \"figures\"\n# If tqdm is installed, configure loguru with tqdm.write\n# https://github.com/Delgan/loguru/issues/135",
+        "detail": "rag_admissions_consulting.src.config",
+        "documentation": {}
+    },
+    {
+        "label": "RAW_DATA_DIR",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "RAW_DATA_DIR = DATA_DIR / \"raw\"\nINTERIM_DATA_DIR = DATA_DIR / \"interim\"\nPROCESSED_DATA_DIR = DATA_DIR / \"processed\"\nEXTERNAL_DATA_DIR = DATA_DIR / \"external\"\nMODELS_DIR = PROJ_ROOT / \"models\"\nREPORTS_DIR = PROJ_ROOT / \"reports\"\nFIGURES_DIR = REPORTS_DIR / \"figures\"\n# If tqdm is installed, configure loguru with tqdm.write\n# https://github.com/Delgan/loguru/issues/135\ntry:",
+        "detail": "rag_admissions_consulting.src.config",
+        "documentation": {}
+    },
+    {
+        "label": "INTERIM_DATA_DIR",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "INTERIM_DATA_DIR = DATA_DIR / \"interim\"\nPROCESSED_DATA_DIR = DATA_DIR / \"processed\"\nEXTERNAL_DATA_DIR = DATA_DIR / \"external\"\nMODELS_DIR = PROJ_ROOT / \"models\"\nREPORTS_DIR = PROJ_ROOT / \"reports\"\nFIGURES_DIR = REPORTS_DIR / \"figures\"\n# If tqdm is installed, configure loguru with tqdm.write\n# https://github.com/Delgan/loguru/issues/135\ntry:\n    from tqdm import tqdm",
+        "detail": "rag_admissions_consulting.src.config",
+        "documentation": {}
+    },
+    {
+        "label": "PROCESSED_DATA_DIR",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "PROCESSED_DATA_DIR = DATA_DIR / \"processed\"\nEXTERNAL_DATA_DIR = DATA_DIR / \"external\"\nMODELS_DIR = PROJ_ROOT / \"models\"\nREPORTS_DIR = PROJ_ROOT / \"reports\"\nFIGURES_DIR = REPORTS_DIR / \"figures\"\n# If tqdm is installed, configure loguru with tqdm.write\n# https://github.com/Delgan/loguru/issues/135\ntry:\n    from tqdm import tqdm\n    logger.remove(0)",
+        "detail": "rag_admissions_consulting.src.config",
+        "documentation": {}
+    },
+    {
+        "label": "EXTERNAL_DATA_DIR",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "EXTERNAL_DATA_DIR = DATA_DIR / \"external\"\nMODELS_DIR = PROJ_ROOT / \"models\"\nREPORTS_DIR = PROJ_ROOT / \"reports\"\nFIGURES_DIR = REPORTS_DIR / \"figures\"\n# If tqdm is installed, configure loguru with tqdm.write\n# https://github.com/Delgan/loguru/issues/135\ntry:\n    from tqdm import tqdm\n    logger.remove(0)\n    logger.add(lambda msg: tqdm.write(msg, end=\"\"), colorize=True)",
+        "detail": "rag_admissions_consulting.src.config",
+        "documentation": {}
+    },
+    {
+        "label": "MODELS_DIR",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "MODELS_DIR = PROJ_ROOT / \"models\"\nREPORTS_DIR = PROJ_ROOT / \"reports\"\nFIGURES_DIR = REPORTS_DIR / \"figures\"\n# If tqdm is installed, configure loguru with tqdm.write\n# https://github.com/Delgan/loguru/issues/135\ntry:\n    from tqdm import tqdm\n    logger.remove(0)\n    logger.add(lambda msg: tqdm.write(msg, end=\"\"), colorize=True)\nexcept ModuleNotFoundError:",
+        "detail": "rag_admissions_consulting.src.config",
+        "documentation": {}
+    },
+    {
+        "label": "REPORTS_DIR",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "REPORTS_DIR = PROJ_ROOT / \"reports\"\nFIGURES_DIR = REPORTS_DIR / \"figures\"\n# If tqdm is installed, configure loguru with tqdm.write\n# https://github.com/Delgan/loguru/issues/135\ntry:\n    from tqdm import tqdm\n    logger.remove(0)\n    logger.add(lambda msg: tqdm.write(msg, end=\"\"), colorize=True)\nexcept ModuleNotFoundError:\n    pass",
+        "detail": "rag_admissions_consulting.src.config",
+        "documentation": {}
+    },
+    {
+        "label": "FIGURES_DIR",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "FIGURES_DIR = REPORTS_DIR / \"figures\"\n# If tqdm is installed, configure loguru with tqdm.write\n# https://github.com/Delgan/loguru/issues/135\ntry:\n    from tqdm import tqdm\n    logger.remove(0)\n    logger.add(lambda msg: tqdm.write(msg, end=\"\"), colorize=True)\nexcept ModuleNotFoundError:\n    pass",
+        "detail": "rag_admissions_consulting.src.config",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.dataset",
+        "description": "rag_admissions_consulting.src.dataset",
+        "peekOfCode": "def main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    input_path: Path = RAW_DATA_DIR / \"dataset.csv\",\n    output_path: Path = PROCESSED_DATA_DIR / \"dataset.csv\",\n    # ----------------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----\n    logger.info(\"Processing dataset...\")\n    for i in tqdm(range(10), total=10):\n        if i == 5:",
+        "detail": "rag_admissions_consulting.src.dataset",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.dataset",
+        "description": "rag_admissions_consulting.src.dataset",
+        "peekOfCode": "app = typer.Typer()\n@app.command()\ndef main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    input_path: Path = RAW_DATA_DIR / \"dataset.csv\",\n    output_path: Path = PROCESSED_DATA_DIR / \"dataset.csv\",\n    # ----------------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----\n    logger.info(\"Processing dataset...\")",
+        "detail": "rag_admissions_consulting.src.dataset",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.features",
+        "description": "rag_admissions_consulting.src.features",
+        "peekOfCode": "def main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    input_path: Path = PROCESSED_DATA_DIR / \"dataset.csv\",\n    output_path: Path = PROCESSED_DATA_DIR / \"features.csv\",\n    # -----------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----\n    logger.info(\"Generating features from dataset...\")\n    for i in tqdm(range(10), total=10):\n        if i == 5:",
+        "detail": "rag_admissions_consulting.src.features",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.features",
+        "description": "rag_admissions_consulting.src.features",
+        "peekOfCode": "app = typer.Typer()\n@app.command()\ndef main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    input_path: Path = PROCESSED_DATA_DIR / \"dataset.csv\",\n    output_path: Path = PROCESSED_DATA_DIR / \"features.csv\",\n    # -----------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----\n    logger.info(\"Generating features from dataset...\")",
+        "detail": "rag_admissions_consulting.src.features",
+        "documentation": {}
+    },
+    {
+        "label": "load_pdf_files",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.helper",
+        "description": "rag_admissions_consulting.src.helper",
+        "peekOfCode": "def load_pdf_files(path: str) -> list[str]:\n    loader = DirectoryLoader(path, glob=\"*.pdf\", loader_cls=PyPDFLoader)\n    documents = loader.load()\n    return documents\ndef load_pdf_files(path: Path) -> list[str]:\n    return [f for f in path.glob(\"*.pdf\")]",
+        "detail": "rag_admissions_consulting.src.helper",
+        "documentation": {}
+    },
+    {
+        "label": "load_pdf_files",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.helper",
+        "description": "rag_admissions_consulting.src.helper",
+        "peekOfCode": "def load_pdf_files(path: Path) -> list[str]:\n    return [f for f in path.glob(\"*.pdf\")]",
+        "detail": "rag_admissions_consulting.src.helper",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.plots",
+        "description": "rag_admissions_consulting.src.plots",
+        "peekOfCode": "def main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    input_path: Path = PROCESSED_DATA_DIR / \"dataset.csv\",\n    output_path: Path = FIGURES_DIR / \"plot.png\",\n    # -----------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----\n    logger.info(\"Generating plot from data...\")\n    for i in tqdm(range(10), total=10):\n        if i == 5:",
+        "detail": "rag_admissions_consulting.src.plots",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.plots",
+        "description": "rag_admissions_consulting.src.plots",
+        "peekOfCode": "app = typer.Typer()\n@app.command()\ndef main(\n    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----\n    input_path: Path = PROCESSED_DATA_DIR / \"dataset.csv\",\n    output_path: Path = FIGURES_DIR / \"plot.png\",\n    # -----------------------------------------\n):\n    # ---- REPLACE THIS WITH YOUR OWN CODE ----\n    logger.info(\"Generating plot from data...\")",
+        "detail": "rag_admissions_consulting.src.plots",
+        "documentation": {}
+    }
+]
