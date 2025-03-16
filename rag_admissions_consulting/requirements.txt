@@ -1,0 +1,20 @@
+loguru
+mkdocs
+pip
+python-dotenv
+ruff
+tqdm
+typer
+sentence-transformers==2.2.2
+langchain
+flask
+pypdf
+pinecore[grpc]
+langchain-pinecone
+langchain_community
+langchain_experimental
+langchain-google-genai
+langchain-openai
+
+-e .
+
