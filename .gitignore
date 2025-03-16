@@ -185,3 +185,36 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 .data_set.csv
+
+# Project specific
+*.env*
+*.config
+*.key
+*.pem
+*.crt
+*.csr
+*.cer
+*.der
+*.p12
+*.pfx
+*.keystore
+*.truststore
+
+# Data and model files
+*.csv
+*.pdf
+*.json
+*.h5
+*.pkl
+*.pt
+*.pth
+*.onnx
+*.bin
+*.npy
+*.npz
+
+# IDE specific
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
