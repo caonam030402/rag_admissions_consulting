@@ -1,1 +1,3 @@
-from rag_admissions_consulting import config  # noqa: F401
+import sys
+sys.path.append("../..")
+import config  # noqa: F401

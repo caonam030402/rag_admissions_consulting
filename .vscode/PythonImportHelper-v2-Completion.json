@@ -33,10 +33,10 @@
     },
     {
         "label": "HuggingFaceEmbeddings",
-        "importPath": "langchain.embeddings",
-        "description": "langchain.embeddings",
+        "importPath": "langchain_huggingface",
+        "description": "langchain_huggingface",
         "isExtraImport": true,
-        "detail": "langchain.embeddings",
+        "detail": "langchain_huggingface",
         "documentation": {}
     },
     {
@@ -81,18 +81,18 @@
     },
     {
         "label": "ModelType",
-        "importPath": "rag_admissions_consulting.src.shared.enum",
-        "description": "rag_admissions_consulting.src.shared.enum",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
         "isExtraImport": true,
-        "detail": "rag_admissions_consulting.src.shared.enum",
+        "detail": "shared.enum",
         "documentation": {}
     },
     {
         "label": "ModelType",
-        "importPath": "rag_admissions_consulting.src.shared.enum",
-        "description": "rag_admissions_consulting.src.shared.enum",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
         "isExtraImport": true,
-        "detail": "rag_admissions_consulting.src.shared.enum",
+        "detail": "shared.enum",
         "documentation": {}
     },
     {
@@ -109,6 +109,14 @@
         "description": "rag_admissions_consulting.src.shared.constant",
         "isExtraImport": true,
         "detail": "rag_admissions_consulting.src.shared.constant",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "rag_admissions_consulting.src.shared.enum",
+        "description": "rag_admissions_consulting.src.shared.enum",
+        "isExtraImport": true,
+        "detail": "rag_admissions_consulting.src.shared.enum",
         "documentation": {}
     },
     {
@@ -136,6 +144,38 @@
         "documentation": {}
     },
     {
+        "label": "store",
+        "importPath": "store",
+        "description": "store",
+        "isExtraImport": true,
+        "detail": "store",
+        "documentation": {}
+    },
+    {
+        "label": "helper",
+        "importPath": "shared.helper",
+        "description": "shared.helper",
+        "isExtraImport": true,
+        "detail": "shared.helper",
+        "documentation": {}
+    },
+    {
+        "label": "embeddings",
+        "importPath": "embeddings",
+        "description": "embeddings",
+        "isExtraImport": true,
+        "detail": "embeddings",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "loguru",
+        "description": "loguru",
+        "isExtraImport": true,
+        "detail": "loguru",
+        "documentation": {}
+    },
+    {
         "label": "PineconeGRPC",
         "importPath": "pinecone.grpc",
         "description": "pinecone.grpc",
@@ -152,11 +192,20 @@
         "documentation": {}
     },
     {
-        "label": "getEnv",
-        "importPath": "rag_admissions_consulting.config",
-        "description": "rag_admissions_consulting.config",
+        "label": "sys",
+        "kind": 6,
         "isExtraImport": true,
-        "detail": "rag_admissions_consulting.config",
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "getEnv",
+        "importPath": "config",
+        "description": "config",
+        "isExtraImport": true,
+        "detail": "config",
         "documentation": {}
     },
     {
@@ -232,7 +281,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.shared.helper",
         "description": "rag_admissions_consulting.src.shared.helper",
-        "peekOfCode": "class Helper:\n    def __init__(self, chunk_size: int = 500,chunk_overlap: int = 20):\n        self.chunk_size = chunk_size\n        self.chunk_overlap = chunk_overlap\n    def load_pdf_files(path: str) -> list[str]:\n        loader=DirectoryLoader(path,glob=\"*.pdf\",loader_cls=PyPDFLoader)\n        documents=loader.load()\n        return documents\n    def load_csv_files(path: str) -> list[str]:\n        loader=TextLoader(path)",
+        "peekOfCode": "class Helper:\n    def __init__(self, chunk_size: int = 500,chunk_overlap: int = 20):\n        self.chunk_size = chunk_size\n        self.chunk_overlap = chunk_overlap\n    def load_pdf_files(self, path: str) -> list[str]:\n        loader=DirectoryLoader(path,glob=\"*.pdf\",loader_cls=PyPDFLoader)\n        documents=loader.load()\n        return documents\n    def load_csv_files(self, path: str) -> list[str]:\n        loader=TextLoader(path)",
         "detail": "rag_admissions_consulting.src.shared.helper",
         "documentation": {}
     },
@@ -250,7 +299,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.embeddings",
         "description": "rag_admissions_consulting.src.embeddings",
-        "peekOfCode": "class Embeddings:\n    EMBEDDING_MODELS = {\n        ModelType.HUGGINGFACE: lambda: HuggingFaceEmbeddings(\n            model_name=\"sentence-transformers/all-MiniLM-L6-v2\"\n        ),\n        ModelType.GEMINI: lambda: GoogleGenerativeAIEmbeddings(\n            model=\"models/text-embedding-004\"\n        ),\n        ModelType.OpenAI: lambda: OpenAIEmbeddings(\n            model=\"text-embedding-3-large\"",
+        "peekOfCode": "class Embeddings:\n    EMBEDDING_MODELS = {\n        ModelType.HUGGINGFACE: lambda: HuggingFaceEmbeddings(\n            model_name=\"sentence-transformers/all-MiniLM-L6-v2\"\n        ),\n        ModelType.GEMINI: lambda: GoogleGenerativeAIEmbeddings(\n            model=\"models/text-embedding-004\"\n        ),\n        ModelType.OPENAI: lambda: OpenAIEmbeddings(\n            model=\"text-embedding-3-large\"",
         "detail": "rag_admissions_consulting.src.embeddings",
         "documentation": {}
     },
@@ -304,7 +353,7 @@
         "kind": 2,
         "importPath": "rag_admissions_consulting.src.seed",
         "description": "rag_admissions_consulting.src.seed",
-        "peekOfCode": "def main():\n    print(\"Hello World\")\nif __name__ == \"__main__\":\n    main()",
+        "peekOfCode": "def main():\n    store.initStore()\n    # load csv files\n    extracted_data = helper.load_pdf_files(path=\"../data/pdf/\")\n    # split text\n    text_chunks = helper.text_split(extracted_data)\n    # embeddings\n    embeddings_model = embeddings.get_embeddings(ModelType.HUGGINGFACE)\n    # upload to pinecone\n    store.uploadToStore(text_chunks, embeddings_model)",
         "detail": "rag_admissions_consulting.src.seed",
         "documentation": {}
     },
@@ -313,7 +362,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.store",
         "description": "rag_admissions_consulting.src.store",
-        "peekOfCode": "class Store:\n    def __init__(self, index_name: str = \"test\", search_kwargs: str = {\"k\": 3}, search_tye: str = \"similarity\"):\n        self.search_kwargs = search_kwargs\n        self.search_type = search_type\n        self.index_name = index_name\n    def initStore(self):\n        pc = Pinecone(api_key=getEnv(\"PINECONE_API_KEY\"))\n        pc.Index(self.index_name)\n    def getRetriever(self, embeddings):\n        docsearch = PineconeVectorStore.from_existing_index(index_name=self.index_name, embedding=embeddings)",
+        "peekOfCode": "class Store:\n    def __init__(self, index_name: str = \"test\", search_kwargs: str = {\"k\": 3}, search_type: str = \"similarity\"):\n        self.search_kwargs = search_kwargs\n        self.search_type = search_type\n        self.index_name = index_name\n    def initStore(self):\n        pc = Pinecone(api_key=getEnv(\"PINECONE_API_KEY\"))\n        pc.Index(self.index_name)\n    def uploadToStore(self, text_chunks: str, embeddings):\n        docsearch = PineconeVectorStore.from_documents(",
         "detail": "rag_admissions_consulting.src.store",
         "documentation": {}
     },
@@ -331,7 +380,7 @@
         "kind": 2,
         "importPath": "rag_admissions_consulting.config",
         "description": "rag_admissions_consulting.config",
-        "peekOfCode": "def getEnv(key):\n    value = listEnv[key]\n    if key not in env_vars:\n        raise KeyError(f\"Unknown key: {key}\")\n    if not value:\n        raise ValueError(f\"Environment variable {key} is not set in .env file\")\n    return value",
+        "peekOfCode": "def getEnv(key):\n    if key not in listEnv:\n        raise KeyError(f\"Unknown key: {key}\")\n    value = listEnv[key]\n    if not value:\n        raise ValueError(f\"Environment variable {key} is not set in .env file\")\n    return value",
         "detail": "rag_admissions_consulting.config",
         "documentation": {}
     },
@@ -340,7 +389,7 @@
         "kind": 5,
         "importPath": "rag_admissions_consulting.config",
         "description": "rag_admissions_consulting.config",
-        "peekOfCode": "listEnv = {\n    \"PINECONE_API_KEY\": os.environ.get('PINECONE_API_KEY'),\n    \"GEMINI_API_KEY\": os.environ.get('GEMINI_API_KEY')\n}\ndef getEnv(key):\n    value = listEnv[key]\n    if key not in env_vars:\n        raise KeyError(f\"Unknown key: {key}\")\n    if not value:\n        raise ValueError(f\"Environment variable {key} is not set in .env file\")",
+        "peekOfCode": "listEnv = {\n    \"PINECONE_API_KEY\": os.environ.get('PINECONE_API_KEY'),\n    \"GEMINI_API_KEY\": os.environ.get('GEMINI_API_KEY')\n}\ndef getEnv(key):\n    if key not in listEnv:\n        raise KeyError(f\"Unknown key: {key}\")\n    value = listEnv[key]\n    if not value:\n        raise ValueError(f\"Environment variable {key} is not set in .env file\")",
         "detail": "rag_admissions_consulting.config",
         "documentation": {}
     }

@@ -1,20 +1,18 @@
-from langchain.document_loaders import PyPDFLoader,DirectoryLoader
+from langchain.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter 
-from langchain.document_loaders import TextLoader
-
 
 class Helper:
     def __init__(self, chunk_size: int = 500,chunk_overlap: int = 20):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         
-    def load_pdf_files(path: str) -> list[str]:
+    def load_pdf_files(self, path: str) -> list[str]:
         loader=DirectoryLoader(path,glob="*.pdf",loader_cls=PyPDFLoader)
 
         documents=loader.load()
         return documents
 
-    def load_csv_files(path: str) -> list[str]:
+    def load_csv_files(self, path: str) -> list[str]:
         loader=TextLoader(path)
         documents=loader.load()
         return documents

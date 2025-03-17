@@ -8,11 +8,10 @@ listEnv = {
 }
 
 def getEnv(key):
-    value = listEnv[key]
-    
-    if key not in env_vars:
+    if key not in listEnv:
         raise KeyError(f"Unknown key: {key}")
     
+    value = listEnv[key]
     if not value:
         raise ValueError(f"Environment variable {key} is not set in .env file")
     
