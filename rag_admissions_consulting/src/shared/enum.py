@@ -6,3 +6,4 @@ class ModelType(str):
 class FileDataType(str):
     CSV = "csv"
     PDF = "pdf"
+    JSON = "json"

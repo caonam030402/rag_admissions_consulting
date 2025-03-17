@@ -18,5 +18,7 @@ setup(
         "langchain-google-genai",
         "langchain-community",
         "langchain-experimental",
+        "beautifulsoup4",
+        "requests",
     ],
 )

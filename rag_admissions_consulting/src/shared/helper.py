@@ -1,4 +1,4 @@
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, CSVLoader
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, CSVLoader, JSONLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 class Helper:
@@ -13,6 +13,11 @@ class Helper:
 
     def load_csv_files(self, path: str) -> list[str]:
         loader = DirectoryLoader(path, glob="*.csv", loader_cls=lambda file_path: CSVLoader(file_path, encoding='utf-8'))
+        documents = loader.load()
+        return documents
+    
+    def load_json_files(self, path: str) -> list[str]:
+        loader = DirectoryLoader(path, glob="*.json", loader_cls=lambda file_path: JSONLoader(file_path, jq_schema='.', text_content=False))
         documents = loader.load()
         return documents
     

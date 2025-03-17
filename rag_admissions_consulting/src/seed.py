@@ -12,6 +12,8 @@ def seed_data(type: FileDataType = FileDataType.PDF):
         extracted_data = helper.load_csv_files(path="../data/csv/")
     elif type == FileDataType.PDF:
         extracted_data = helper.load_pdf_files(path="../data/pdf/") 
+    elif type == FileDataType.JSON:
+        extracted_data = helper.load_json_files(path="../data/json/")
     else :
         raise Exception("Invalid file type")    
     
@@ -27,4 +29,4 @@ def seed_data(type: FileDataType = FileDataType.PDF):
     
 
 if __name__ == "__main__":
-    seed_data(FileDataType.CSV)
+    seed_data(FileDataType.JSON)

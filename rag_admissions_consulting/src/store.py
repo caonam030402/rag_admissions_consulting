@@ -29,7 +29,7 @@ class Store:
     
     def getRetriever(self, embeddings):
         docsearch = PineconeVectorStore.from_existing_index(index_name=self.index_name, embedding=embeddings)
-        retriever = docsearch.as_retriever(search_type=self.search_type, search_kwargs={"k": self.search_kwargs})
+        retriever = docsearch.as_retriever(search_type=self.search_type, search_kwargs=self.search_kwargs)
         return retriever
         
 store = Store()

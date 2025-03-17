@@ -1,7 +1,11 @@
 from langchain_openai import OpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from rag_admissions_consulting.src.shared.constant import gemini_model, openai_model
-from rag_admissions_consulting.src.shared.enum import ModelType
+from shared.constant import gemini_model, openai_model
+from shared.enum import ModelType
+
+import sys
+sys.path.append("..")
+from config import getEnv
 
 class LLms:
     def getLLm(type_model: ModelType):
@@ -10,7 +14,7 @@ class LLms:
                     model=gemini_model,
                     treaming=True,
                     temperature=0,
-                    api_key=GEMINI_API_KEY,
+                    api_key=getEnv("GEMINI_API_KEY"),
                 )
             return lmm
         elif type_model == ModelType.OPENAI:
@@ -18,7 +22,7 @@ class LLms:
                     model=openai_model,
                     treaming=True,
                     temperature=0,
-                    api_key=GEMINI_API_KEY,
+                    api_key=getEnv("OPENAI_API_KEY"),
                 )
             return lmm
         else:

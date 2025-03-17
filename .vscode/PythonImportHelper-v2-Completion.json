@@ -1,5 +1,31 @@
 [
     {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "WebScraper",
+        "importPath": "scraper",
+        "description": "scraper",
+        "isExtraImport": true,
+        "detail": "scraper",
+        "documentation": {}
+    },
+    {
         "label": "PyPDFLoader",
         "importPath": "langchain_community.document_loaders",
         "description": "langchain_community.document_loaders",
@@ -24,11 +50,116 @@
         "documentation": {}
     },
     {
+        "label": "JSONLoader",
+        "importPath": "langchain_community.document_loaders",
+        "description": "langchain_community.document_loaders",
+        "isExtraImport": true,
+        "detail": "langchain_community.document_loaders",
+        "documentation": {}
+    },
+    {
         "label": "RecursiveCharacterTextSplitter",
         "importPath": "langchain.text_splitter",
         "description": "langchain.text_splitter",
         "isExtraImport": true,
         "detail": "langchain.text_splitter",
+        "documentation": {}
+    },
+    {
+        "label": "streamlit",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "streamlit",
+        "description": "streamlit",
+        "detail": "streamlit",
+        "documentation": {}
+    },
+    {
+        "label": "RagAgent",
+        "importPath": "rag_agent",
+        "description": "rag_agent",
+        "isExtraImport": true,
+        "detail": "rag_agent",
+        "documentation": {}
+    },
+    {
+        "label": "LLms",
+        "importPath": "llms",
+        "description": "llms",
+        "isExtraImport": true,
+        "detail": "llms",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "FileDataType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "store",
+        "importPath": "store",
+        "description": "store",
+        "isExtraImport": true,
+        "detail": "store",
+        "documentation": {}
+    },
+    {
+        "label": "store",
+        "importPath": "store",
+        "description": "store",
+        "isExtraImport": true,
+        "detail": "store",
+        "documentation": {}
+    },
+    {
+        "label": "embeddings",
+        "importPath": "embeddings",
+        "description": "embeddings",
+        "isExtraImport": true,
+        "detail": "embeddings",
+        "documentation": {}
+    },
+    {
+        "label": "embeddings",
+        "importPath": "embeddings",
+        "description": "embeddings",
+        "isExtraImport": true,
+        "detail": "embeddings",
         "documentation": {}
     },
     {
@@ -80,51 +211,43 @@
         "documentation": {}
     },
     {
-        "label": "ModelType",
-        "importPath": "shared.enum",
-        "description": "shared.enum",
+        "label": "getEnv",
+        "importPath": "config",
+        "description": "config",
         "isExtraImport": true,
-        "detail": "shared.enum",
+        "detail": "config",
         "documentation": {}
     },
     {
-        "label": "ModelType",
-        "importPath": "shared.enum",
-        "description": "shared.enum",
+        "label": "getEnv",
+        "importPath": "config",
+        "description": "config",
         "isExtraImport": true,
-        "detail": "shared.enum",
+        "detail": "config",
         "documentation": {}
     },
     {
-        "label": "FileDataType",
-        "importPath": "shared.enum",
-        "description": "shared.enum",
+        "label": "getEnv",
+        "importPath": "config",
+        "description": "config",
         "isExtraImport": true,
-        "detail": "shared.enum",
+        "detail": "config",
         "documentation": {}
     },
     {
         "label": "gemini_model",
-        "importPath": "rag_admissions_consulting.src.shared.constant",
-        "description": "rag_admissions_consulting.src.shared.constant",
+        "importPath": "shared.constant",
+        "description": "shared.constant",
         "isExtraImport": true,
-        "detail": "rag_admissions_consulting.src.shared.constant",
+        "detail": "shared.constant",
         "documentation": {}
     },
     {
         "label": "openai_model",
-        "importPath": "rag_admissions_consulting.src.shared.constant",
-        "description": "rag_admissions_consulting.src.shared.constant",
+        "importPath": "shared.constant",
+        "description": "shared.constant",
         "isExtraImport": true,
-        "detail": "rag_admissions_consulting.src.shared.constant",
-        "documentation": {}
-    },
-    {
-        "label": "ModelType",
-        "importPath": "rag_admissions_consulting.src.shared.enum",
-        "description": "rag_admissions_consulting.src.shared.enum",
-        "isExtraImport": true,
-        "detail": "rag_admissions_consulting.src.shared.enum",
+        "detail": "shared.constant",
         "documentation": {}
     },
     {
@@ -152,11 +275,103 @@
         "documentation": {}
     },
     {
-        "label": "store",
-        "importPath": "store",
-        "description": "store",
+        "label": "system_prompt",
+        "importPath": "prompt",
+        "description": "prompt",
         "isExtraImport": true,
-        "detail": "store",
+        "detail": "prompt",
+        "documentation": {}
+    },
+    {
+        "label": "requests",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "requests",
+        "description": "requests",
+        "detail": "requests",
+        "documentation": {}
+    },
+    {
+        "label": "BeautifulSoup",
+        "importPath": "bs4",
+        "description": "bs4",
+        "isExtraImport": true,
+        "detail": "bs4",
+        "documentation": {}
+    },
+    {
+        "label": "urljoin",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "logging",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "RobotFileParser",
+        "importPath": "urllib.robotparser",
+        "description": "urllib.robotparser",
+        "isExtraImport": true,
+        "detail": "urllib.robotparser",
         "documentation": {}
     },
     {
@@ -165,14 +380,6 @@
         "description": "shared.helper",
         "isExtraImport": true,
         "detail": "shared.helper",
-        "documentation": {}
-    },
-    {
-        "label": "embeddings",
-        "importPath": "embeddings",
-        "description": "embeddings",
-        "isExtraImport": true,
-        "detail": "embeddings",
         "documentation": {}
     },
     {
@@ -200,23 +407,6 @@
         "documentation": {}
     },
     {
-        "label": "sys",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "sys",
-        "description": "sys",
-        "detail": "sys",
-        "documentation": {}
-    },
-    {
-        "label": "getEnv",
-        "importPath": "config",
-        "description": "config",
-        "isExtraImport": true,
-        "detail": "config",
-        "documentation": {}
-    },
-    {
         "label": "PineconeVectorStore",
         "importPath": "langchain_pinecone",
         "description": "langchain_pinecone",
@@ -233,15 +423,6 @@
         "documentation": {}
     },
     {
-        "label": "os",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "os",
-        "description": "os",
-        "detail": "os",
-        "documentation": {}
-    },
-    {
         "label": "setup",
         "importPath": "setuptools",
         "description": "setuptools",
@@ -255,6 +436,15 @@
         "description": "setuptools",
         "isExtraImport": true,
         "detail": "setuptools",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.scripts.scrape_example",
+        "description": "rag_admissions_consulting.src.scripts.scrape_example",
+        "peekOfCode": "def main():\n    # Initialize the scraper with the base URL\n    scraper = WebScraper('https://donga.edu.vn')\n    # Scrape admission-related pages\n    print(\"Starting to scrape Donga University admission pages...\")\n    results = scraper.scrape_site('/', max_pages=100)\n    # Save the results\n    scraper.save_results(results, 'donga_admissions.json')\n    print(\"Scraping completed. Results saved to donga_admissions.json\")\nif __name__ == '__main__':",
+        "detail": "rag_admissions_consulting.src.scripts.scrape_example",
         "documentation": {}
     },
     {
@@ -280,7 +470,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.shared.enum",
         "description": "rag_admissions_consulting.src.shared.enum",
-        "peekOfCode": "class ModelType(str):\n    GEMINI = \"gemini\"\n    OPENAI = \"openai\"\n    HUGGINGFACE = \"huggingface\"\nclass FileDataType(str):\n    CSV = \"csv\"\n    PDF = \"pdf\"",
+        "peekOfCode": "class ModelType(str):\n    GEMINI = \"gemini\"\n    OPENAI = \"openai\"\n    HUGGINGFACE = \"huggingface\"\nclass FileDataType(str):\n    CSV = \"csv\"\n    PDF = \"pdf\"\n    JSON = \"json\"",
         "detail": "rag_admissions_consulting.src.shared.enum",
         "documentation": {}
     },
@@ -289,7 +479,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.shared.enum",
         "description": "rag_admissions_consulting.src.shared.enum",
-        "peekOfCode": "class FileDataType(str):\n    CSV = \"csv\"\n    PDF = \"pdf\"",
+        "peekOfCode": "class FileDataType(str):\n    CSV = \"csv\"\n    PDF = \"pdf\"\n    JSON = \"json\"",
         "detail": "rag_admissions_consulting.src.shared.enum",
         "documentation": {}
     },
@@ -312,11 +502,29 @@
         "documentation": {}
     },
     {
+        "label": "ui_test",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.ui_test.main",
+        "description": "rag_admissions_consulting.src.ui_test.main",
+        "peekOfCode": "def ui_test():\n    st.write(\"Hello World\")\nif __name__ == \"__main__\":\n    ui_test()",
+        "detail": "rag_admissions_consulting.src.ui_test.main",
+        "documentation": {}
+    },
+    {
+        "label": "app_chat",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.app_chat",
+        "description": "rag_admissions_consulting.src.app_chat",
+        "peekOfCode": "def app_chat():\n    question = \"Kỹ sư phát triển sản phẩm Chuỗi khối (Blockchain)?\"\n    lmm = LLms.getLLm(ModelType.GEMINI)\n    # Use GEMINI embeddings for better Vietnamese language support\n    embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)\n    # Configure store with optimized search parameters\n    store.search_kwargs = {\"k\": 5, \"score_threshold\": 0.7}\n    store.search_type = \"mmr\"\n    retriever = store.getRetriever(embedding)\n    response = RagAgent.answer_question(question, lmm, retriever)",
+        "detail": "rag_admissions_consulting.src.app_chat",
+        "documentation": {}
+    },
+    {
         "label": "Embeddings",
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.embeddings",
         "description": "rag_admissions_consulting.src.embeddings",
-        "peekOfCode": "class Embeddings:\n    EMBEDDING_MODELS = {\n        ModelType.HUGGINGFACE: lambda: HuggingFaceEmbeddings(\n            model_name=\"sentence-transformers/all-MiniLM-L6-v2\"\n        ),\n        ModelType.GEMINI: lambda: GoogleGenerativeAIEmbeddings(\n            model=\"models/text-embedding-004\"\n        ),\n        ModelType.OPENAI: lambda: OpenAIEmbeddings(\n            model=\"text-embedding-3-large\"",
+        "peekOfCode": "class Embeddings:\n    EMBEDDING_MODELS = {\n        ModelType.HUGGINGFACE: lambda: HuggingFaceEmbeddings(\n            model_name=\"sentence-transformers/all-MiniLM-L6-v2\"\n        ),\n        ModelType.GEMINI: lambda: GoogleGenerativeAIEmbeddings(\n            model=\"models/embedding-001\",\n            google_api_key= getEnv(\"GEMINI_API_KEY\"),\n            task_type=\"retrieval_document\"\n        ),",
         "detail": "rag_admissions_consulting.src.embeddings",
         "documentation": {}
     },
@@ -334,7 +542,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.llms",
         "description": "rag_admissions_consulting.src.llms",
-        "peekOfCode": "class LLms:\n    def getLLm(type_model: ModelType):\n        if type_model == ModelType.GEMINI:\n            lmm = ChatGoogleGenerativeAI(\n                    model=gemini_model,\n                    treaming=True,\n                    temperature=0,\n                    api_key=GEMINI_API_KEY,\n                )\n            return lmm",
+        "peekOfCode": "class LLms:\n    def getLLm(type_model: ModelType):\n        if type_model == ModelType.GEMINI:\n            lmm = ChatGoogleGenerativeAI(\n                    model=gemini_model,\n                    treaming=True,\n                    temperature=0,\n                    api_key=getEnv(\"GEMINI_API_KEY\"),\n                )\n            return lmm",
         "detail": "rag_admissions_consulting.src.llms",
         "documentation": {}
     },
@@ -350,10 +558,10 @@
     {
         "label": "system_prompt",
         "kind": 5,
-        "importPath": "rag_admissions_consulting.src.promt",
-        "description": "rag_admissions_consulting.src.promt",
-        "peekOfCode": "system_prompt = (\"\"\"Bạn là trợ lý tư vấn tuyển sinh của trường Đại học Đông Á. Hãy trả lời câu hỏi của học sinh dựa trên thông tin được cung cấp một cách chi tiết và thân thiện.\nNếu không có đủ thông tin để trả lời câu hỏi cụ thể, hãy:\n1. Trả lời những phần thông tin mà bạn có\n2. Cung cấp đường link chính thức để học sinh tham khảo thêm\n3. Gợi ý học sinh có thể hỏi thêm những thông tin liên quan\n{context}\"\"\")",
-        "detail": "rag_admissions_consulting.src.promt",
+        "importPath": "rag_admissions_consulting.src.prompt",
+        "description": "rag_admissions_consulting.src.prompt",
+        "peekOfCode": "system_prompt = (\"\"\"Bạn là trợ lý tư vấn tuyển sinh chuyên nghiệp của trường Đại học Đông Á, được trang bị kiến thức chuyên sâu về các ngành học và chương trình đào tạo. Nhiệm vụ của bạn là phân tích thông tin từ context một cách kỹ lưỡng và cung cấp câu trả lời chính xác, đầy đủ về tuyển sinh cho học sinh và phụ huynh.\nQuy tắc trả lời:\n1. Thông tin và nội dung:\n   - Chỉ trả lời dựa trên thông tin được cung cấp trong context\n   - Không thêm thông tin giả định hoặc không có trong context\n   - Nếu không có thông tin, trả lời: \"Xin lỗi, hiện tại tôi không có thông tin về vấn đề này\"\n   - Không đề xuất liên hệ hoặc tìm hiểu thêm nếu không có trong context\n2. Cách thức trả lời:\n   - Trả lời ngắn gọn, súc tích, đi thẳng vào trọng tâm câu hỏi\n   - Sử dụng ngôn ngữ thân thiện, dễ hiểu, phù hợp với học sinh",
+        "detail": "rag_admissions_consulting.src.prompt",
         "documentation": {}
     },
     {
@@ -361,8 +569,17 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.rag_agent",
         "description": "rag_admissions_consulting.src.rag_agent",
-        "peekOfCode": "class RagAgent:\n    def rag_chain():\n        prompt = ChatPromptTemplate.from_messages(\n            [\n                (\"system\", system_prompt),\n                (\"human\", \"{{question}}\"),\n            ]\n        )\n        question_answer_chain = create_stuff_documents_chain(llm, prompt)\n        rag_chain = create_retrieval_chain(retriever, question_answer_chain)",
+        "peekOfCode": "class RagAgent:\n    def rag_chain(llm, retriever):\n        prompt = ChatPromptTemplate.from_messages(\n            [\n                (\"system\", system_prompt),\n                (\"human\", \"{{question}}\"),\n            ]\n        )\n        question_answer_chain = create_stuff_documents_chain(llm, prompt)\n        rag_chain = create_retrieval_chain(retriever, question_answer_chain)",
         "detail": "rag_admissions_consulting.src.rag_agent",
+        "documentation": {}
+    },
+    {
+        "label": "WebScraper",
+        "kind": 6,
+        "importPath": "rag_admissions_consulting.src.scraper",
+        "description": "rag_admissions_consulting.src.scraper",
+        "peekOfCode": "class WebScraper:\n    def __init__(self, base_url: str, output_dir: str = 'data'):\n        self.base_url = base_url\n        self.output_dir = Path(output_dir)\n        self.output_dir.mkdir(parents=True, exist_ok=True)\n        self.session = requests.Session()\n        self.session.headers.update({\n            'User-Agent': 'RAG Admissions Bot/1.0'\n        })\n        self.robot_parser = RobotFileParser()",
+        "detail": "rag_admissions_consulting.src.scraper",
         "documentation": {}
     },
     {
@@ -370,7 +587,7 @@
         "kind": 2,
         "importPath": "rag_admissions_consulting.src.seed",
         "description": "rag_admissions_consulting.src.seed",
-        "peekOfCode": "def seed_data(type: FileDataType = FileDataType.PDF):\n    store.initStore()\n    # load files\n    if type == FileDataType.CSV:\n        extracted_data = helper.load_csv_files(path=\"../data/csv/\")\n    elif type == FileDataType.PDF:\n        extracted_data = helper.load_pdf_files(path=\"../data/pdf/\") \n    else :\n        raise Exception(\"Invalid file type\")    \n    text_chunks = helper.text_split(extracted_data)",
+        "peekOfCode": "def seed_data(type: FileDataType = FileDataType.PDF):\n    store.initStore()\n    # load files\n    if type == FileDataType.CSV:\n        extracted_data = helper.load_csv_files(path=\"../data/csv/\")\n    elif type == FileDataType.PDF:\n        extracted_data = helper.load_pdf_files(path=\"../data/pdf/\") \n    elif type == FileDataType.JSON:\n        extracted_data = helper.load_json_files(path=\"../data/json/\")\n    else :",
         "detail": "rag_admissions_consulting.src.seed",
         "documentation": {}
     },
