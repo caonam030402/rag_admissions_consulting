@@ -1,5 +1,5 @@
-from langchain.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter 
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, CSVLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 class Helper:
     def __init__(self, chunk_size: int = 500,chunk_overlap: int = 20):
@@ -8,13 +8,12 @@ class Helper:
         
     def load_pdf_files(self, path: str) -> list[str]:
         loader=DirectoryLoader(path,glob="*.pdf",loader_cls=PyPDFLoader)
-
         documents=loader.load()
         return documents
 
     def load_csv_files(self, path: str) -> list[str]:
-        loader=TextLoader(path)
-        documents=loader.load()
+        loader = DirectoryLoader(path, glob="*.csv", loader_cls=lambda file_path: CSVLoader(file_path, encoding='utf-8'))
+        documents = loader.load()
         return documents
     
     def text_split(self, extracted_data: str) -> list:

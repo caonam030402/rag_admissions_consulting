@@ -1,26 +1,26 @@
 [
     {
         "label": "PyPDFLoader",
-        "importPath": "langchain.document_loaders",
-        "description": "langchain.document_loaders",
+        "importPath": "langchain_community.document_loaders",
+        "description": "langchain_community.document_loaders",
         "isExtraImport": true,
-        "detail": "langchain.document_loaders",
+        "detail": "langchain_community.document_loaders",
         "documentation": {}
     },
     {
         "label": "DirectoryLoader",
-        "importPath": "langchain.document_loaders",
-        "description": "langchain.document_loaders",
+        "importPath": "langchain_community.document_loaders",
+        "description": "langchain_community.document_loaders",
         "isExtraImport": true,
-        "detail": "langchain.document_loaders",
+        "detail": "langchain_community.document_loaders",
         "documentation": {}
     },
     {
-        "label": "TextLoader",
-        "importPath": "langchain.document_loaders",
-        "description": "langchain.document_loaders",
+        "label": "CSVLoader",
+        "importPath": "langchain_community.document_loaders",
+        "description": "langchain_community.document_loaders",
         "isExtraImport": true,
-        "detail": "langchain.document_loaders",
+        "detail": "langchain_community.document_loaders",
         "documentation": {}
     },
     {
@@ -298,7 +298,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.shared.helper",
         "description": "rag_admissions_consulting.src.shared.helper",
-        "peekOfCode": "class Helper:\n    def __init__(self, chunk_size: int = 500,chunk_overlap: int = 20):\n        self.chunk_size = chunk_size\n        self.chunk_overlap = chunk_overlap\n    def load_pdf_files(self, path: str) -> list[str]:\n        loader=DirectoryLoader(path,glob=\"*.pdf\",loader_cls=PyPDFLoader)\n        documents=loader.load()\n        return documents\n    def load_csv_files(self, path: str) -> list[str]:\n        loader=TextLoader(path)",
+        "peekOfCode": "class Helper:\n    def __init__(self, chunk_size: int = 500,chunk_overlap: int = 20):\n        self.chunk_size = chunk_size\n        self.chunk_overlap = chunk_overlap\n    def load_pdf_files(self, path: str) -> list[str]:\n        loader=DirectoryLoader(path,glob=\"*.pdf\",loader_cls=PyPDFLoader)\n        documents=loader.load()\n        return documents\n    def load_csv_files(self, path: str) -> list[str]:\n        loader = DirectoryLoader(path, glob=\"*.csv\", loader_cls=lambda file_path: CSVLoader(file_path, encoding='utf-8'))",
         "detail": "rag_admissions_consulting.src.shared.helper",
         "documentation": {}
     },

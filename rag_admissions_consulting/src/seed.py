@@ -27,4 +27,4 @@ def seed_data(type: FileDataType = FileDataType.PDF):
     
 
 if __name__ == "__main__":
-    seed_data(FileDataType.PDF)
+    seed_data(FileDataType.CSV)
