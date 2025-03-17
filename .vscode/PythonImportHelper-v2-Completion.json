@@ -96,6 +96,14 @@
         "documentation": {}
     },
     {
+        "label": "FileDataType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
         "label": "gemini_model",
         "importPath": "rag_admissions_consulting.src.shared.constant",
         "description": "rag_admissions_consulting.src.shared.constant",
@@ -272,7 +280,16 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.shared.enum",
         "description": "rag_admissions_consulting.src.shared.enum",
-        "peekOfCode": "class ModelType(str):\n    GEMINI = \"gemini\"\n    OPENAI = \"openai\"\n    HUGGINGFACE = \"huggingface\"",
+        "peekOfCode": "class ModelType(str):\n    GEMINI = \"gemini\"\n    OPENAI = \"openai\"\n    HUGGINGFACE = \"huggingface\"\nclass FileDataType(str):\n    CSV = \"csv\"\n    PDF = \"pdf\"",
+        "detail": "rag_admissions_consulting.src.shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "FileDataType",
+        "kind": 6,
+        "importPath": "rag_admissions_consulting.src.shared.enum",
+        "description": "rag_admissions_consulting.src.shared.enum",
+        "peekOfCode": "class FileDataType(str):\n    CSV = \"csv\"\n    PDF = \"pdf\"",
         "detail": "rag_admissions_consulting.src.shared.enum",
         "documentation": {}
     },
@@ -349,11 +366,11 @@
         "documentation": {}
     },
     {
-        "label": "main",
+        "label": "seed_data",
         "kind": 2,
         "importPath": "rag_admissions_consulting.src.seed",
         "description": "rag_admissions_consulting.src.seed",
-        "peekOfCode": "def main():\n    store.initStore()\n    # load csv files\n    extracted_data = helper.load_pdf_files(path=\"../data/pdf/\")\n    # split text\n    text_chunks = helper.text_split(extracted_data)\n    # embeddings\n    embeddings_model = embeddings.get_embeddings(ModelType.HUGGINGFACE)\n    # upload to pinecone\n    store.uploadToStore(text_chunks, embeddings_model)",
+        "peekOfCode": "def seed_data(type: FileDataType = FileDataType.PDF):\n    store.initStore()\n    # load files\n    if type == FileDataType.CSV:\n        extracted_data = helper.load_csv_files(path=\"../data/csv/\")\n    elif type == FileDataType.PDF:\n        extracted_data = helper.load_pdf_files(path=\"../data/pdf/\") \n    else :\n        raise Exception(\"Invalid file type\")    \n    text_chunks = helper.text_split(extracted_data)",
         "detail": "rag_admissions_consulting.src.seed",
         "documentation": {}
     },

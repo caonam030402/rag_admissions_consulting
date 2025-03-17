@@ -1,16 +1,20 @@
 from store import store
 from shared.helper import helper
 from embeddings import embeddings
-from shared.enum import ModelType
+from shared.enum import ModelType,FileDataType
 from loguru import logger
 
-def main():
+def seed_data(type: FileDataType = FileDataType.PDF):
     store.initStore()
     
-    # load csv files
-    extracted_data = helper.load_pdf_files(path="../data/pdf/")
+    # load files
+    if type == FileDataType.CSV:
+        extracted_data = helper.load_csv_files(path="../data/csv/")
+    elif type == FileDataType.PDF:
+        extracted_data = helper.load_pdf_files(path="../data/pdf/") 
+    else :
+        raise Exception("Invalid file type")    
     
-    # split text
     text_chunks = helper.text_split(extracted_data)
     
     # embeddings
@@ -23,4 +27,4 @@ def main():
     
 
 if __name__ == "__main__":
-    main()
+    seed_data(FileDataType.PDF)
