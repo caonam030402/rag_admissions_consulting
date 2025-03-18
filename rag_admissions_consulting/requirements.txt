@@ -5,6 +5,7 @@ python-dotenv
 ruff
 tqdm
 typer
+torch>=2.0.0
 sentence-transformers==2.4.0
 langchain
 flask
@@ -15,6 +16,7 @@ langchain_community
 langchain_experimental
 langchain-google-genai
 langchain-openai
-
--e .
-
+protoc_gen_openapiv2
+langchain_huggingface==0.1.2
+langchain_ollama
+streamlit

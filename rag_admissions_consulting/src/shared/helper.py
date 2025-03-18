@@ -2,7 +2,7 @@ from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, C
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 class Helper:
-    def __init__(self, chunk_size: int = 500,chunk_overlap: int = 20):
+    def __init__(self, chunk_size: int = 1500,chunk_overlap: int = 150):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         

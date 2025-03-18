@@ -6,14 +6,14 @@ from embeddings import embeddings
 
 
 def app_chat():
-    question = "Kỹ sư phát triển sản phẩm Chuỗi khối (Blockchain)?"
+    question = "Chương trình đạo tạo ngành CNTT cụ thể chi tiết nhất"
     lmm = LLms.getLLm(ModelType.GEMINI)
     # Use GEMINI embeddings for better Vietnamese language support
-    embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)
+    embedding = embeddings.get_embeddings(ModelType.OLLAMA)
     
-    # Configure store with optimized search parameters
-    store.search_kwargs = {"k": 5, "score_threshold": 0.7}
+    store.search_kwargs = {"k": 8, "score_threshold": 0.5, "fetch_k": 20}
     store.search_type = "mmr"
+    store.search_kwargs["lambda_mult"] = 0.8  
     retriever = store.getRetriever(embedding)
     
     response = RagAgent.answer_question(question, lmm, retriever)

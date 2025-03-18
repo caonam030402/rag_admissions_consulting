@@ -1,6 +1,7 @@
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAI, OpenAIEmbeddings
+from langchain_ollama import OllamaEmbeddings
 from shared.enum import ModelType
 
 import sys
@@ -18,7 +19,10 @@ class Embeddings:
             task_type="retrieval_document"
         ),
         ModelType.OPENAI: lambda: OpenAIEmbeddings(
-            model="text-embedding-3-large"
+            model="text-embedding-3-small"
+        ),
+         ModelType.OLLAMA: lambda: OllamaEmbeddings(
+             model="nomic-embed-text"
         )
     }
 

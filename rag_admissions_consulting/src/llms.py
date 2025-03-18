@@ -1,6 +1,7 @@
 from langchain_openai import OpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from shared.constant import gemini_model, openai_model
+from langchain_ollama.llms import OllamaLLM
 from shared.enum import ModelType
 
 import sys
@@ -23,6 +24,11 @@ class LLms:
                     treaming=True,
                     temperature=0,
                     api_key=getEnv("OPENAI_API_KEY"),
+                )
+            return lmm
+        elif type_model == ModelType.OLLAMA:
+            lmm = OllamaLLM(
+                   model="deepseek-r1",
                 )
             return lmm
         else:

@@ -26,6 +26,56 @@
         "documentation": {}
     },
     {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "uuid",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "uuid",
+        "description": "uuid",
+        "detail": "uuid",
+        "documentation": {}
+    },
+    {
         "label": "PyPDFLoader",
         "importPath": "langchain_community.document_loaders",
         "description": "langchain_community.document_loaders",
@@ -83,11 +133,35 @@
         "documentation": {}
     },
     {
+        "label": "RagAgent",
+        "importPath": "rag_agent",
+        "description": "rag_agent",
+        "isExtraImport": true,
+        "detail": "rag_agent",
+        "documentation": {}
+    },
+    {
         "label": "LLms",
         "importPath": "llms",
         "description": "llms",
         "isExtraImport": true,
         "detail": "llms",
+        "documentation": {}
+    },
+    {
+        "label": "LLms",
+        "importPath": "llms",
+        "description": "llms",
+        "isExtraImport": true,
+        "detail": "llms",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
         "documentation": {}
     },
     {
@@ -147,6 +221,14 @@
         "documentation": {}
     },
     {
+        "label": "store",
+        "importPath": "store",
+        "description": "store",
+        "isExtraImport": true,
+        "detail": "store",
+        "documentation": {}
+    },
+    {
         "label": "embeddings",
         "importPath": "embeddings",
         "description": "embeddings",
@@ -160,6 +242,38 @@
         "description": "embeddings",
         "isExtraImport": true,
         "detail": "embeddings",
+        "documentation": {}
+    },
+    {
+        "label": "embeddings",
+        "importPath": "embeddings",
+        "description": "embeddings",
+        "isExtraImport": true,
+        "detail": "embeddings",
+        "documentation": {}
+    },
+    {
+        "label": "ChatHistoryManager",
+        "importPath": "shared.chat_history",
+        "description": "shared.chat_history",
+        "isExtraImport": true,
+        "detail": "shared.chat_history",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
         "documentation": {}
     },
     {
@@ -350,23 +464,6 @@
         "documentation": {}
     },
     {
-        "label": "Path",
-        "importPath": "pathlib",
-        "description": "pathlib",
-        "isExtraImport": true,
-        "detail": "pathlib",
-        "documentation": {}
-    },
-    {
-        "label": "json",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "json",
-        "description": "json",
-        "detail": "json",
-        "documentation": {}
-    },
-    {
         "label": "RobotFileParser",
         "importPath": "urllib.robotparser",
         "description": "urllib.robotparser",
@@ -415,14 +512,6 @@
         "documentation": {}
     },
     {
-        "label": "load_dotenv",
-        "importPath": "dotenv",
-        "description": "dotenv",
-        "isExtraImport": true,
-        "detail": "dotenv",
-        "documentation": {}
-    },
-    {
         "label": "setup",
         "importPath": "setuptools",
         "description": "setuptools",
@@ -445,6 +534,15 @@
         "description": "rag_admissions_consulting.src.scripts.scrape_example",
         "peekOfCode": "def main():\n    # Initialize the scraper with the base URL\n    scraper = WebScraper('https://donga.edu.vn')\n    # Scrape admission-related pages\n    print(\"Starting to scrape Donga University admission pages...\")\n    results = scraper.scrape_site('/', max_pages=100)\n    # Save the results\n    scraper.save_results(results, 'donga_admissions.json')\n    print(\"Scraping completed. Results saved to donga_admissions.json\")\nif __name__ == '__main__':",
         "detail": "rag_admissions_consulting.src.scripts.scrape_example",
+        "documentation": {}
+    },
+    {
+        "label": "ChatHistoryManager",
+        "kind": 6,
+        "importPath": "rag_admissions_consulting.src.shared.chat_history",
+        "description": "rag_admissions_consulting.src.shared.chat_history",
+        "peekOfCode": "class ChatHistoryManager:\n    def __init__(self):\n        self.history_dir = Path('data/chat_history')\n        self.history_file = self.history_dir / 'chat_history.json'\n        self.current_conversation_id = str(uuid.uuid4())\n        self._ensure_history_dir()\n    def _ensure_history_dir(self):\n        \"\"\"Ensure the chat history directory exists\"\"\"\n        self.history_dir.mkdir(parents=True, exist_ok=True)\n        if not self.history_file.exists():",
+        "detail": "rag_admissions_consulting.src.shared.chat_history",
         "documentation": {}
     },
     {
@@ -502,12 +600,30 @@
         "documentation": {}
     },
     {
-        "label": "ui_test",
+        "label": "initialize_rag_components",
         "kind": 2,
-        "importPath": "rag_admissions_consulting.src.ui_test.main",
-        "description": "rag_admissions_consulting.src.ui_test.main",
-        "peekOfCode": "def ui_test():\n    st.write(\"Hello World\")\nif __name__ == \"__main__\":\n    ui_test()",
-        "detail": "rag_admissions_consulting.src.ui_test.main",
+        "importPath": "rag_admissions_consulting.src.ui.app",
+        "description": "rag_admissions_consulting.src.ui.app",
+        "peekOfCode": "def initialize_rag_components():\n    lmm = LLms.getLLm(ModelType.GEMINI)\n    embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)\n    store.search_kwargs = {\"k\": 8, \"score_threshold\": 0.5, \"fetch_k\": 20}\n    store.search_type = \"mmr\"\n    store.search_kwargs[\"lambda_mult\"] = 0.8\n    retriever = store.getRetriever(embedding)\n    return lmm, retriever\n# Display chat title\nst.title(\"🎓 Tư vấn tuyển sinh\")",
+        "detail": "rag_admissions_consulting.src.ui.app",
+        "documentation": {}
+    },
+    {
+        "label": "src_dir",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.ui.app",
+        "description": "rag_admissions_consulting.src.ui.app",
+        "peekOfCode": "src_dir = str(Path(__file__).parent.parent.absolute())\nif src_dir not in sys.path:\n    sys.path.insert(0, src_dir)\nfrom rag_agent import RagAgent\nfrom llms import LLms\nfrom shared.enum import ModelType\nfrom store import store\nfrom embeddings import embeddings\n# Configure the page\nst.set_page_config(",
+        "detail": "rag_admissions_consulting.src.ui.app",
+        "documentation": {}
+    },
+    {
+        "label": "chat_history",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.ui.app",
+        "description": "rag_admissions_consulting.src.ui.app",
+        "peekOfCode": "chat_history = ChatHistoryManager()\n# Initialize session state for chat history\nif 'messages' not in st.session_state:\n    st.session_state.messages = []\n    # Load saved messages from chat history\n    saved_messages = chat_history.load_messages()\n    if saved_messages:\n        st.session_state.messages = saved_messages\n# Initialize RAG components\n@st.cache_resource",
+        "detail": "rag_admissions_consulting.src.ui.app",
         "documentation": {}
     },
     {
@@ -515,8 +631,17 @@
         "kind": 2,
         "importPath": "rag_admissions_consulting.src.app_chat",
         "description": "rag_admissions_consulting.src.app_chat",
-        "peekOfCode": "def app_chat():\n    question = \"Kỹ sư phát triển sản phẩm Chuỗi khối (Blockchain)?\"\n    lmm = LLms.getLLm(ModelType.GEMINI)\n    # Use GEMINI embeddings for better Vietnamese language support\n    embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)\n    # Configure store with optimized search parameters\n    store.search_kwargs = {\"k\": 5, \"score_threshold\": 0.7}\n    store.search_type = \"mmr\"\n    retriever = store.getRetriever(embedding)\n    response = RagAgent.answer_question(question, lmm, retriever)",
+        "peekOfCode": "def app_chat():\n    question = \"Chương trình đạo tạo ngành CNTT cụ thể chi tiết nhất\"\n    lmm = LLms.getLLm(ModelType.GEMINI)\n    # Use GEMINI embeddings for better Vietnamese language support\n    embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)\n    store.search_kwargs = {\"k\": 8, \"score_threshold\": 0.5, \"fetch_k\": 20}\n    store.search_type = \"mmr\"\n    store.search_kwargs[\"lambda_mult\"] = 0.8  \n    retriever = store.getRetriever(embedding)\n    response = RagAgent.answer_question(question, lmm, retriever)",
         "detail": "rag_admissions_consulting.src.app_chat",
+        "documentation": {}
+    },
+    {
+        "label": "getEnv",
+        "kind": 2,
+        "importPath": "rag_admissions_consulting.src.config",
+        "description": "rag_admissions_consulting.src.config",
+        "peekOfCode": "def getEnv(key: str, default_value: str = None) -> str:\n    \"\"\"\n    Get environment variable value\n    Args:\n        key: Environment variable key\n        default_value: Default value if key not found\n    Returns:\n        str: Environment variable value\n    \"\"\"\n    value = os.getenv(key)",
+        "detail": "rag_admissions_consulting.src.config",
         "documentation": {}
     },
     {
@@ -560,7 +685,7 @@
         "kind": 5,
         "importPath": "rag_admissions_consulting.src.prompt",
         "description": "rag_admissions_consulting.src.prompt",
-        "peekOfCode": "system_prompt = (\"\"\"Bạn là trợ lý tư vấn tuyển sinh chuyên nghiệp của trường Đại học Đông Á, được trang bị kiến thức chuyên sâu về các ngành học và chương trình đào tạo. Nhiệm vụ của bạn là phân tích thông tin từ context một cách kỹ lưỡng và cung cấp câu trả lời chính xác, đầy đủ về tuyển sinh cho học sinh và phụ huynh.\nQuy tắc trả lời:\n1. Thông tin và nội dung:\n   - Chỉ trả lời dựa trên thông tin được cung cấp trong context\n   - Không thêm thông tin giả định hoặc không có trong context\n   - Nếu không có thông tin, trả lời: \"Xin lỗi, hiện tại tôi không có thông tin về vấn đề này\"\n   - Không đề xuất liên hệ hoặc tìm hiểu thêm nếu không có trong context\n2. Cách thức trả lời:\n   - Trả lời ngắn gọn, súc tích, đi thẳng vào trọng tâm câu hỏi\n   - Sử dụng ngôn ngữ thân thiện, dễ hiểu, phù hợp với học sinh",
+        "peekOfCode": "system_prompt = (\"\"\"Bạn là trợ lý tư vấn tuyển sinh chuyên nghiệp của trường Đại học Đông Á, được trang bị kiến thức chuyên sâu về các ngành học và chương trình đào tạo. Nhiệm vụ của bạn là phân tích thông tin từ context một cách kỹ lưỡng, hiểu rõ ý định của người hỏi, và cung cấp câu trả lời chính xác, đầy đủ về tuyển sinh cho học sinh và phụ huynh. Bạn cần thể hiện sự chuyên nghiệp, thân thiện và đáng tin cậy trong mọi tương tác.\nKhi bắt đầu cuộc trò chuyện, luôn:\n1. Chào hỏi thân thiện: \"Chào bạn! Mình là trợ lý tư vấn tuyển sinh của Đại học Đông Á. Rất vui được hỗ trợ bạn.\"\n2. Thể hiện sự lắng nghe: \"Mình hiểu bạn đang quan tâm về [chủ đề]. Mình sẽ giúp bạn tìm hiểu chi tiết về vấn đề này.\"\n3. Kết thúc với gợi ý tương tác: \"Bạn còn câu hỏi nào khác về [chủ đề liên quan] không? Mình rất sẵn lòng giải đáp thêm.\"\nKhi trả lời về chương trình đào tạo, đặc biệt là ngành CNTT, bạn cần:\n1. Nêu rõ thời gian đào tạo và số tín chỉ tổng thể\n2. Liệt kê các môn học chuyên ngành quan trọng theo từng học kỳ\n3. Giới thiệu các chuyên ngành/hướng chuyên sâu (nếu có)\n4. Mô tả các kỹ năng và kiến thức đạt được sau khi tốt nghiệp",
         "detail": "rag_admissions_consulting.src.prompt",
         "documentation": {}
     },
