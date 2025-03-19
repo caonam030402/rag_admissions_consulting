@@ -76,6 +76,62 @@
         "documentation": {}
     },
     {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "ModelType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
+        "label": "FileDataType",
+        "importPath": "shared.enum",
+        "description": "shared.enum",
+        "isExtraImport": true,
+        "detail": "shared.enum",
+        "documentation": {}
+    },
+    {
         "label": "PyPDFLoader",
         "importPath": "langchain_community.document_loaders",
         "description": "langchain_community.document_loaders",
@@ -154,54 +210,6 @@
         "description": "llms",
         "isExtraImport": true,
         "detail": "llms",
-        "documentation": {}
-    },
-    {
-        "label": "ModelType",
-        "importPath": "shared.enum",
-        "description": "shared.enum",
-        "isExtraImport": true,
-        "detail": "shared.enum",
-        "documentation": {}
-    },
-    {
-        "label": "ModelType",
-        "importPath": "shared.enum",
-        "description": "shared.enum",
-        "isExtraImport": true,
-        "detail": "shared.enum",
-        "documentation": {}
-    },
-    {
-        "label": "ModelType",
-        "importPath": "shared.enum",
-        "description": "shared.enum",
-        "isExtraImport": true,
-        "detail": "shared.enum",
-        "documentation": {}
-    },
-    {
-        "label": "ModelType",
-        "importPath": "shared.enum",
-        "description": "shared.enum",
-        "isExtraImport": true,
-        "detail": "shared.enum",
-        "documentation": {}
-    },
-    {
-        "label": "ModelType",
-        "importPath": "shared.enum",
-        "description": "shared.enum",
-        "isExtraImport": true,
-        "detail": "shared.enum",
-        "documentation": {}
-    },
-    {
-        "label": "FileDataType",
-        "importPath": "shared.enum",
-        "description": "shared.enum",
-        "isExtraImport": true,
-        "detail": "shared.enum",
         "documentation": {}
     },
     {
@@ -325,6 +333,14 @@
         "documentation": {}
     },
     {
+        "label": "OllamaEmbeddings",
+        "importPath": "langchain_ollama",
+        "description": "langchain_ollama",
+        "isExtraImport": true,
+        "detail": "langchain_ollama",
+        "documentation": {}
+    },
+    {
         "label": "getEnv",
         "importPath": "config",
         "description": "config",
@@ -365,6 +381,14 @@
         "documentation": {}
     },
     {
+        "label": "OllamaLLM",
+        "importPath": "langchain_ollama.llms",
+        "description": "langchain_ollama.llms",
+        "isExtraImport": true,
+        "detail": "langchain_ollama.llms",
+        "documentation": {}
+    },
+    {
         "label": "create_retrieval_chain",
         "importPath": "langchain.chains",
         "description": "langchain.chains",
@@ -394,6 +418,14 @@
         "description": "prompt",
         "isExtraImport": true,
         "detail": "prompt",
+        "documentation": {}
+    },
+    {
+        "label": "hub",
+        "importPath": "langchain",
+        "description": "langchain",
+        "isExtraImport": true,
+        "detail": "langchain",
         "documentation": {}
     },
     {
@@ -550,7 +582,7 @@
         "kind": 5,
         "importPath": "rag_admissions_consulting.src.shared.constant",
         "description": "rag_admissions_consulting.src.shared.constant",
-        "peekOfCode": "openai_model = \"gpt-3.5-turbo\"\ngemini_model = \"gemini-1.5-flash\"",
+        "peekOfCode": "openai_model = \"gpt-3.5-turbo\"\ngemini_model = \"gemini-1.5-flash\"\ntype_embedding = ModelType.OLLAMA",
         "detail": "rag_admissions_consulting.src.shared.constant",
         "documentation": {}
     },
@@ -559,7 +591,16 @@
         "kind": 5,
         "importPath": "rag_admissions_consulting.src.shared.constant",
         "description": "rag_admissions_consulting.src.shared.constant",
-        "peekOfCode": "gemini_model = \"gemini-1.5-flash\"",
+        "peekOfCode": "gemini_model = \"gemini-1.5-flash\"\ntype_embedding = ModelType.OLLAMA",
+        "detail": "rag_admissions_consulting.src.shared.constant",
+        "documentation": {}
+    },
+    {
+        "label": "type_embedding",
+        "kind": 5,
+        "importPath": "rag_admissions_consulting.src.shared.constant",
+        "description": "rag_admissions_consulting.src.shared.constant",
+        "peekOfCode": "type_embedding = ModelType.OLLAMA",
         "detail": "rag_admissions_consulting.src.shared.constant",
         "documentation": {}
     },
@@ -568,7 +609,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.shared.enum",
         "description": "rag_admissions_consulting.src.shared.enum",
-        "peekOfCode": "class ModelType(str):\n    GEMINI = \"gemini\"\n    OPENAI = \"openai\"\n    HUGGINGFACE = \"huggingface\"\nclass FileDataType(str):\n    CSV = \"csv\"\n    PDF = \"pdf\"\n    JSON = \"json\"",
+        "peekOfCode": "class ModelType(str):\n    GEMINI = \"gemini\"\n    OPENAI = \"openai\"\n    HUGGINGFACE = \"huggingface\"\n    OLLAMA = \"ollama\"\nclass FileDataType(str):\n    CSV = \"csv\"\n    PDF = \"pdf\"\n    JSON = \"json\"",
         "detail": "rag_admissions_consulting.src.shared.enum",
         "documentation": {}
     },
@@ -586,7 +627,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.shared.helper",
         "description": "rag_admissions_consulting.src.shared.helper",
-        "peekOfCode": "class Helper:\n    def __init__(self, chunk_size: int = 500,chunk_overlap: int = 20):\n        self.chunk_size = chunk_size\n        self.chunk_overlap = chunk_overlap\n    def load_pdf_files(self, path: str) -> list[str]:\n        loader=DirectoryLoader(path,glob=\"*.pdf\",loader_cls=PyPDFLoader)\n        documents=loader.load()\n        return documents\n    def load_csv_files(self, path: str) -> list[str]:\n        loader = DirectoryLoader(path, glob=\"*.csv\", loader_cls=lambda file_path: CSVLoader(file_path, encoding='utf-8'))",
+        "peekOfCode": "class Helper:\n    def __init__(self, chunk_size: int = 1500,chunk_overlap: int = 150):\n        self.chunk_size = chunk_size\n        self.chunk_overlap = chunk_overlap\n    def load_pdf_files(self, path: str) -> list[str]:\n        loader=DirectoryLoader(path,glob=\"*.pdf\",loader_cls=PyPDFLoader)\n        documents=loader.load()\n        return documents\n    def load_csv_files(self, path: str) -> list[str]:\n        loader = DirectoryLoader(path, glob=\"*.csv\", loader_cls=lambda file_path: CSVLoader(file_path, encoding='utf-8'))",
         "detail": "rag_admissions_consulting.src.shared.helper",
         "documentation": {}
     },
@@ -604,7 +645,7 @@
         "kind": 2,
         "importPath": "rag_admissions_consulting.src.ui.app",
         "description": "rag_admissions_consulting.src.ui.app",
-        "peekOfCode": "def initialize_rag_components():\n    lmm = LLms.getLLm(ModelType.GEMINI)\n    embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)\n    store.search_kwargs = {\"k\": 8, \"score_threshold\": 0.5, \"fetch_k\": 20}\n    store.search_type = \"mmr\"\n    store.search_kwargs[\"lambda_mult\"] = 0.8\n    retriever = store.getRetriever(embedding)\n    return lmm, retriever\n# Display chat title\nst.title(\"🎓 Tư vấn tuyển sinh\")",
+        "peekOfCode": "def initialize_rag_components():\n    lmm = LLms.getLLm(ModelType.GEMINI)\n    embedding = embeddings.get_embeddings(ModelType.OLLAMA)\n    store.search_kwargs = {\"k\": 8, \"score_threshold\": 0.5, \"fetch_k\": 20}\n    store.search_type = \"mmr\"\n    store.search_kwargs[\"lambda_mult\"] = 0.8\n    retriever = store.getRetriever(embedding)\n    return lmm, retriever\n# Display chat title\nst.title(\"🎓 Tư vấn tuyển sinh\")",
         "detail": "rag_admissions_consulting.src.ui.app",
         "documentation": {}
     },
@@ -631,7 +672,7 @@
         "kind": 2,
         "importPath": "rag_admissions_consulting.src.app_chat",
         "description": "rag_admissions_consulting.src.app_chat",
-        "peekOfCode": "def app_chat():\n    question = \"Chương trình đạo tạo ngành CNTT cụ thể chi tiết nhất\"\n    lmm = LLms.getLLm(ModelType.GEMINI)\n    # Use GEMINI embeddings for better Vietnamese language support\n    embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)\n    store.search_kwargs = {\"k\": 8, \"score_threshold\": 0.5, \"fetch_k\": 20}\n    store.search_type = \"mmr\"\n    store.search_kwargs[\"lambda_mult\"] = 0.8  \n    retriever = store.getRetriever(embedding)\n    response = RagAgent.answer_question(question, lmm, retriever)",
+        "peekOfCode": "def app_chat():\n    question = \"Chương trình đạo tạo ngành CNTT cụ thể chi tiết nhất\"\n    lmm = LLms.getLLm(ModelType.GEMINI)\n    # Use GEMINI embeddings for better Vietnamese language support\n    embedding = embeddings.get_embeddings(ModelType.OLLAMA)\n    store.search_kwargs = {\"k\": 8, \"score_threshold\": 0.5, \"fetch_k\": 20}\n    store.search_type = \"mmr\"\n    store.search_kwargs[\"lambda_mult\"] = 0.8  \n    retriever = store.getRetriever(embedding)\n    response = RagAgent.answer_question(question, lmm, retriever)",
         "detail": "rag_admissions_consulting.src.app_chat",
         "documentation": {}
     },
@@ -685,7 +726,7 @@
         "kind": 5,
         "importPath": "rag_admissions_consulting.src.prompt",
         "description": "rag_admissions_consulting.src.prompt",
-        "peekOfCode": "system_prompt = (\"\"\"Bạn là trợ lý tư vấn tuyển sinh chuyên nghiệp của trường Đại học Đông Á, được trang bị kiến thức chuyên sâu về các ngành học và chương trình đào tạo. Nhiệm vụ của bạn là phân tích thông tin từ context một cách kỹ lưỡng, hiểu rõ ý định của người hỏi, và cung cấp câu trả lời chính xác, đầy đủ về tuyển sinh cho học sinh và phụ huynh. Bạn cần thể hiện sự chuyên nghiệp, thân thiện và đáng tin cậy trong mọi tương tác.\nKhi bắt đầu cuộc trò chuyện, luôn:\n1. Chào hỏi thân thiện: \"Chào bạn! Mình là trợ lý tư vấn tuyển sinh của Đại học Đông Á. Rất vui được hỗ trợ bạn.\"\n2. Thể hiện sự lắng nghe: \"Mình hiểu bạn đang quan tâm về [chủ đề]. Mình sẽ giúp bạn tìm hiểu chi tiết về vấn đề này.\"\n3. Kết thúc với gợi ý tương tác: \"Bạn còn câu hỏi nào khác về [chủ đề liên quan] không? Mình rất sẵn lòng giải đáp thêm.\"\nKhi trả lời về chương trình đào tạo, đặc biệt là ngành CNTT, bạn cần:\n1. Nêu rõ thời gian đào tạo và số tín chỉ tổng thể\n2. Liệt kê các môn học chuyên ngành quan trọng theo từng học kỳ\n3. Giới thiệu các chuyên ngành/hướng chuyên sâu (nếu có)\n4. Mô tả các kỹ năng và kiến thức đạt được sau khi tốt nghiệp",
+        "peekOfCode": "system_prompt = (\"\"\"Ignore all previous instructions.You are a guidance officer of a university's student admission system.Your role is answer the question of user that related to College entrance and that have been provide in context so user don't need to search outside to understand the answer.Your answer must focus on the content of the question, the answer must be clear.If you are unable to provide an answer to a question, don't try to create an answer, just say you don't know!\nBase on the context below, please answer the question below in Vietnames.\n{context}\"\"\")",
         "detail": "rag_admissions_consulting.src.prompt",
         "documentation": {}
     },
@@ -694,7 +735,7 @@
         "kind": 6,
         "importPath": "rag_admissions_consulting.src.rag_agent",
         "description": "rag_admissions_consulting.src.rag_agent",
-        "peekOfCode": "class RagAgent:\n    def rag_chain(llm, retriever):\n        prompt = ChatPromptTemplate.from_messages(\n            [\n                (\"system\", system_prompt),\n                (\"human\", \"{{question}}\"),\n            ]\n        )\n        question_answer_chain = create_stuff_documents_chain(llm, prompt)\n        rag_chain = create_retrieval_chain(retriever, question_answer_chain)",
+        "peekOfCode": "class RagAgent:\n    def rag_chain(llm, retriever):\n        prompt = ChatPromptTemplate.from_messages(\n            [\n                (\"system\", system_prompt),\n                (\"human\", \"{{question}}\"),\n            ]\n        )\n        qa_prompt = hub.pull(\"bagumeow/qa-tuyensinh\") \n        question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)",
         "detail": "rag_admissions_consulting.src.rag_agent",
         "documentation": {}
     },
@@ -748,7 +789,7 @@
         "kind": 5,
         "importPath": "rag_admissions_consulting.config",
         "description": "rag_admissions_consulting.config",
-        "peekOfCode": "listEnv = {\n    \"PINECONE_API_KEY\": os.environ.get('PINECONE_API_KEY'),\n    \"GEMINI_API_KEY\": os.environ.get('GEMINI_API_KEY')\n}\ndef getEnv(key):\n    if key not in listEnv:\n        raise KeyError(f\"Unknown key: {key}\")\n    value = listEnv[key]\n    if not value:\n        raise ValueError(f\"Environment variable {key} is not set in .env file\")",
+        "peekOfCode": "listEnv = {\n    \"PINECONE_API_KEY\": os.environ.get('PINECONE_API_KEY'),\n    \"GEMINI_API_KEY\": os.environ.get('GEMINI_API_KEY'),\n    \"OPENAI_API_KEY\": os.environ.get('OPENAI_API_KEY'),\n}\ndef getEnv(key):\n    if key not in listEnv:\n        raise KeyError(f\"Unknown key: {key}\")\n    value = listEnv[key]\n    if not value:",
         "detail": "rag_admissions_consulting.config",
         "documentation": {}
     }
