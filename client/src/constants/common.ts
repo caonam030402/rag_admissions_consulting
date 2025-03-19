@@ -1,28 +1,15 @@
 export const PATH = {
   HOME: "/",
   LOGIN: "/admin/login",
-  REGISTER: "/register",
-  WORKPLACE: "/workplace",
-  MESSENGER: "/workplace/messenger",
-  GET_STARTED: "/get-started",
-  INVITE_WORKSPACE: "/get-started/invite-workspace",
-  VERIFY: "/verify",
-  FORGOT_PASSWORD: "/forgot-password",
-  BASE_DOC: "/workplace/base/doc",
-  BASE_HOME: "/workplace/base/home",
+  MANAGER: "/admin/manager",
 };
 
-export const PUBLIC_PAGES = [
-  PATH.LOGIN,
-  PATH.REGISTER,
-  PATH.HOME,
-  PATH.WORKPLACE,
-  PATH.MESSENGER,
-  PATH.GET_STARTED,
-  PATH.HOME,
-  PATH.INVITE_WORKSPACE,
-];
+export const PUBLIC_PAGES = [PATH.LOGIN, PATH.MANAGER];
 
 export enum ENameCookie {
   ACCESS_TOKEN = "_next-auth.htshs",
+}
+
+export enum ENameLocalS {
+  PROFILE = "_next-wq.pf",
 }

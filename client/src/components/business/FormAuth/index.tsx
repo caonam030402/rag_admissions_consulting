@@ -97,24 +97,22 @@ export default function FormSignUp({
           <Input
             size="md"
             placeholder="Google code key"
-            errorMessage={errors.email?.message}
-            isInvalid={!!errors.email?.message}
-            type="email"
+            errorMessage={errors.googleCode?.message}
+            isInvalid={!!errors.googleCode?.message}
             startContent={
               <CheckSquare className="pointer-events-none shrink-0 text-xl text-default-400" />
             }
-            {...form.register("email")}
+            {...form.register("googleCode")}
           />
           <Input
             size="md"
             placeholder="Key university"
-            errorMessage={errors.email?.message}
-            isInvalid={!!errors.email?.message}
-            type="email"
+            errorMessage={errors.key?.message}
+            isInvalid={!!errors.key?.message}
             startContent={
               <CheckCircle className="pointer-events-none shrink-0 text-xl text-default-400" />
             }
-            {...form.register("email")}
+            {...form.register("key")}
           />
           <Button
             isLoading={isLoading}

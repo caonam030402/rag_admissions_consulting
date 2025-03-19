@@ -1,18 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 
 interface InfiniteGridProps {
   images: string[];
 }
 
-export default function InfiniteGrid({ images }: InfiniteGridProps) {
+function InfiniteGrid({ images }: InfiniteGridProps) {
   const [duplicatedImages, setDuplicatedImages] = useState<string[]>([]);
   const [isClient, setIsClient] = useState(false);
 
-  const shuffleArray = (array: string[]) => {
+  const shuffleArray = useCallback((array: string[]) => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i >= 1; i -= 1) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -21,7 +21,7 @@ export default function InfiniteGrid({ images }: InfiniteGridProps) {
       shuffled[j] = temp ?? "";
     }
     return shuffled;
-  };
+  }, []);
 
   useEffect(() => {
     setIsClient(true);
@@ -29,7 +29,7 @@ export default function InfiniteGrid({ images }: InfiniteGridProps) {
       .fill(null)
       .flatMap(() => shuffleArray(images));
     setDuplicatedImages(initialImages);
-  }, [images]);
+  }, [images, shuffleArray]);
 
   if (!isClient) return null;
   if (!duplicatedImages.length) return null;
@@ -67,7 +67,7 @@ export default function InfiniteGrid({ images }: InfiniteGridProps) {
                 <img
                   src={image}
                   alt={`Grid item ${index}`}
-                  className={`h-auto w-full object-cover transition-transform duration-300 ${index % 3 === 0 ? "min-h-[400px]" : "min-h-[200px]"}`}
+                  className={`h-auto w-full object-cover transition-transform duration-300 ${index % 3 === 0 ? "min-h-[400px]" : "min-h-[200px]"}}`}
                   loading="lazy"
                 />
               </div>
@@ -78,3 +78,5 @@ export default function InfiniteGrid({ images }: InfiniteGridProps) {
     </div>
   );
 }
+
+export default React.memo(InfiniteGrid);

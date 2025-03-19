@@ -1,5 +1,5 @@
 const initialState = {
-  isCollapsedSideBar: false,
+  isCollapsedSideBar: true,
 };
 
 export default initialState;

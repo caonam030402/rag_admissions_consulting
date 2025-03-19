@@ -18,6 +18,16 @@ const authValidation = z.object({
     .regex(passwordValidation, {
       message: messageValidation({ field: "password" }).passwordRule,
     }),
+  key: z
+    .string({
+      message: messageValidation({ field: "key" }).isRequired,
+    })
+    .regex(/^UDA$/, {
+      message: "Sai tên hệ thống",
+    }),
+  googleCode: z.string({
+    message: messageValidation({ field: "googleCode" }).isRequired,
+  }),
   firstName: z
     .string({ message: messageValidation({ field: "firstName" }).isRequired })
     .min(1, { message: messageValidation({ min: 3 }).minCharacters })

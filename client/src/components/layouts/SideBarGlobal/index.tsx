@@ -5,8 +5,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import QuickCreate from "@/components/business/QuickCreate";
-import QuickSearch from "@/components/business/QuickSearch";
 import UserSetting from "@/components/business/UserSetting";
 import { cn } from "@/libs/utils";
 import { userService } from "@/services/user";
@@ -18,7 +16,7 @@ import ListItemSideBar from "./ListItemSideBar";
 
 export default function SideBarGlobal() {
   const dispatch = useDispatch();
-  const minWidth = 150;
+  const minWidth = 200;
   const minWidthCollapse = 70;
   const isCollapsedSideBar = useSelector(selectIsCollapsed);
 
@@ -57,18 +55,13 @@ export default function SideBarGlobal() {
                 name: user?.name,
               }}
             />
-            {!isCollapsedSideBar && <QuickCreate />}
           </div>
           <ListItemSideBar />
         </div>
-        <div className={cn("space-y-4 w-full mb-3", isBetweenStyle)}>
-          {isCollapsedSideBar && <QuickCreate />}
-          <QuickSearch isExpanded={!isCollapsedSideBar} />
-        </div>
       </div>
       <div
-        // cursor-col-resize
-        // className="w-[2px]"
+        cursor-col-resize
+        className="w-[2px]"
         onMouseDown={handleMouseDown}
       />
     </div>
