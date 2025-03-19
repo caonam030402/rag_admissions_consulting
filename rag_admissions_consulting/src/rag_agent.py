@@ -19,26 +19,12 @@ class RagAgent:
         return rag_chain
         
     def answer_question(question: str, llm, retriever, chat_history: list = None):
-        # Process the question with chat history
         response = RagAgent.rag_chain(llm, retriever).invoke({
             "input": question,
             "chat_history": chat_history or [],
             "context": ""
         })
-        
-        # If no relevant information found in context
-        if not response or 'context' not in response or not response['context']:
-            return {
-                'answer': 'Could you please clarify which specific program or university you are asking about? This will help me provide more accurate information.'
-            }
-            
-        # Validate answer quality
-        if 'generic' in response['answer'].lower() or 'sorry' in response['answer'].lower():
-            return {
-                'answer': 'To better assist you, could you share: 1) Your target universities 2) Academic background 3) Specific concerns?'
-            }
 
-        # Update chat history with current interaction
         return {
             'answer': response['answer'],
             'updated_history': (chat_history or []) + [
@@ -46,5 +32,4 @@ class RagAgent:
             ]
         }
         
-        # Structure the response based on the question type and available information
         return response

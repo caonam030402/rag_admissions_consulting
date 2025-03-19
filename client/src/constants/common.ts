@@ -1,6 +1,6 @@
 export const PATH = {
   HOME: "/",
-  LOGIN: "/login",
+  LOGIN: "/admin/login",
   REGISTER: "/register",
   WORKPLACE: "/workplace",
   MESSENGER: "/workplace/messenger",
@@ -26,4 +26,3 @@ export const PUBLIC_PAGES = [
 export enum ENameCookie {
   ACCESS_TOKEN = "_next-auth.htshs",
 }
-

@@ -6,7 +6,7 @@ import { IoChevronBackOutline } from "@react-icons/all-files/io5/IoChevronBackOu
 import React, { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { STEP_FORM_AUTH } from "@/app/[locale]/(auth)/register/constant";
+import { STEP_FORM_AUTH } from "@/app/[locale]/admin/(auth)/register/constant";
 import { signOut } from "@/configs/auth";
 import { ENameLocalS } from "@/constants";
 import { cn } from "@/libs/utils";
@@ -59,7 +59,7 @@ export default function VerifyCodeMail({
         },
         code: Number(data.otp),
       },
-      userId || 0,
+      userId || 0
     );
   };
 
@@ -139,7 +139,7 @@ export default function VerifyCodeMail({
           }}
           className={cn(
             "mt-2 flex cursor-pointer items-center gap-1 text-primary",
-            isDisabledResend && "cursor-not-allowed opacity-50",
+            isDisabledResend && "cursor-not-allowed opacity-50"
           )}
         >
           {!isDisabledResend ? (

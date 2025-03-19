@@ -1,16 +1,17 @@
 import { Button } from "@heroui/button";
-import { Input } from "@heroui/input";
 import {
+  CheckCircle,
+  CheckSquare,
   EnvelopeSimple,
   Eye,
   EyeSlash,
   Lock,
-  User,
 } from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { type UseFormReturn } from "react-hook-form";
 
-import AuthWithProvider from "@/components/business/AuthWithProvider";
+import Input from "@/components/common/Input";
+import Logo from "@/components/common/Logo";
 import type { IFormTypeAuth } from "@/types/form";
 
 interface IProps {
@@ -30,11 +31,9 @@ export default function FormSignUp({
   title = "Create account",
   labelAction = "Sign in",
   description,
-  isLogin,
 }: IProps) {
   const [isVisiblePassWord, setIsVisiblePassWord] = useState(false);
-  const [isVisibleConfirmPassWord, setIsVisibleConfirmPassWord] =
-    useState(false);
+
   const {
     formState: { errors },
     register,
@@ -44,9 +43,6 @@ export default function FormSignUp({
   const toggleVisibilityPassword = () =>
     setIsVisiblePassWord(!isVisiblePassWord);
 
-  const toggleVisibilityConfirmPassword = () =>
-    setIsVisibleConfirmPassWord(!isVisibleConfirmPassWord);
-
   const onSubmit = handleSubmit((data) => {
     handleSubmitMail(data);
   });
@@ -54,11 +50,17 @@ export default function FormSignUp({
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center">
       <div className="w-full max-w-[600px] space-y-6">
-        <form onSubmit={onSubmit} className="w-full space-y-6">
-          <h1 className="text-2xl font-bold">{title}</h1>
+        <form
+          onSubmit={onSubmit}
+          className="flex w-full flex-col items-center space-y-6"
+        >
+          <div className="flex items-center gap-2">
+            <Logo />
+            <h1 className="text-center text-2xl font-bold">{title}</h1>
+          </div>
           <Input
             size="md"
-            placeholder="name@work.com"
+            placeholder="Name@work.com"
             errorMessage={errors.email?.message}
             isInvalid={!!errors.email?.message}
             type="email"
@@ -67,31 +69,10 @@ export default function FormSignUp({
             }
             {...form.register("email")}
           />
-          {!isLogin && (
-            <div className="flex gap-3">
-              <Input
-                size="md"
-                placeholder="first name"
-                errorMessage={errors.firstName?.message}
-                isInvalid={!!errors.firstName?.message}
-                startContent={
-                  <User className="pointer-events-none shrink-0 text-xl text-default-400" />
-                }
-                {...form.register("firstName")}
-              />
-              <Input
-                size="md"
-                placeholder="last name"
-                errorMessage={errors.lastName?.message}
-                isInvalid={!!errors.lastName?.message}
-                {...form.register("lastName")}
-              />
-            </div>
-          )}
           <Input
             size="md"
             errorMessage={errors.password?.message}
-            placeholder="password"
+            placeholder="Password"
             isInvalid={!!errors.password?.message}
             startContent={
               <Lock className="pointer-events-none shrink-0 text-xl text-default-400" />
@@ -113,33 +94,28 @@ export default function FormSignUp({
             type={isVisiblePassWord ? "text" : "password"}
             {...register("password")}
           />
-          {!isLogin && (
-            <Input
-              size="md"
-              errorMessage={errors.confirmPassword?.message}
-              placeholder="confirm password"
-              isInvalid={!!errors.confirmPassword?.message}
-              startContent={
-                <Lock className="pointer-events-none shrink-0 text-xl text-default-400" />
-              }
-              endContent={
-                <button
-                  className="focus:outline-none"
-                  type="button"
-                  onClick={toggleVisibilityConfirmPassword}
-                  aria-label="toggle password visibility"
-                >
-                  {isVisibleConfirmPassWord ? (
-                    <EyeSlash className="pointer-events-none text-xl text-default-400" />
-                  ) : (
-                    <Eye className="pointer-events-none text-xl text-default-400" />
-                  )}
-                </button>
-              }
-              type={isVisibleConfirmPassWord ? "text" : "password"}
-              {...register("confirmPassword")}
-            />
-          )}
+          <Input
+            size="md"
+            placeholder="Google code key"
+            errorMessage={errors.email?.message}
+            isInvalid={!!errors.email?.message}
+            type="email"
+            startContent={
+              <CheckSquare className="pointer-events-none shrink-0 text-xl text-default-400" />
+            }
+            {...form.register("email")}
+          />
+          <Input
+            size="md"
+            placeholder="Key university"
+            errorMessage={errors.email?.message}
+            isInvalid={!!errors.email?.message}
+            type="email"
+            startContent={
+              <CheckCircle className="pointer-events-none shrink-0 text-xl text-default-400" />
+            }
+            {...form.register("email")}
+          />
           <Button
             isLoading={isLoading}
             type="submit"
@@ -150,7 +126,6 @@ export default function FormSignUp({
             {labelAction}
           </Button>
         </form>
-        <AuthWithProvider />
         {description}
       </div>
     </div>

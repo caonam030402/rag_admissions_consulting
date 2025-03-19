@@ -38,7 +38,7 @@ if 'messages' not in st.session_state:
 @st.cache_resource
 def initialize_rag_components():
     lmm = LLms.getLLm(ModelType.GEMINI)
-    embedding = embeddings.get_embeddings(ModelType.OLLAMA)
+    embedding = embeddings.get_embeddings(ModelType.GEMINI)
     
     store.search_kwargs = {"k": 8, "score_threshold": 0.5, "fetch_k": 20}
     store.search_type = "mmr"

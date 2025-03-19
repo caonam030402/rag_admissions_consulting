@@ -30,6 +30,8 @@ export default withSentryConfig(
           'framerusercontent.com',
           'media.gcflearnfree.org',
           'cdn.pixabay.com',
+          'images.unsplash.com',
+          'plus.unsplash.com',
         ],
       },
     }),
