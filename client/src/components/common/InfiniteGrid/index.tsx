@@ -35,7 +35,7 @@ function InfiniteGrid({ images }: InfiniteGridProps) {
   if (!duplicatedImages.length) return null;
 
   return (
-    <div className="fixed inset-0 z-0 h-screen w-screen overflow-hidden opacity-80">
+    <div className="h-screen w-screen overflow-hidden opacity-80">
       <motion.div
         className="h-[200%] w-full p-2"
         style={{ transformStyle: "preserve-3d" }}

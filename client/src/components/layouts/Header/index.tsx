@@ -4,15 +4,10 @@ import {
   Navbar,
   NavbarBrand,
   NavbarContent,
-  NavbarItem,
 } from "@heroui/react";
 
-import UserSetting from "@/components/business/UserSetting";
 import Logo from "@/components/common/Logo";
-import RenderCondition from "@/components/common/RenderCondition";
-import { userMenuOptionsHome } from "@/constants";
 import { PATH } from "@/constants/common";
-import { userService } from "@/services/user";
 
 const listNav = [
   {
@@ -38,7 +33,6 @@ const listNav = [
 ];
 
 export default function Header() {
-  const { user, isLoading } = userService.useProfile();
   return (
     <Navbar maxWidth="xl">
       <NavbarBrand>
@@ -60,28 +54,9 @@ export default function Header() {
         })}
       </NavbarContent>
       <NavbarContent justify="end">
-        <NavbarItem>
-          {!isLoading && (
-            <RenderCondition
-              condition={!!user}
-              ifContent={
-                <UserSetting
-                  placement="bottom"
-                  info={{
-                    email: user?.email,
-                    avatar: user?.avatar,
-                  }}
-                  menuOptions={userMenuOptionsHome}
-                />
-              }
-              elseContent={
-                <Button as={Link} color="primary" href={PATH.REGISTER}>
-                  Sign Up
-                </Button>
-              }
-            />
-          )}
-        </NavbarItem>
+        <Button as={Link} color="primary">
+          Sign Up
+        </Button>
       </NavbarContent>
     </Navbar>
   );

@@ -5,10 +5,10 @@ import Logo from "@/components/common/Logo";
 
 export default function IntroSection() {
   return (
-    <div className="h-full w-1/2 bg-[url('https://lf-scm-us.feishucdn.com/larksuite/global_registration_web/static/image/left-bg.cc3d00d0.png')] bg-cover p-10 2xl:w-[30%]">
+    <div className="h-full w-1/2 bg-[url('https://lf-scm-us.feishucdn.com/larksuite/global_registration_web/static/image/left-bg.cc3d00d0.png')] bg-cover p-10">
       <Logo />
       <div className="flex h-[90%] flex-col items-center justify-center text-center">
-        <div className="h-[300px] w-[90%] overflow-hidden rounded-3xl border-[15px] border-white">
+        <div className="h-[500px] w-[90%] overflow-hidden rounded-3xl border-[15px] border-white">
           <video
             className="size-full rounded-md object-cover"
             src="https://framerusercontent.com/assets/3iiUyXf3NFxGzXdNizRJYlD4AY.mp4"

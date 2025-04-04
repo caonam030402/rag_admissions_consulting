@@ -1,101 +1,101 @@
-import { Button } from "@heroui/button";
-import { Link } from "@heroui/link";
-import { IoCloudDownloadOutline } from "@react-icons/all-files/io5/IoCloudDownloadOutline";
-import Image from "next/image";
+import { Input } from "@heroui/input";
 import React from "react";
+import toast from "react-hot-toast";
 
-import { PATH } from "@/constants";
-import { userService } from "@/services/user";
+import Button from "@/components/common/Button";
+import { InfiniteMovingCards } from "@/components/common/InfiniteMoving";
+import { ENameLocalS } from "@/constants";
+import useNavigate from "@/hooks/navigate";
+import { setLocalStorage } from "@/utils/clientStorage";
 
-const listLogoCompany = [
-  "https://framerusercontent.com/images/PPfehcyhCEreeqFeefrJsrMGQuI.png?scale-down-to=512",
-  "https://framerusercontent.com/images/jzriHkTmxukLUMFozWuKPWIODNE.png?scale-down-to=512",
-  "https://framerusercontent.com/images/eXnXhWuUyzZR8vgTMMR8mHO4Mw.png?scale-down-to=512",
-  "https://framerusercontent.com/images/E7ZPZFHqhI1DAyDq3Olx13iOqFw.png?scale-down-to=512",
-  "https://framerusercontent.com/images/7KT6pfYhbHMu69NtVo684Pv0dTY.png?scale-down-to=512",
-  "https://framerusercontent.com/images/Yj8HKZJO1ZbKKEvN89cv8AiC19I.png?scale-down-to=512",
-  "https://framerusercontent.com/images/hoIFPPBhMs6vJd54kVL36yoXc.png?scale-down-to=512",
-  "https://framerusercontent.com/images/kKSIMXAgtOTILcsphmfpSOgdKSA.webp?scale-down-to=512",
+const images = [
+  "https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8c3R1ZGVudHN8ZW58MHx8MHx8fDA%3D",
+  "https://plus.unsplash.com/premium_photo-1679547202572-bb3a34c54130?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8c3R1ZGVudHN8ZW58MHx8MHx8fDA%3D",
+  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8c3R1ZGVudHN8ZW58MHx8MHx8fDA%3D",
+  "https://images.unsplash.com/photo-1549057446-9f5c6ac91a04?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fHN0dWRlbnRzfGVufDB8fDB8fHww",
+  "https://images.unsplash.com/photo-1552664730-d307ca884978?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fHN0dWRlbnRzfGVufDB8fDB8fHww",
+  "https://plus.unsplash.com/premium_photo-1683887034146-c79058dbdcb1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fHN0dWRlbnRzfGVufDB8fDB8fHww",
 ];
 
 export default function Introduce() {
-  const { user } = userService.useProfile();
-  const isAuthenticated = !!user;
+  const emailRef = React.useRef<HTMLInputElement>(null);
+  const { navigate } = useNavigate();
+  const [loading, setLoading] = React.useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    setLoading(true);
+    e.preventDefault();
+    const email = emailRef.current?.value;
+
+    if (!email || email.trim() === "") {
+      toast.error("Vui lòng nhập email để tiếp tục");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Vui lòng nhập đúng định dạng email");
+      return;
+    }
+
+    setLocalStorage({
+      key: ENameLocalS.EMAIL,
+      value: email,
+    });
+
+    navigate({ customUrl: "/chat-bot" });
+
+    toast.success("Email đã được gửi thành công");
+    setLoading(false);
+  };
+
   return (
-    <div
-      className="relative flex h-auto w-full flex-col items-center "
-      style={{
-        background:
-          "linear-gradient(120deg, rgb(255, 255, 255) 0%, rgb(249, 249, 251) 100%)",
-      }}
-    >
-      <div className="absolute z-10 h-[1100px] w-full flex-none object-cover">
-        <Image
-          width={1820}
-          height={1100}
-          className="size-full rounded-md object-cover"
-          src="https://framerusercontent.com/images/PFndlXPw7ZnW1cAJl4zNb0HxfM.jpg?scale-down-to=2048"
-          alt=""
+    <div className="relative flex h-auto w-full flex-col items-center bg-black">
+      <div className="flex w-full flex-col gap-3 py-4 opacity-30">
+        <InfiniteMovingCards
+          pauseOnHover={false}
+          items={images}
+          direction="right"
+          speed="slow"
         />
-      </div>
-      <div className="right-0 top-[50px] z-10 h-[1100px] w-full max-w-[1820px] flex-none object-cover">
-        <video
-          muted
-          className="size-full rounded-md object-cover"
-          src="https://framerusercontent.com/assets/81NHtv0iyw6dYfipy1368Pukjk.mp4"
-          autoPlay
-          loop
+        <InfiniteMovingCards
+          pauseOnHover={false}
+          items={images}
+          direction="left"
+          speed="slow"
         />
-      </div>
-      <div className="absolute bottom-[5%] z-10 text-center uppercase">
-        Trusted by fast-growing companies from
-        <span className="font-bold"> 125+</span> countries
-        <div className="mt-2 flex flex-wrap gap-3">
-          {listLogoCompany.map((logo) => (
-            <div
-              key={logo}
-              className="flex h-[50px] w-[120px] items-center justify-center rounded-md bg-white/70 object-cover px-3"
-            >
-              <Image
-                key={logo}
-                width={2000}
-                height={2000}
-                className="rounded-md object-cover"
-                src={logo}
-                alt=""
-              />
-            </div>
-          ))}
-        </div>
+        <InfiniteMovingCards
+          pauseOnHover={false}
+          items={images}
+          direction="right"
+          speed="slow"
+        />
       </div>
 
-      <div className="absolute z-10 mt-10 flex flex-col items-center gap-5">
-        <div className="text-center text-5xl font-bold">
-          Your <span className="text-primary">Digital Hub</span> to <br />
-          simplify business operations
-        </div>
-        <div className="mt-3 w-3/5 text-center text-base text-gray-800">
-          Turn boardroom vision into operational excellence with tools for
-          centralized communication, project management, digital workflows,
-          analytics and more.
-        </div>
-        <div className="flex gap-4">
-          <Button className="mt-5" size="lg" color="primary">
-            Download Now <IoCloudDownloadOutline />
-          </Button>
-          {isAuthenticated && (
-            <Button
-              variant="bordered"
-              className="mt-5"
-              size="lg"
-              as={Link}
-              href={PATH.GET_STARTED}
-              color="primary"
-            >
-              Launch Lark
-            </Button>
-          )}
-        </div>
+      <div className="absolute flex size-full items-center justify-center">
+        <form onSubmit={handleSubmit} className="text-center">
+          <p className="mb-2 text-6xl font-bold text-white">
+            Trợ lý tuyển sinh <span className="text-primary">DAD</span>
+          </p>
+          <p className="mx-auto w-3/5 py-3 text-white">
+            Create AI Art and turn your imaginations into reality with Imagine's
+            AI Art Generator and produce stunning visuals to cover up your
+            artistic thoughts.
+          </p>
+          <Input
+            ref={emailRef}
+            classNames={{
+              inputWrapper: "pr-1",
+            }}
+            placeholder="Vui lòng nhập email để tiếp tục chat"
+            size="lg"
+            className="mx-auto mt-4 w-3/5"
+            endContent={
+              <Button isLoading={loading} type="submit" color="primary">
+                Chat ngay
+              </Button>
+            }
+          />
+        </form>
       </div>
     </div>
   );

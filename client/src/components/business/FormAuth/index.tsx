@@ -52,7 +52,7 @@ export default function FormSignUp({
       <div className="w-full max-w-[600px] space-y-6">
         <form
           onSubmit={onSubmit}
-          className="flex w-full flex-col items-center space-y-6"
+          className="flex w-full flex-col items-start space-y-6"
         >
           <div className="flex items-center gap-2">
             <Logo />
