@@ -3,6 +3,9 @@ import psycopg2
 from psycopg2 import pool
 from loguru import logger
 
+import sys
+sys.path.append("..")
+from config import getEnv
 class DatabaseConnection:
     _connection_pool = None
 
@@ -13,7 +16,7 @@ class DatabaseConnection:
                 cls._connection_pool = pool.SimpleConnectionPool(
                     minconn=1,
                     maxconn=10,
-                    dsn="postgresql://neondb_owner:npg_u7q9ivgolDHN@ep-tight-bar-a5go3tiq-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+                    dsn=getEnv("DATABASE_URL")
                 )
                 logger.info("Database connection pool initialized successfully")
             except Exception as e:
