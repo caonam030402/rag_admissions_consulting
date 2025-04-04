@@ -34,7 +34,8 @@ setup(
         "typer",
         "mkdocs",
         "ruff",
-        "protoc_gen_openapiv2"
+        "protoc_gen_openapiv2",
+        "psycopg2-binary>=2.9.9"
     ],
     options={
         'install': {'user': True}

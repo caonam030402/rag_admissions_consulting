@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime
+from .enum import RoleType
 import uuid
 
 class ChatHistoryManager:
@@ -21,7 +22,9 @@ class ChatHistoryManager:
         """Load chat messages from the JSON file"""
         try:
             with open(self.history_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                messages = json.load(f)
+                # Sort messages by timestamp to ensure chronological order
+                return sorted(messages, key=lambda x: x.get('timestamp', ''), reverse=True)
         except Exception as e:
             print(f"Error loading chat history: {e}")
             return []
@@ -34,7 +37,7 @@ class ChatHistoryManager:
         except Exception as e:
             print(f"Error saving chat history: {e}")
     
-    def append_message(self, role, content):
+    def append_message(self, role: RoleType, content: str):
         """Append a new message to the chat history with timestamp and conversation ID"""
         messages = self.load_messages()
         message = {
@@ -51,4 +54,6 @@ class ChatHistoryManager:
         messages = self.load_messages()
         conversation_messages = [msg for msg in messages 
                                if msg.get("conversation_id") == self.current_conversation_id]
+        # Sort messages by timestamp to ensure chronological order
+        conversation_messages.sort(key=lambda x: x.get('timestamp', ''))
         return conversation_messages[-limit:] if conversation_messages else []
