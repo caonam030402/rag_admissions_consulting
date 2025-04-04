@@ -1,5 +1,11 @@
 import React from "react";
 
+import MainChat from "./MainChat";
+
 export default function ChatBot() {
-  return <div>ChatBot</div>;
+  return (
+    <div>
+      <MainChat />
+    </div>
+  );
 }
