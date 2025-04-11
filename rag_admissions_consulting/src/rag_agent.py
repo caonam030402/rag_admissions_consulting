@@ -18,7 +18,25 @@ class RagAgent:
         rag_chain = create_retrieval_chain(retriever, question_answer_chain)
         return rag_chain
         
+    @staticmethod
+    async def answer_question_stream(question: str, llm, retriever, chat_history: list = None):
+        """Stream responses token by token"""
+        response_tokens = []
+        async for token in RagAgent.rag_chain(llm, retriever).astream({
+            "input": question,
+            "chat_history": chat_history or [],
+            "context": ""
+        }):
+            if 'answer' in token:
+                response_tokens.append(token['answer'])
+                yield token['answer']
+        
+        # No return statement in async generator
+        # The final response is handled by the caller
+
+    @staticmethod
     def answer_question(question: str, llm, retriever, chat_history: list = None):
+        """Non-streaming version for compatibility"""
         response = RagAgent.rag_chain(llm, retriever).invoke({
             "input": question,
             "chat_history": chat_history or [],
@@ -31,5 +49,3 @@ class RagAgent:
                 {'question': question, 'answer': response['answer']}
             ]
         }
-        
-        return response
