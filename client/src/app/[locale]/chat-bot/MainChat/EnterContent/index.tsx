@@ -8,11 +8,11 @@ import {
   PaperPlaneRight,
 } from "@phosphor-icons/react";
 import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 import Button from "@/components/common/Button";
-import { useChatStore } from "@/stores/chat";
 import { chatService } from "@/services/chat";
-import { v4 as uuidv4 } from "uuid";
+import { useChatStore } from "@/stores/chat";
 
 const listUtil = [
   {
@@ -91,48 +91,43 @@ export default function EnterContent() {
   };
 
   return (
-    <div className="border-t p-5">
-      <div className="flex justify-between">
-        <div className="flex items-center gap-2">
-          {listUtil.map((item, index) => {
-            return (
-              <Button
-                key={index}
-                variant="ghost"
-                size="sm"
-                startContent={item.icon}
-                onClick={item.action}
-              />
-            );
-          })}
-        </div>
-        <div className="flex items-center gap-2">
-          {listAction.map((item, index) => {
-            return (
-              <Button
-                key={index}
-                variant="ghost"
-                size="sm"
-                startContent={item.icon}
-                onClick={item.action}
-              />
-            );
-          })}
-        </div>
-      </div>
-      <div className="mt-3 flex gap-3">
+    <div className="p-3">
+      <div className="relative flex items-center gap-2 rounded-xl border border-default-200 bg-default-50 px-3 py-2">
+        {listUtil.map((item, index) => (
+          <Button
+            key={index}
+            variant="light"
+            size="sm"
+            isIconOnly
+            className="text-default-500 hover:text-default-900"
+            startContent={item.icon}
+            onClick={item.action}
+          />
+        ))}
         <textarea
-          className="h-[45px] flex-1 resize-none rounded-lg border p-3 outline-none"
+          className="flex-1 resize-none bg-transparent py-1 text-sm outline-none placeholder:text-default-500"
           placeholder="Send a message..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
+          rows={1}
         />
-        <Button
-          startContent={<PaperPlaneRight size={20} />}
-          onClick={handleSubmit}
-          disabled={!message.trim()}
-        />
+        <div className="flex items-center gap-2">
+          {listAction.map((item, index) => (
+            <Button
+              key={index}
+              isIconOnly
+              variant="light"
+              size="sm"
+              className="text-default-500 hover:text-default-900"
+              startContent={item.icon}
+              onClick={item.action}
+            />
+          ))}
+          <Button size="sm" color="primary" isIconOnly onClick={handleSubmit}>
+            <PaperPlaneRight size={20} />
+          </Button>
+        </div>
       </div>
     </div>
   );

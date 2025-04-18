@@ -8,8 +8,12 @@ export default function MainChat() {
   return (
     <div className="flex h-screen flex-col">
       <HeaderMainChat />
-      <BodyMainChat />
-      <EnterContent />
+      <div className="relative mx-auto h-full w-1/2">
+        <BodyMainChat />
+        <div className="absolute bottom-0 w-full">
+          <EnterContent />
+        </div>
+      </div>
     </div>
   );
 }

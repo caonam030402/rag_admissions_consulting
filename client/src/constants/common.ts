@@ -4,6 +4,8 @@ export const PATH = {
   MANAGER: "/admin/manager",
   CHATBOT: "/chat-bot",
   DATASET: "/admin/manager/data-set",
+  CONFIGURATION: "/admin/manager/configuration",
+  OVERVIEW: "/admin/manager/overview",
 };
 
 export const PUBLIC_PAGES = [
@@ -12,6 +14,8 @@ export const PUBLIC_PAGES = [
   PATH.CHATBOT,
   PATH.HOME,
   PATH.DATASET,
+  PATH.CONFIGURATION,
+  PATH.OVERVIEW,
 ];
 
 export enum ENameCookie {

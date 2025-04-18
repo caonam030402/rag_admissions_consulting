@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
+
 import { useChatStore } from "@/stores/chat";
+
 import ChatMessage from "../ChatMessage";
 import IntroChat from "../IntroChat";
 
@@ -19,9 +21,9 @@ export default function BodyMainChat() {
           ))}
           {isTyping && (
             <div className="flex gap-2 p-4">
-              <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
-              <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 delay-100"></div>
-              <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400 delay-200"></div>
+              <div className="size-2 animate-bounce rounded-full bg-gray-400" />
+              <div className="size-2 animate-bounce rounded-full bg-gray-400 delay-100" />
+              <div className="size-2 animate-bounce rounded-full bg-gray-400 delay-200" />
             </div>
           )}
         </div>
