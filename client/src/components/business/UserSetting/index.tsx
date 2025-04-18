@@ -9,12 +9,10 @@ import {
   DropdownTrigger,
 } from "@heroui/react";
 import React from "react";
-import { useSelector } from "react-redux";
 
 import User from "@/components/common/User";
 import { userMenuOptions } from "@/constants/setting";
 import useIsClient from "@/hooks/useIsClient";
-import { selectIsCollapsed } from "@/stores/setting/selectors";
 
 import AccountHeader from "./AccountHeader";
 
@@ -26,16 +24,17 @@ export interface IProps {
   };
   placement?: OverlayPlacement;
   menuOptions?: IMenuUserOption[];
+  onlyAvatar?: boolean;
 }
 
 export default function UserSetting({
   info,
   placement = "left-start",
   menuOptions = userMenuOptions,
+  onlyAvatar = false,
 }: IProps) {
   const isClient = useIsClient();
 
-  const isCollapsedSideBar = useSelector(selectIsCollapsed);
   return (
     isClient && (
       <Dropdown placement={placement}>
@@ -43,7 +42,7 @@ export default function UserSetting({
           <div>
             <User
               shape="circle"
-              onlyAvatar={isCollapsedSideBar}
+              onlyAvatar={onlyAvatar}
               info={{
                 name: info?.name,
                 email: info?.email,

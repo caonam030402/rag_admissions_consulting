@@ -9,13 +9,13 @@ import {
 interface IProps {
   setAction?: (
     sidebarWidth: number,
-    setSidebarWidth: Dispatch<SetStateAction<number>>,
+    setSidebarWidth: Dispatch<SetStateAction<number>>
   ) => void;
   minWidth?: number;
 }
 
 export default function useResize({ setAction, minWidth }: IProps) {
-  const [sidebarWidth, setSidebarWidth] = useState(70);
+  const [sidebarWidth, setSidebarWidth] = useState(300);
   const [isResizing, setIsResizing] = useState(false);
 
   const handleMouseDown = useCallback(() => {
@@ -30,7 +30,7 @@ export default function useResize({ setAction, minWidth }: IProps) {
         });
       }
     },
-    [isResizing, setSidebarWidth, minWidth],
+    [isResizing, setSidebarWidth, minWidth]
   );
   const handleMouseUp = useCallback(() => {
     setIsResizing(false);
