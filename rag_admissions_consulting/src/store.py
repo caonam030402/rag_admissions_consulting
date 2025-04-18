@@ -6,7 +6,7 @@ from config import getEnv
 from langchain_pinecone import PineconeVectorStore
 
 class Store:
-    def __init__(self, index_name: str = "test2", search_kwargs: str = {"k": 3}, search_type: str = "similarity"):
+    def __init__(self, index_name: str = "test4", search_kwargs: str = {"k": 3}, search_type: str = "similarity"):
         self.search_kwargs = search_kwargs
         self.search_type = search_type
         self.index_name = index_name

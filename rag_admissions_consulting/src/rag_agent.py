@@ -13,8 +13,8 @@ class RagAgent:
             ]
         )
         qa_prompt = hub.pull("bagumeow/qa-tuyensinh") 
-        
-        question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+        print(qa_prompt)
+        question_answer_chain = create_stuff_documents_chain(llm, prompt)
         rag_chain = create_retrieval_chain(retriever, question_answer_chain)
         return rag_chain
         
