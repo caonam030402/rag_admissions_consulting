@@ -1,5 +1,6 @@
 import {
   getKeyValue,
+  Pagination,
   Table,
   TableBody,
   TableCell,
@@ -8,8 +9,11 @@ import {
   type TableProps,
   TableRow,
 } from "@heroui/react";
+import { useMemo } from "react";
 
 import { cn } from "@/libs/utils";
+
+import Button from "../Button";
 
 interface IProps extends TableProps {
   columns: {
@@ -29,46 +33,68 @@ export default function TableList({
   rowAction,
   ...props
 }: IProps) {
+  const bottomContent = useMemo(() => {
+    return (
+      <div className="flex items-center justify-between p-2">
+        <div className="text-sm">Total 85 items</div>
+        <Pagination
+          isCompact
+          showControls
+          showShadow
+          color="primary"
+          page={2}
+          total={2}
+          onChange={() => {}}
+        />
+      </div>
+    );
+  }, []);
+
   return (
-    <Table
-      classNames={{
-        base: "max-h-[calc(100vh-193px)] scroll",
-      }}
-      isHeaderSticky
-      {...props}
-      isStriped
-      aria-label="table-list"
-    >
-      <TableHeader columns={columns}>
-        {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
-      </TableHeader>
-      <TableBody
-        emptyContent={21312312321312}
-        isLoading={isLoading}
-        className="border"
-        items={data || []}
+    <div>
+      <Table
+        classNames={{
+          base: "max-h-[calc(100vh-200px)] scroll",
+        }}
+        isHeaderSticky
+        {...props}
+        isStriped
+        aria-label="table-list"
       >
-        {(item: any) => (
-          <TableRow
-            onClick={() => rowAction && rowAction(item)}
-            className={cn("border-b hover:bg-primary-50/50 group/row-table", {
-              "cursor-pointer": !!rowAction,
-            })}
-            key={item.key}
-          >
-            {(columnKey) => {
-              const col = columns.find((column) => column.key === columnKey);
-              return (
-                <TableCell>
-                  {col?.render
-                    ? col?.render(item)
-                    : getKeyValue(item, columnKey)}
-                </TableCell>
-              );
-            }}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn key={column.key}>{column.label}</TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          emptyContent={21312312321312}
+          isLoading={isLoading}
+          className="border"
+          items={data || []}
+        >
+          {(item: any) => (
+            <TableRow
+              onClick={() => rowAction && rowAction(item)}
+              className={cn("border-b hover:bg-primary-50/50 group/row-table", {
+                "cursor-pointer": !!rowAction,
+              })}
+              key={item.key}
+            >
+              {(columnKey) => {
+                const col = columns.find((column) => column.key === columnKey);
+                return (
+                  <TableCell>
+                    {col?.render
+                      ? col?.render(item)
+                      : getKeyValue(item, columnKey)}
+                  </TableCell>
+                );
+              }}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      {bottomContent}
+    </div>
   );
 }

@@ -15,7 +15,7 @@ interface IProps {
 }
 
 export default function useResize({ setAction, minWidth }: IProps) {
-  const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
 
   const handleMouseDown = useCallback(() => {

@@ -2,27 +2,24 @@
 
 "use client";
 
+import Link from "next/link";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import Logo from "@/components/common/Logo";
+import { PATH } from "@/constants";
 import { cn } from "@/libs/utils";
-import { userService } from "@/services/user";
 import { selectIsCollapsed } from "@/stores/setting/selectors";
 import { setIsCollapsedSideBar } from "@/stores/setting/slice";
 
 import useResize from "./hooks/useResize";
 import ListItemSideBar from "./ListItemSideBar";
-import Link from "next/link";
-import Logo from "@/components/common/Logo";
-import { PATH } from "@/constants";
 
 export default function SideBarGlobal() {
   const dispatch = useDispatch();
   const minWidth = 150;
   const minWidthCollapse = 70;
   const isCollapsedSideBar = useSelector(selectIsCollapsed);
-
-  const { user } = userService.useProfile();
 
   const checkHandleCollapse = (sidebarWidth: number, setSidebarWidth: any) => {
     if (sidebarWidth < minWidth + 10) {
@@ -47,9 +44,9 @@ export default function SideBarGlobal() {
           "px-1": isCollapsedSideBar,
         })}
       >
-        <div className={cn("w-full space-y-2", isBetweenStyle)}>
+        <div className={cn("w-full space-y-6", isBetweenStyle)}>
           <Link href={PATH.HOME}>
-            <div className="p-2">
+            <div className="px-2 py-3">
               <Logo />
             </div>
           </Link>

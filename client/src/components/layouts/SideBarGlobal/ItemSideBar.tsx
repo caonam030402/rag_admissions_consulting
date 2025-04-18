@@ -35,7 +35,7 @@ export default function ItemSideBar({ item }: { item: IItemSideBar }) {
               "transform transition-transform duration-300 rotate-0",
               {
                 "rotate-180": item.isOpenSubMenu,
-              },
+              }
             )}
           />
         </div>
@@ -57,20 +57,18 @@ export default function ItemSideBar({ item }: { item: IItemSideBar }) {
       className={cn(
         "flex w-full justify-start bg-transparent hover:bg-primary-500/20 rounded-md p-2 text-sm",
         {
-          "bg-white text-primary": isActive,
+          "bg-primary text-white": isActive,
         },
         {
           "h-[50px]": isCollapsedSideBar,
-        },
+        }
       )}
     >
       <div
-        className={cn(
-          "flex w-full items-center justify-between gap-2 text-gray-600",
-          {
-            "flex-col items-center text-[10px]": isCollapsedSideBar,
-          },
-        )}
+        className={cn("flex w-full items-center justify-between gap-2 ", {
+          "flex-col items-center text-[10px]": isCollapsedSideBar,
+          "text-white": isActive,
+        })}
       >
         <div
           className={cn("flex items-center gap-2", {
@@ -81,7 +79,7 @@ export default function ItemSideBar({ item }: { item: IItemSideBar }) {
             {item.isOpenSubMenu && isCollapsedSideBar && item.isParent ? (
               <IoIosArrowDown />
             ) : (
-              <span className={cn({ "text-primary": isActive })}>
+              <span className={cn("text-gray-600", { "text-white": isActive })}>
                 {item.icon}
               </span>
             )}
