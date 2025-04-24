@@ -1,7 +1,9 @@
+import { ActorType } from "@/enums/systemChat";
+
 export interface ChatMessage {
   id: string;
   content: string;
-  role: "user" | "assistant";
+  role: ActorType;
   timestamp: number;
 }
 

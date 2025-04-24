@@ -4,13 +4,14 @@ import { Robot, User } from "@phosphor-icons/react";
 import React from "react";
 
 import type { ChatMessage as ChatMessageType } from "@/types/chat";
+import { ActorType } from "@/enums/systemChat";
 
 interface ChatMessageProps {
   message: ChatMessageType;
 }
 
 export default function ChatMessage({ message }: ChatMessageProps) {
-  const isUser = message.role === "user";
+  const isUser = message.role === ActorType.Human;
 
   return (
     <div

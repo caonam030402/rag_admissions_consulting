@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import Button from "@/components/common/Button";
 import { chatService } from "@/services/chat";
 import { useChatStore } from "@/stores/chat";
+import { ActorType } from "@/enums/systemChat";
 
 const listUtil = [
   {
@@ -60,7 +61,7 @@ export default function EnterContent() {
     addMessage({
       id: uuidv4(),
       content: message.trim(),
-      role: "user",
+      role: ActorType.Human,
       timestamp: Date.now(),
     });
 

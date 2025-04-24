@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { ChatMessage, ChatState } from "@/types/chat";
 import { v4 as uuidv4 } from "uuid";
+import { ActorType } from "@/enums/systemChat";
 
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
@@ -16,7 +17,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((state) => {
       const messages = [...state.messages];
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage && lastMessage.role === "assistant") {
+      if (lastMessage && lastMessage.role === ActorType.Bot) {
         lastMessage.content += content;
         return { messages };
       }
@@ -30,7 +31,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         {
           id: uuidv4(),
           content: "",
-          role: "assistant",
+          role: ActorType.Bot,
           timestamp: Date.now(),
         },
       ],

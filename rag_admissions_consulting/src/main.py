@@ -80,7 +80,7 @@ async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None
     chat_manager = ChatHistoryManager(user_id)
     
     # Initialize RAG components
-    llm = LLms.getLLm(ModelType.OLLAMA)
+    llm = LLms.getLLm(ModelType.GEMINI)
     embedding = embeddings.get_embeddings(ModelType.OLLAMA)
     retriever = store.getRetriever(embedding)
     
