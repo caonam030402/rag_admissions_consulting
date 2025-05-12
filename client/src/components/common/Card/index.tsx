@@ -36,13 +36,13 @@ interface IProps extends CardProps {
 const getBaseClasses = (
   isDecorative: boolean,
   isNoStyle: boolean,
-  baseClass?: string,
+  baseClass?: string
 ) => {
   return cn(
     "h-full shadow-none group",
     isDecorative && "border border-default-100",
     isNoStyle && "border-none shadow-none p-0 rounded-none",
-    baseClass,
+    baseClass
   );
 };
 
@@ -57,7 +57,7 @@ const getBodyClasses = (isNoStyle: boolean, bodyClass?: string) => {
     "dark:[&::-webkit-scrollbar-track]:bg-neutral-700",
     "[&::-webkit-scrollbar]:w-1",
     isNoStyle && "p-0",
-    bodyClass,
+    bodyClass
   );
 };
 
@@ -84,13 +84,13 @@ export default function Card({
     <CardUI
       classNames={{
         base: getBaseClasses(isDecorative, isNoStyle, classNames?.base),
-        body: cn("w-full", isNoStyle && "p-0"),
+        body: cn("w-full p-5", isNoStyle && "p-0"),
       }}
       {...props}
     >
       {header && (
         <CardHeader
-          className={cn("flex-col items-start p-3", classNames?.header)}
+          className={cn("flex-col items-start p-5", classNames?.header)}
         >
           {header}
         </CardHeader>

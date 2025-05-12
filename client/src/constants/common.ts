@@ -3,7 +3,7 @@ export const PATH = {
   LOGIN: "/admin/login",
   MANAGER: "/admin/manager",
   CHATBOT: "/chat-bot",
-  DATASET: "/admin/manager/data-set",
+  DATASET: "/admin/manager/data-source",
   CONFIGURATION: "/admin/manager/configuration",
   OVERVIEW: "/admin/manager/overview",
 };

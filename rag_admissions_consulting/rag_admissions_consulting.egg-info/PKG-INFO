@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: rag_admissions_consulting
+Version: 0.0.1
+Summary: A short description of the project.
+Author: caonam0304
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Dynamic: requires-python

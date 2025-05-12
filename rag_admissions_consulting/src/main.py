@@ -41,11 +41,6 @@ class ChatRequest(BaseModel):
     message: str
     user_email: str
 
-class ChatResponse(BaseModel):
-    message: str
-    conversation_id: str
-
-def get_or_create_user(user_email: str) -> int:
     """Get user ID from email or create new user"""
     try:
         conn = DatabaseConnection.get_connection()
@@ -108,30 +103,6 @@ async def save_message(chat_manager: ChatHistoryManager, role: RoleType, content
     """Asynchronously save message to database"""
     try:
         await asyncio.to_thread(chat_manager.append_message, role, content)
-    except Exception as e:
-        logger.error(f"Error saving message to database: {e}")
-
-@app.post("/chat")
-async def send_chat(request: ChatRequest):
-    try:
-        return StreamingResponse(
-            stream_chat_response(request),
-            media_type="text/event-stream"
-        )
-
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/chat/{user_email}", response_model=List[ChatMessage])
-async def get_chat_history(user_email: str):
-    try:
-        user_id = get_or_create_user(user_email)
-        chat_manager = ChatHistoryManager(user_id)
-        return [ChatMessage(**msg) for msg in chat_manager.messages]
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

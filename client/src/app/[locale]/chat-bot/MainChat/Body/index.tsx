@@ -10,6 +10,7 @@ import SurveyForm from "../SurveyForm";
 import { ActorType } from "@/enums/systemChat";
 import { chatService } from "@/services/chat";
 import { formatSurveyData } from "@/utils/common";
+import Button from "@/components/common/Button";
 
 export default function BodyMainChat() {
   const { messages, isTyping, addMessage, setTyping, setError } =
@@ -58,12 +59,12 @@ export default function BodyMainChat() {
         <div>
           <IntroChat />
           <div className="flex justify-center mt-4">
-            <button
-              onClick={() => setShowSurvey(true)}
+            <Button
+              onPress={() => setShowSurvey(true)}
               className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
             >
-              Khảo sát nghề nghiệp
-            </button>
+              Bạn chưa biết nên học nghành gì ?
+            </Button>
           </div>
         </div>
       ) : (
