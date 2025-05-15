@@ -1,25 +1,20 @@
-import type { EChatType, EMessageStatus, EMessageType } from "@/enums/chat";
+import type { ActorType } from "@/enums/systemChat";
 
-interface IMessage {
-  id?: string;
-  type: EMessageType;
-  status: EMessageStatus;
-  content: string;
-  user: IUser;
-  sentAt: string;
-}
-
-interface IUserChat {
-  user: IUser;
-}
-
-interface IChat {
+export interface ChatMessage {
   id: string;
-  name: string;
-  avatar: string;
-  chatType: EChatType;
-  lastMessage: IMessage;
-  createdAt: string;
-  updatedAt: string;
-  userChats: IUserChat[];
+  content: string;
+  role: ActorType;
+  timestamp: number;
+}
+
+export interface ChatState {
+  messages: ChatMessage[];
+  isTyping: boolean;
+  error: string | null;
+  addMessage: (message: ChatMessage) => void;
+  setTyping: (isTyping: boolean) => void;
+  setError: (error: string | null) => void;
+  clearMessages: () => void;
+  startNewAssistantMessage: () => void;
+  appendToLastMessage: (content: string) => void;
 }
