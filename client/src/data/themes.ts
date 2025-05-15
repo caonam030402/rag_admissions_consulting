@@ -1,0 +1,103 @@
+import { Theme } from "../types/appearance";
+
+/**
+ * Predefined themes for the application
+ */
+export const predefinedThemes: Theme[] = [
+  {
+    id: "cosmic-chills",
+    name: "Cosmic Chills",
+    colors: {
+      layoutBackground: "#f0f0f8",
+      minimizedBackground: "#ffffff",
+      inputBackground: "#212121",
+      inputFontColor: "#fff9f5",
+      primaryButton: "#7a5af5",
+      borderColor: "#363636",
+      copilotReplyBackground: "#141822",
+      copilotFontColor: "#d5d5d5",
+      userReplyBackground: "#1b1b1b",
+      userFontColor: "#ffffff",
+    },
+  },
+  {
+    id: "cosmic-depth",
+    name: "Cosmic Depth",
+    colors: {
+      layoutBackground: "#0a0e18",
+      minimizedBackground: "#ffffff",
+      inputBackground: "#212121",
+      inputFontColor: "#fff9f5",
+      primaryButton: "#7a5af5",
+      borderColor: "#363636",
+      copilotReplyBackground: "#141822",
+      copilotFontColor: "#d5d5d5",
+      userReplyBackground: "#1b1b1b",
+      userFontColor: "#ffffff",
+    },
+  },
+  {
+    id: "sunset-bliss",
+    name: "Sunset Bliss",
+    colors: {
+      layoutBackground: "#fdf0e9",
+      minimizedBackground: "#ffffff",
+      inputBackground: "#212121",
+      inputFontColor: "#fff9f5",
+      primaryButton: "#7a5af5",
+      borderColor: "#363636",
+      copilotReplyBackground: "#141822",
+      copilotFontColor: "#d5d5d5",
+      userReplyBackground: "#1b1b1b",
+      userFontColor: "#ffffff",
+    },
+  },
+  {
+    id: "stary-night",
+    name: "Stary Night",
+    colors: {
+      layoutBackground: "#f0f0f8",
+      minimizedBackground: "#ffffff",
+      inputBackground: "#212121",
+      inputFontColor: "#fff9f5",
+      primaryButton: "#7a5af5",
+      borderColor: "#363636",
+      copilotReplyBackground: "#141822",
+      copilotFontColor: "#d5d5d5",
+      userReplyBackground: "#1b1b1b",
+      userFontColor: "#ffffff",
+    },
+  },
+  {
+    id: "mint-breeze",
+    name: "Mint Breeze",
+    colors: {
+      layoutBackground: "#e6f5f0",
+      minimizedBackground: "#ffffff",
+      inputBackground: "#212121",
+      inputFontColor: "#fff9f5",
+      primaryButton: "#7a5af5",
+      borderColor: "#363636",
+      copilotReplyBackground: "#141822",
+      copilotFontColor: "#d5d5d5",
+      userReplyBackground: "#1b1b1b",
+      userFontColor: "#ffffff",
+    },
+  },
+  {
+    id: "custom",
+    name: "Custom",
+    colors: {
+      layoutBackground: "#0a0e18",
+      minimizedBackground: "#ffffff",
+      inputBackground: "#212121",
+      inputFontColor: "#fff9f5",
+      primaryButton: "#7a5af5",
+      borderColor: "#363636",
+      copilotReplyBackground: "#141822",
+      copilotFontColor: "#d5d5d5",
+      userReplyBackground: "#1b1b1b",
+      userFontColor: "#ffffff",
+    },
+  },
+]; 
