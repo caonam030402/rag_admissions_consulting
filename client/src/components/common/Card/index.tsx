@@ -36,13 +36,13 @@ interface IProps extends CardProps {
 const getBaseClasses = (
   isDecorative: boolean,
   isNoStyle: boolean,
-  baseClass?: string
+  baseClass?: string,
 ) => {
   return cn(
     "h-full shadow-none group",
     isDecorative && "border border-default-100",
     isNoStyle && "border-none shadow-none p-0 rounded-none",
-    baseClass
+    baseClass,
   );
 };
 
@@ -57,7 +57,7 @@ const getBodyClasses = (isNoStyle: boolean, bodyClass?: string) => {
     "dark:[&::-webkit-scrollbar-track]:bg-neutral-700",
     "[&::-webkit-scrollbar]:w-1",
     isNoStyle && "p-0",
-    bodyClass
+    bodyClass,
   );
 };
 

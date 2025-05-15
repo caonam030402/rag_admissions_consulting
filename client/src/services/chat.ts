@@ -1,5 +1,5 @@
-import { ChatMessage } from "@/types/chat";
 import { ENameLocalS } from "@/constants";
+import type { ChatMessage } from "@/types/chat";
 
 const API_URL = "http://localhost:8000";
 

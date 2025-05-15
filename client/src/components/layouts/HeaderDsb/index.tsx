@@ -1,7 +1,5 @@
-import { Link, Navbar, NavbarBrand, NavbarContent } from "@heroui/react";
+import { Navbar, NavbarBrand, NavbarContent } from "@heroui/react";
 
-import Logo from "@/components/common/Logo";
-import { PATH } from "@/constants/common";
 import UserSetting from "@/components/business/UserSetting";
 
 const listNav = [
@@ -30,7 +28,7 @@ const listNav = [
 export default function HeaderDsh() {
   return (
     <Navbar isBordered maxWidth="full">
-      <NavbarBrand></NavbarBrand>
+      <NavbarBrand />
       <NavbarContent className="hidden gap-9 sm:flex" justify="start">
         {/* {listNav.map((nav) => {
           return (

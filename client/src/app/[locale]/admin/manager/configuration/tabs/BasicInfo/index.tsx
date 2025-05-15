@@ -1,14 +1,16 @@
+import { Textarea } from "@heroui/input";
+import { Slider } from "@heroui/slider";
+import { Sparkle } from "@phosphor-icons/react";
+import React from "react";
+
 import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
 import Divider from "@/components/common/Divider";
 import Input from "@/components/common/Input";
-import { Sparkle } from "@phosphor-icons/react";
-import Personality from "./Personality";
-import React from "react";
-import { Textarea } from "@heroui/input";
-import { Slider } from "@heroui/slider";
 import Select from "@/components/common/Select";
+
 import Avatar from "./Avatar";
+import Personality from "./Personality";
 
 export default function BasicInfo() {
   const listModel = [
@@ -20,12 +22,12 @@ export default function BasicInfo() {
     <Card
       className="h-[calc(100vh-210px)]"
       header={
-        <div className="flex justify-between w-full">
+        <div className="flex w-full justify-between">
           <div>
             <div>Basic Info</div>
             <p className="text-xs">
-              Manage your Copilot's name, persona, and AI model settings to
-              define its core identity and behavior.
+              Manage your Copilot name, persona, and AI model settings to define
+              its core identity and behavior.
             </p>
           </div>
           <Button
@@ -63,7 +65,7 @@ export default function BasicInfo() {
           label="Creativity Level"
           maxValue={1}
           minValue={0}
-          showSteps={true}
+          showSteps
           size="sm"
           step={0.02}
         />
@@ -72,6 +74,7 @@ export default function BasicInfo() {
           labelPlacement="outside"
           defaultSelectedKeys="0"
           items={listModel}
+          // eslint-disable-next-line react/no-children-prop
           children={null}
         />
       </div>

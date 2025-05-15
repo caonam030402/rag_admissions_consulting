@@ -1,7 +1,8 @@
-import { create } from "zustand";
-import { ChatMessage, ChatState } from "@/types/chat";
 import { v4 as uuidv4 } from "uuid";
+import { create } from "zustand";
+
 import { ActorType } from "@/enums/systemChat";
+import type { ChatMessage, ChatState } from "@/types/chat";
 
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],

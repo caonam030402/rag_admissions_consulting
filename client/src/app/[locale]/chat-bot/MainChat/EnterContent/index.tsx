@@ -11,9 +11,9 @@ import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import Button from "@/components/common/Button";
+import { ActorType } from "@/enums/systemChat";
 import { chatService } from "@/services/chat";
 import { useChatStore } from "@/stores/chat";
-import { ActorType } from "@/enums/systemChat";
 
 const listUtil = [
   {
@@ -77,7 +77,7 @@ export default function EnterContent() {
       }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Failed to send message"
+        error instanceof Error ? error.message : "Failed to send message",
       );
     } finally {
       setTyping(false);

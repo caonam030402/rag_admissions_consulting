@@ -59,7 +59,7 @@ export default function VerifyCodeMail({
         },
         code: Number(data.otp),
       },
-      userId || 0
+      userId || 0,
     );
   };
 
@@ -139,7 +139,7 @@ export default function VerifyCodeMail({
           }}
           className={cn(
             "mt-2 flex cursor-pointer items-center gap-1 text-primary",
-            isDisabledResend && "cursor-not-allowed opacity-50"
+            isDisabledResend && "cursor-not-allowed opacity-50",
           )}
         >
           {!isDisabledResend ? (

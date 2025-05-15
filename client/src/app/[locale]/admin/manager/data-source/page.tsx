@@ -1,24 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
-import { DotsThree, Upload, Eye, Trash } from "@phosphor-icons/react";
-import { 
-  Chip, 
-  useDisclosure, 
-  Dropdown, 
-  DropdownTrigger, 
-  DropdownMenu, 
-  DropdownItem 
+import {
+  Chip,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  useDisclosure,
 } from "@heroui/react";
+import { DotsThree, Eye, Trash, Upload } from "@phosphor-icons/react";
+import React, { useState } from "react";
 import toast from "react-hot-toast";
 
 import Button from "@/components/common/Button";
 import TableList from "@/components/common/Table";
 import ModalUploadFile from "@/components/modals/ModalUploadFile";
+import type { ILogEntry } from "@/components/modals/ModalViewLog";
 import ModalViewLog from "@/components/modals/ModalViewLog";
-import { uploadFiles } from "@/services/fileUpload";
 import { EStatusUpload } from "@/enums/adminChat";
-import { ILogEntry } from "@/components/modals/ModalViewLog";
+import { uploadFiles } from "@/services/fileUpload";
 
 /**
  * Dataset item interface
@@ -45,10 +45,22 @@ const mockData: ITableDataset[] = [
     status: EStatusUpload.UPLOADED,
     createdAt: "2025-04-17 10:30:00",
     logs: [
-      { timestamp: "2025-04-17 10:29:30", message: "Starting document upload", type: "info" },
-      { timestamp: "2025-04-17 10:29:45", message: "Validating document format", type: "info" },
-      { timestamp: "2025-04-17 10:30:00", message: "Document uploaded successfully", type: "success" }
-    ]
+      {
+        timestamp: "2025-04-17 10:29:30",
+        message: "Starting document upload",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-17 10:29:45",
+        message: "Validating document format",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-17 10:30:00",
+        message: "Document uploaded successfully",
+        type: "success",
+      },
+    ],
   },
   {
     id: "2",
@@ -59,11 +71,27 @@ const mockData: ITableDataset[] = [
     status: EStatusUpload.FAILED,
     createdAt: "2025-04-16 15:45:00",
     logs: [
-      { timestamp: "2025-04-16 15:44:30", message: "Starting document upload", type: "info" },
-      { timestamp: "2025-04-16 15:44:45", message: "Validating document format", type: "info" },
-      { timestamp: "2025-04-16 15:45:00", message: "Error: Invalid document format", type: "error" },
-      { timestamp: "2025-04-16 15:45:00", message: "Upload failed: Please check file format and try again", type: "error" }
-    ]
+      {
+        timestamp: "2025-04-16 15:44:30",
+        message: "Starting document upload",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-16 15:44:45",
+        message: "Validating document format",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-16 15:45:00",
+        message: "Error: Invalid document format",
+        type: "error",
+      },
+      {
+        timestamp: "2025-04-16 15:45:00",
+        message: "Upload failed: Please check file format and try again",
+        type: "error",
+      },
+    ],
   },
   {
     id: "3",
@@ -74,10 +102,22 @@ const mockData: ITableDataset[] = [
     status: EStatusUpload.UPLOADED,
     createdAt: "2025-04-15 08:20:00",
     logs: [
-      { timestamp: "2025-04-15 08:19:30", message: "Starting image upload", type: "info" },
-      { timestamp: "2025-04-15 08:19:45", message: "Validating image format", type: "info" },
-      { timestamp: "2025-04-15 08:20:00", message: "Image uploaded successfully", type: "success" }
-    ]
+      {
+        timestamp: "2025-04-15 08:19:30",
+        message: "Starting image upload",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-15 08:19:45",
+        message: "Validating image format",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-15 08:20:00",
+        message: "Image uploaded successfully",
+        type: "success",
+      },
+    ],
   },
   {
     id: "4",
@@ -88,11 +128,27 @@ const mockData: ITableDataset[] = [
     status: EStatusUpload.FAILED,
     createdAt: "2025-04-14 17:05:00",
     logs: [
-      { timestamp: "2025-04-14 17:04:30", message: "Starting video upload", type: "info" },
-      { timestamp: "2025-04-14 17:04:45", message: "Validating video format", type: "info" },
-      { timestamp: "2025-04-14 17:05:00", message: "Error: File size exceeds limit", type: "error" },
-      { timestamp: "2025-04-14 17:05:00", message: "Upload failed: File too large", type: "error" }
-    ]
+      {
+        timestamp: "2025-04-14 17:04:30",
+        message: "Starting video upload",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-14 17:04:45",
+        message: "Validating video format",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-14 17:05:00",
+        message: "Error: File size exceeds limit",
+        type: "error",
+      },
+      {
+        timestamp: "2025-04-14 17:05:00",
+        message: "Upload failed: File too large",
+        type: "error",
+      },
+    ],
   },
   {
     id: "5",
@@ -103,11 +159,23 @@ const mockData: ITableDataset[] = [
     status: EStatusUpload.UPLOADED,
     createdAt: "2025-04-13 12:00:00",
     logs: [
-      { timestamp: "2025-04-13 11:59:30", message: "Starting audio upload", type: "info" },
-      { timestamp: "2025-04-13 11:59:45", message: "Validating audio format", type: "info" },
-      { timestamp: "2025-04-13 12:00:00", message: "Audio uploaded successfully", type: "success" }
-    ]
-  }
+      {
+        timestamp: "2025-04-13 11:59:30",
+        message: "Starting audio upload",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-13 11:59:45",
+        message: "Validating audio format",
+        type: "info",
+      },
+      {
+        timestamp: "2025-04-13 12:00:00",
+        message: "Audio uploaded successfully",
+        type: "success",
+      },
+    ],
+  },
 ];
 
 // Accepted file types for upload
@@ -133,11 +201,11 @@ export default function DataSourcePage() {
   // Modal state management
   const uploadModal = useDisclosure();
   const logModal = useDisclosure();
-  
+
   // State management
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedItem, setSelectedItem] = useState<ITableDataset | null>(null);
-  
+
   /**
    * Handles file uploads to the server
    * @param files Files to upload
@@ -145,10 +213,10 @@ export default function DataSourcePage() {
   const handleUpload = async (files: File[]): Promise<any> => {
     try {
       const response = await uploadFiles(files, "/api/data-source/upload");
-      
+
       // Refresh the data table after successful upload
-      setRefreshKey(prev => prev + 1);
-      
+      setRefreshKey((prev) => prev + 1);
+
       return response;
     } catch (error) {
       console.error("Upload failed:", error);
@@ -180,9 +248,15 @@ export default function DataSourcePage() {
    * @param item Dataset item
    */
   const renderStatusChip = (item: ITableDataset) => {
-    const statusColor = item.status === EStatusUpload.UPLOADED ? "success" : "danger";
-    const statusText = item.status === EStatusUpload.UPLOADED ? "Uploaded" : "Failed";
-    return <Chip size="sm" variant="flat" color={statusColor}>{statusText}</Chip>;
+    const statusColor =
+      item.status === EStatusUpload.UPLOADED ? "success" : "danger";
+    const statusText =
+      item.status === EStatusUpload.UPLOADED ? "Uploaded" : "Failed";
+    return (
+      <Chip size="sm" variant="flat" color={statusColor}>
+        {statusText}
+      </Chip>
+    );
   };
 
   /**
@@ -204,7 +278,7 @@ export default function DataSourcePage() {
         >
           View Log
         </DropdownItem>
-        <DropdownItem 
+        <DropdownItem
           key="delete"
           startContent={<Trash size={20} className="text-danger-500" />}
           className="text-danger-500"
@@ -226,7 +300,7 @@ export default function DataSourcePage() {
     { key: "createdAt", label: "CREATED AT" },
     { key: "action", label: "ACTION", render: renderActionMenu },
   ];
-  
+
   return (
     <div>
       {/* Header with title and upload button */}
@@ -234,35 +308,31 @@ export default function DataSourcePage() {
         <div>
           <div className="text-xl">Dataset</div>
         </div>
-        <Button 
-          size="sm" 
-          startContent={<Upload size={20} />} 
+        <Button
+          size="sm"
+          startContent={<Upload size={20} />}
           color="primary"
           onPress={uploadModal.onOpen}
         >
           Upload file
         </Button>
       </div>
-      
+
       {/* Data table */}
       <div className="mt-5">
-        <TableList
-          data={mockData}
-          columns={tableColumns}
-          key={refreshKey}
-        />
+        <TableList data={mockData} columns={tableColumns} key={refreshKey} />
       </div>
-      
+
       {/* Modals */}
-      <ModalUploadFile 
-        isOpen={uploadModal.isOpen} 
+      <ModalUploadFile
+        isOpen={uploadModal.isOpen}
         onOpenChange={uploadModal.onOpenChange}
         onUpload={handleUpload}
         maxFileSize={5}
         acceptedFileTypes={ACCEPTED_FILE_TYPES}
       />
-      
-      <ModalViewLog 
+
+      <ModalViewLog
         isOpen={logModal.isOpen}
         onOpenChange={logModal.onOpenChange}
         fileName={selectedItem?.name}

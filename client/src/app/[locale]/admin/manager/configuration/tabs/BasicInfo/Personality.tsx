@@ -1,6 +1,6 @@
-import ListBox from "@/components/common/ListBox";
-import RatioGroup from "@/components/common/RadioGroup";
 import React from "react";
+
+import RatioGroup from "@/components/common/RadioGroup";
 
 export default function Personality() {
   const personality = [
@@ -13,7 +13,7 @@ export default function Personality() {
   ];
   return (
     <div>
-      <div className="text-sm mb-2">Personality</div>
+      <div className="mb-2 text-sm">Personality</div>
       <RatioGroup items={personality} action={(key) => console.log(key)} />
     </div>
   );

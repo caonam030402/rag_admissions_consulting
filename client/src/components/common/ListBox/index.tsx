@@ -1,6 +1,8 @@
-import { cn } from "@/libs/utils";
 import { Listbox, ListboxItem } from "@heroui/react";
-import { Key, useState } from "react";
+import type { Key } from "react";
+import { useState } from "react";
+
+import { cn } from "@/libs/utils";
 
 interface Props {
   items: {

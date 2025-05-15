@@ -15,7 +15,7 @@ export default function layout({ children }: Props) {
       <SideBarGlobal />
       <div className="w-full">
         <HeaderDsh />
-        <div className="w-full h-[calc(100vh-65px)] rounded-md bg-[#f2f0f0] p-3">
+        <div className="h-[calc(100vh-65px)] w-full rounded-md bg-[#f2f0f0] p-3">
           {children}
         </div>
       </div>

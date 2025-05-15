@@ -1,11 +1,15 @@
 "use client";
 
-import Tab from "@/components/common/Tab";
-import React from "react";
 import { Spacer } from "@heroui/spacer";
+import React from "react";
+
 import Button from "@/components/common/Button";
+import Tab from "@/components/common/Tab";
+
 import Appearance from "./tabs/Appearance";
 import BasicInfo from "./tabs/BasicInfo";
+import HumanHandoff from "./tabs/HumanHandoff";
+import WelcomeSetting from "./tabs/WelcomeSetting";
 
 export default function page() {
   const listTab = [
@@ -22,21 +26,21 @@ export default function page() {
     {
       title: "Welcome Settings",
       key: 3,
-      content: <div>Welcome Settings</div>,
+      content: <WelcomeSetting />,
     },
     {
       title: "Human Handoff",
       key: 4,
-      content: <div>Human Handoff</div>,
+      content: <HumanHandoff />,
     },
   ];
   return (
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-xl font-bold mb-1">Configuration</div>
+          <div className="mb-1 text-xl font-bold">Configuration</div>
           <div className="text-sm">
-            Adjust your Copilot's behavior, appearance, and preferences for
+            Adjust your Copilot behavior, appearance, and preferences for
             optimal performance.
           </div>
         </div>

@@ -1,14 +1,16 @@
-import Button from "@/components/common/Button";
-import Card from "@/components/common/Card";
-import Select from "@/components/common/Select";
 import { PencilSimple } from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
+
+import Button from "@/components/common/Button";
+import Card from "@/components/common/Card";
+import Select from "@/components/common/Select";
+import { predefinedThemes } from "@/data/themes";
+import type { ColorScheme } from "@/types/appearance";
+import { validateHexColor } from "@/utils/colorValidator";
+
 import { ColorInput } from "./components/ColorInput";
 import { ThemeThumbnail } from "./components/ThemeThumbnail";
-import { predefinedThemes } from "@/data/themes";
-import { ColorScheme } from "@/types/appearance";
-import { validateHexColor } from "@/utils/colorValidator";
 
 // Font options for the select component
 const fontOptions = [
@@ -47,12 +49,12 @@ export default function Appearance() {
 
     // Validate color and set error
     if (!validateHexColor(value)) {
-      setColorErrors(prev => ({
+      setColorErrors((prev) => ({
         ...prev,
-        [key]: "Please enter a valid hex color code."
+        [key]: "Please enter a valid hex color code.",
       }));
     } else {
-      setColorErrors(prev => {
+      setColorErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[key];
         return newErrors;
@@ -64,42 +66,44 @@ export default function Appearance() {
   const saveConfiguration = async () => {
     // Check if there are any validation errors
     if (Object.keys(colorErrors).length > 0) {
-      toast.error('Please fix the color format errors before saving');
+      toast.error("Please fix the color format errors before saving");
       return;
     }
 
     try {
       setIsLoading(true);
-      const currentTheme = selectedTheme === "custom" 
-        ? customColors 
-        : predefinedThemes.find(theme => theme.id === selectedTheme)?.colors || customColors;
+      const currentTheme =
+        selectedTheme === "custom"
+          ? customColors
+          : predefinedThemes.find((theme) => theme.id === selectedTheme)
+              ?.colors || customColors;
 
       const config = {
         appearance: {
           theme: selectedTheme,
           colors: currentTheme,
-          font: selectedFont
-        }
+          font: selectedFont,
+        },
       };
 
       // Send to server API
-      const response = await fetch('/api/configuration/appearance', {
-        method: 'POST',
+      const response = await fetch("/api/configuration/appearance", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(config),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save configuration');
+        throw new Error("Failed to save configuration");
       }
 
-      toast.success('Appearance settings saved successfully');
+      toast.success("Appearance settings saved successfully");
       setIsEditing(false);
     } catch (error) {
-      console.error('Error saving configuration:', error);
-      toast.error('Failed to save configuration');
+      console.error("Error saving configuration:", error);
+      toast.error("Failed to save configuration");
     } finally {
       setIsLoading(false);
     }
@@ -110,10 +114,12 @@ export default function Appearance() {
     setSelectedTheme(themeId);
     setIsEditing(false);
     setColorErrors({});
-    
+
     // Update customColors with the selected theme's colors if not custom
     if (themeId !== "custom") {
-      const selectedThemeColors = predefinedThemes.find(theme => theme.id === themeId)?.colors;
+      const selectedThemeColors = predefinedThemes.find(
+        (theme) => theme.id === themeId
+      )?.colors;
       if (selectedThemeColors) {
         setCustomColors(selectedThemeColors);
       }
@@ -129,19 +135,21 @@ export default function Appearance() {
   };
 
   // Renders a section of color inputs
-  const renderColorSection = (title: string, colorInputs: Array<{label: string, key: keyof ColorScheme}>) => {
+  const renderColorSection = (
+    title: string,
+    colorInputs: Array<{ label: string; key: keyof ColorScheme }>
+  ) => {
     return (
       <div>
-        <h3 className="font-medium mb-3">{title}</h3>
+        <h3 className="mb-3 font-medium">{title}</h3>
         <div className="grid grid-cols-2 gap-4">
-          {colorInputs.map(input => (
-            <ColorInput 
+          {colorInputs.map((input) => (
+            <ColorInput
               key={input.key}
-              label={input.label} 
-              value={customColors[input.key]} 
-              onChange={(value) => handleColorChange(input.key, value)} 
+              label={input.label}
+              value={customColors[input.key]}
+              onChange={(value) => handleColorChange(input.key, value)}
               disabled={isColorInputDisabled}
-              colorKey={input.key}
               error={colorErrors[input.key]}
               validateHexColor={validateHexColor}
             />
@@ -155,11 +163,12 @@ export default function Appearance() {
     <Card
       className="h-[calc(100vh-210px)] overflow-y-auto"
       header={
-        <div className="flex justify-between w-full">
+        <div className="flex w-full justify-between">
           <div>
             <div>Copilot Appearance</div>
             <p className="text-xs">
-              Select from predefined or custom options to personalize your Copilot's theme.
+              Select from predefined or custom options to personalize your
+              Copilot&apos;s theme.
             </p>
           </div>
           <div className="flex gap-2">
@@ -172,7 +181,7 @@ export default function Appearance() {
                 onClick={toggleEditMode}
                 disabled={isLoading}
               >
-                {isEditing ? 'Cancel Edit' : 'Edit Theme'}
+                {isEditing ? "Cancel Edit" : "Edit Theme"}
               </Button>
             )}
             <Button
@@ -182,7 +191,7 @@ export default function Appearance() {
               onClick={saveConfiguration}
               disabled={isLoading || Object.keys(colorErrors).length > 0}
             >
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>
@@ -190,11 +199,11 @@ export default function Appearance() {
     >
       <div className="flex flex-col gap-6">
         {/* Theme Selection */}
-        <div className="flex flex-wrap gap-4 mt-4">
+        <div className="mt-4 flex flex-wrap gap-4">
           {predefinedThemes.map((theme) => (
-            <ThemeThumbnail 
-              key={theme.id} 
-              theme={theme} 
+            <ThemeThumbnail
+              key={theme.id}
+              theme={theme}
               isSelected={selectedTheme === theme.id}
               onSelect={handleThemeSelect}
             />
@@ -204,7 +213,7 @@ export default function Appearance() {
         {/* Layout Settings */}
         {renderColorSection("Layout", [
           { label: "Layout Background", key: "layoutBackground" },
-          { label: "Minimized Background Color", key: "minimizedBackground" }
+          { label: "Minimized Background Color", key: "minimizedBackground" },
         ])}
 
         {/* Action Elements */}
@@ -212,7 +221,7 @@ export default function Appearance() {
           { label: "Input Background", key: "inputBackground" },
           { label: "Input Font Color", key: "inputFontColor" },
           { label: "Primary Button", key: "primaryButton" },
-          { label: "Border Color", key: "borderColor" }
+          { label: "Border Color", key: "borderColor" },
         ])}
 
         {/* Messages */}
@@ -220,14 +229,14 @@ export default function Appearance() {
           { label: "Copilot Reply Background", key: "copilotReplyBackground" },
           { label: "Copilot Font Color", key: "copilotFontColor" },
           { label: "User Reply Background", key: "userReplyBackground" },
-          { label: "User Font Color", key: "userFontColor" }
+          { label: "User Font Color", key: "userFontColor" },
         ])}
 
         {/* Font Settings */}
         <div>
-          <h3 className="font-medium mb-2">Font</h3>
-          <p className="text-xs mb-2">Text style for the copilot interface.</p>
-          <Select 
+          <h3 className="mb-2 font-medium">Font</h3>
+          <p className="mb-2 text-xs">Text style for the copilot interface.</p>
+          <Select
             items={fontOptions}
             selectedKeys={[selectedFont]}
             onSelectionChange={(keys) => {
@@ -239,10 +248,8 @@ export default function Appearance() {
             isDisabled={isColorInputDisabled}
             className="w-full"
           >
-            {fontOptions.map(font => (
-              <React.Fragment key={font.key}>
-                {font.label}
-              </React.Fragment>
+            {fontOptions.map((font) => (
+              <React.Fragment key={font.key}>{font.label}</React.Fragment>
             ))}
           </Select>
         </div>

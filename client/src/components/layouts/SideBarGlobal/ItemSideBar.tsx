@@ -35,7 +35,7 @@ export default function ItemSideBar({ item }: { item: IItemSideBar }) {
               "transform transition-transform duration-300 rotate-0",
               {
                 "rotate-180": item.isOpenSubMenu,
-              }
+              },
             )}
           />
         </div>
@@ -61,7 +61,7 @@ export default function ItemSideBar({ item }: { item: IItemSideBar }) {
         },
         {
           "h-[50px]": isCollapsedSideBar,
-        }
+        },
       )}
     >
       <div

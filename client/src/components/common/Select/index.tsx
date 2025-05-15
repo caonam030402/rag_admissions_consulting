@@ -1,4 +1,5 @@
-import { SelectItem, SelectProps, Select as SelectUI } from "@heroui/react";
+import type { SelectProps } from "@heroui/react";
+import { Select as SelectUI, SelectItem } from "@heroui/react";
 import React, { forwardRef } from "react";
 
 interface IProps extends SelectProps {
@@ -8,17 +9,15 @@ interface IProps extends SelectProps {
   }>;
 }
 
-const Select = forwardRef<HTMLInputElement, IProps>(
-  ({ children, ...props }, ref) => {
-    return (
-      <SelectUI ref={ref as any} {...props}>
-        {props.items.map((item) => (
-          <SelectItem key={item.key}>{item.label}</SelectItem>
-        ))}
-      </SelectUI>
-    );
-  }
-);
+const Select = forwardRef<HTMLInputElement, IProps>(({ ...props }, ref) => {
+  return (
+    <SelectUI ref={ref as any} {...props}>
+      {props.items.map((item) => (
+        <SelectItem key={item.key}>{item.label}</SelectItem>
+      ))}
+    </SelectUI>
+  );
+});
 
 Select.displayName = "Select";
 

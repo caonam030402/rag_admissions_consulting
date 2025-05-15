@@ -10,10 +10,10 @@ import axios from "axios";
 export const uploadFiles = async (
   files: File[],
   endpoint: string = "/api/upload",
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
 ): Promise<any> => {
   const formData = new FormData();
-  
+
   // Append files to form data
   files.forEach((file, index) => {
     formData.append(`file${index}`, file);
@@ -27,7 +27,7 @@ export const uploadFiles = async (
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
           const progress = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
+            (progressEvent.loaded * 100) / progressEvent.total,
           );
           onProgress(progress);
         }
@@ -51,7 +51,7 @@ export const uploadFiles = async (
 export const validateFile = (
   file: File,
   maxSizeMB: number = 5,
-  acceptedTypes: string[] = []
+  acceptedTypes: string[] = [],
 ): { valid: boolean; error?: string } => {
   // Check file size
   if (file.size > maxSizeMB * 1024 * 1024) {
@@ -70,4 +70,4 @@ export const validateFile = (
   }
 
   return { valid: true };
-}; 
+};

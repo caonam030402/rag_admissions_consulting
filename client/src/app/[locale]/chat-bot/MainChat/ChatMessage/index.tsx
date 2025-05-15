@@ -3,8 +3,8 @@
 import { Robot, User } from "@phosphor-icons/react";
 import React from "react";
 
-import type { ChatMessage as ChatMessageType } from "@/types/chat";
 import { ActorType } from "@/enums/systemChat";
+import type { ChatMessage as ChatMessageType } from "@/types/chat";
 
 interface ChatMessageProps {
   message: ChatMessageType;

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
 import { Camera, X } from "@phosphor-icons/react";
+import Image from "next/image";
+import React, { useState } from "react";
+
 import Button from "@/components/common/Button";
 
 export default function Avatar() {
@@ -48,22 +49,22 @@ export default function Avatar() {
             isIconOnly
             size="xxs"
             color="danger"
-            className="absolute top-0 right-0"
-            onClick={handleRemoveImage}
+            className="absolute right-0 top-0"
+            onPress={handleRemoveImage}
           >
             <X size={16} />
           </Button>
         )}
       </div>
       <div className="flex items-center gap-2">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="hidden"
-          id="avatar-upload"
-        />
         <label htmlFor="avatar-upload">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            id="avatar-upload"
+          />
           <Button
             as="span"
             color="primary"

@@ -19,4 +19,4 @@ export interface ColorScheme {
   copilotFontColor: string;
   userReplyBackground: string;
   userFontColor: string;
-} 
+}

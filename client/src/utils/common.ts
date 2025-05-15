@@ -1,4 +1,4 @@
-import { SurveyFormData } from "@/app/[locale]/chat-bot/MainChat/SurveyForm";
+import type { SurveyFormData } from "@/app/[locale]/chat-bot/MainChat/SurveyForm";
 
 export const isClient = typeof window !== "undefined";
 

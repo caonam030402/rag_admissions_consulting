@@ -402,7 +402,7 @@ export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-[800px] max-h-[90vh] overflow-y-auto rounded-lg bg-white p-6">
+      <div className="max-h-[90vh] w-[800px] overflow-y-auto rounded-lg bg-white p-6">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl font-bold">Khảo sát nghề nghiệp</h2>
           <div className="flex items-center gap-2">

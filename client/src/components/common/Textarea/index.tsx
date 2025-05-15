@@ -17,7 +17,7 @@ const Textarea = forwardRef<HTMLInputElement, IProps>(
         {children}
       </TextareaUI>
     );
-  }
+  },
 );
 
 Textarea.displayName = "Textarea";

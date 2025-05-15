@@ -1,4 +1,4 @@
-import { Theme } from "../types/appearance";
+import type { Theme } from "../types/appearance";
 
 /**
  * Predefined themes for the application
@@ -100,4 +100,4 @@ export const predefinedThemes: Theme[] = [
       userFontColor: "#ffffff",
     },
   },
-]; 
+];

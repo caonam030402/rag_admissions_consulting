@@ -13,8 +13,6 @@ import { useMemo } from "react";
 
 import { cn } from "@/libs/utils";
 
-import Button from "../Button";
-
 interface IProps extends TableProps {
   columns: {
     key: string;

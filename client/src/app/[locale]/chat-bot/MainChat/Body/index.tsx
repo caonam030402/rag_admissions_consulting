@@ -2,15 +2,15 @@
 
 import React, { useState } from "react";
 
+import Button from "@/components/common/Button";
+import { ActorType } from "@/enums/systemChat";
+import { chatService } from "@/services/chat";
 import { useChatStore } from "@/stores/chat";
+import { formatSurveyData } from "@/utils/common";
 
 import ChatMessage from "../ChatMessage";
 import IntroChat from "../IntroChat";
 import SurveyForm from "../SurveyForm";
-import { ActorType } from "@/enums/systemChat";
-import { chatService } from "@/services/chat";
-import { formatSurveyData } from "@/utils/common";
-import Button from "@/components/common/Button";
 
 export default function BodyMainChat() {
   const { messages, isTyping, addMessage, setTyping, setError } =
@@ -18,7 +18,7 @@ export default function BodyMainChat() {
   const [showSurvey, setShowSurvey] = useState(false);
 
   return (
-    <div className="flex-1 scroll h-[80vh]">
+    <div className="scroll h-[80vh] flex-1">
       {showSurvey && (
         <SurveyForm
           onSubmit={async (data) => {
@@ -38,7 +38,7 @@ export default function BodyMainChat() {
               useChatStore.getState().startNewAssistantMessage();
 
               for await (const token of chatService.streamMessage(
-                content.trim()
+                content.trim(),
               )) {
                 useChatStore.getState().appendToLastMessage(token);
               }
@@ -46,7 +46,7 @@ export default function BodyMainChat() {
               setError(
                 error instanceof Error
                   ? error.message
-                  : "Failed to send message"
+                  : "Failed to send message",
               );
             } finally {
               setTyping(false);
@@ -58,7 +58,7 @@ export default function BodyMainChat() {
       {messages.length === 0 ? (
         <div>
           <IntroChat />
-          <div className="flex justify-center mt-4">
+          <div className="mt-4 flex justify-center">
             <Button
               onPress={() => setShowSurvey(true)}
               className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"

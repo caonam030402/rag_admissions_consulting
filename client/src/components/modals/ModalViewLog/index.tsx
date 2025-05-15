@@ -1,14 +1,15 @@
-import React from "react";
 import {
+  Button,
+  Chip,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Button,
-  Chip,
 } from "@heroui/react";
 import { FileText } from "@phosphor-icons/react";
+import React from "react";
+
 import { EStatusUpload } from "@/enums/adminChat";
 
 /**
@@ -20,7 +21,7 @@ export interface ILogEntry {
   /** Log message content */
   message: string;
   /** Type of log entry - affects styling */
-  type: 'info' | 'error' | 'success';
+  type: "info" | "error" | "success";
 }
 
 /**
@@ -52,26 +53,26 @@ export default function ModalViewLog({
   /**
    * Get styling for a log entry based on its type
    */
-  const getLogStyles = (type: ILogEntry['type']) => {
+  const getLogStyles = (type: ILogEntry["type"]) => {
     const styles = {
-      container: '',
-      text: '',
+      container: "",
+      text: "",
     };
-    
+
     switch (type) {
-      case 'error':
-        styles.container = 'bg-danger-50 border-l-4 border-danger-500';
-        styles.text = 'text-danger-600';
+      case "error":
+        styles.container = "bg-danger-50 border-l-4 border-danger-500";
+        styles.text = "text-danger-600";
         break;
-      case 'success':
-        styles.container = 'bg-success-50 border-l-4 border-success-500';
-        styles.text = 'text-success-600';
+      case "success":
+        styles.container = "bg-success-50 border-l-4 border-success-500";
+        styles.text = "text-success-600";
         break;
       default: // info
-        styles.container = 'bg-default-50 border-l-4 border-default-300';
-        styles.text = 'text-default-600';
+        styles.container = "bg-default-50 border-l-4 border-default-300";
+        styles.text = "text-default-600";
     }
-    
+
     return styles;
   };
 
@@ -83,33 +84,39 @@ export default function ModalViewLog({
             <ModalHeader className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <FileText size={24} />
-                <span>Logs for {fileName || 'Unknown File'}</span>
+                <span>Logs for {fileName || "Unknown File"}</span>
               </div>
               <div className="text-sm text-default-500">
                 {status === EStatusUpload.UPLOADED ? (
-                  <Chip size="sm" variant="flat" color="success">Uploaded</Chip>
+                  <Chip size="sm" variant="flat" color="success">
+                    Uploaded
+                  </Chip>
                 ) : (
-                  <Chip size="sm" variant="flat" color="danger">Failed</Chip>
+                  <Chip size="sm" variant="flat" color="danger">
+                    Failed
+                  </Chip>
                 )}
               </div>
             </ModalHeader>
-            
+
             <ModalBody>
-              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              <div className="max-h-[400px] space-y-3 overflow-y-auto">
                 {logs.length > 0 ? (
                   logs.map((log, index) => {
                     const styles = getLogStyles(log.type);
-                    
+
                     return (
                       <div
                         key={index}
-                        className={`p-3 rounded-md ${styles.container}`}
+                        className={`rounded-md p-3 ${styles.container}`}
                       >
                         <div className="flex justify-between">
                           <span className={`font-medium ${styles.text}`}>
                             {log.type.toUpperCase()}
                           </span>
-                          <span className="text-xs text-default-500">{log.timestamp}</span>
+                          <span className="text-xs text-default-500">
+                            {log.timestamp}
+                          </span>
                         </div>
                         <p className="mt-1 text-sm">{log.message}</p>
                       </div>
@@ -122,7 +129,7 @@ export default function ModalViewLog({
                 )}
               </div>
             </ModalBody>
-            
+
             <ModalFooter>
               <Button color="primary" onPress={onOpenChange}>
                 Close
@@ -133,4 +140,4 @@ export default function ModalViewLog({
       </ModalContent>
     </Modal>
   );
-} 
+}

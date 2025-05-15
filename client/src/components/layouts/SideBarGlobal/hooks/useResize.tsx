@@ -9,7 +9,7 @@ import {
 interface IProps {
   setAction?: (
     sidebarWidth: number,
-    setSidebarWidth: Dispatch<SetStateAction<number>>
+    setSidebarWidth: Dispatch<SetStateAction<number>>,
   ) => void;
   minWidth?: number;
 }
@@ -30,7 +30,7 @@ export default function useResize({ setAction, minWidth }: IProps) {
         });
       }
     },
-    [isResizing, setSidebarWidth, minWidth]
+    [isResizing, setSidebarWidth, minWidth],
   );
   const handleMouseUp = useCallback(() => {
     setIsResizing(false);

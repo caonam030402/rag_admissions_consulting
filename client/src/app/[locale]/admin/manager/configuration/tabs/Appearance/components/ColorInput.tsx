@@ -1,24 +1,23 @@
 import React from "react";
+
 import Input from "@/components/common/Input";
-import { ColorScheme } from "@/types/appearance";
 
 interface ColorInputProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
-  colorKey: keyof ColorScheme;
   error?: string;
   validateHexColor: (color: string) => boolean;
 }
 
-export const ColorInput: React.FC<ColorInputProps> = ({ 
-  label, 
-  value, 
+export const ColorInput: React.FC<ColorInputProps> = ({
+  label,
+  value,
   onChange,
   disabled = false,
   error,
-  validateHexColor
+  validateHexColor,
 }) => {
   return (
     <div className="flex flex-col gap-1">
@@ -32,22 +31,22 @@ export const ColorInput: React.FC<ColorInputProps> = ({
           isInvalid={!!error}
           className="w-full pr-10"
         />
-        <div 
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border border-gray-300"
-          style={{ backgroundColor: validateHexColor(value) ? value : '#ffffff' }}
+        <div
+          className="absolute right-2 top-1/2 size-6 -translate-y-1/2 rounded-full border border-gray-300"
+          style={{
+            backgroundColor: validateHexColor(value) ? value : "#ffffff",
+          }}
         >
           <input
             type="color"
-            value={validateHexColor(value) ? value : '#ffffff'}
+            value={validateHexColor(value) ? value : "#ffffff"}
             onChange={(e) => onChange(e.target.value)}
-            className="absolute inset-0 opacity-0 cursor-pointer"
+            className="absolute inset-0 cursor-pointer opacity-0"
             disabled={disabled}
           />
         </div>
-        {error && (
-          <p className="text-xs text-red-500 mt-1">{error}</p>
-        )}
+        {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
       </div>
     </div>
   );
-}; 
+};

@@ -1,4 +1,4 @@
-import { ActorType } from "@/enums/systemChat";
+import type { ActorType } from "@/enums/systemChat";
 
 export interface ChatMessage {
   id: string;
