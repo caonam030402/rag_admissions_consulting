@@ -53,6 +53,22 @@ export class User {
   lastName: string | null;
 
   @ApiProperty({
+    type: String,
+    description: 'Two-factor authentication secret',
+    required: false,
+  })
+  @Exclude({ toPlainOnly: true })
+  twoFactorSecret?: string | null;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'Whether two-factor authentication is enabled',
+    default: false,
+  })
+  @Expose({ groups: ['me', 'admin'] })
+  isTwoFactorEnabled: boolean;
+
+  @ApiProperty({
     type: () => FileType,
   })
   photo?: FileType | null;

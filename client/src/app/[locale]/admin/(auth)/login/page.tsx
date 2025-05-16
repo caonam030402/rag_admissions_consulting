@@ -6,7 +6,7 @@ import FormAuth from "@/components/business/FormAuth";
 import useLogin from "@/hooks/features/auth/useLogin";
 
 export default function Login() {
-  const { form, isLoading, handleLogin } = useLogin();
+  const { form, isLoading, handleLogin, requiresTwoFactor } = useLogin();
 
   return (
     <section className="flex h-screen text-sm bg-primary">
@@ -17,6 +17,7 @@ export default function Login() {
         handleSubmitMail={handleLogin}
         title="Welcome back!"
         labelAction="Login"
+        requiresTwoFactor={requiresTwoFactor}
       />
     </section>
   );

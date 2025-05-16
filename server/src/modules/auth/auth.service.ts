@@ -33,6 +33,8 @@ import { OtpsService } from '../otps/otps.service';
 import { UserEntity } from '../users/infrastructure/persistence/relational/entities/user.entity';
 import { ConfirmOtpDto } from '../otps/dto/confirm-otp';
 import { Response } from 'express';
+import { TwoFactorAuthService } from './two-factor-auth.service';
+import { ValidateTwoFactorAuthDto } from './dto/validate-two-factor-auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -43,7 +45,8 @@ export class AuthService {
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
     private otpService: OtpsService,
-  ) { }
+    private twoFactorAuthService: TwoFactorAuthService,
+  ) {}
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
     const user = await this.usersService.findByEmail(loginDto.email);
@@ -87,6 +90,48 @@ export class AuthService {
           password: 'incorrectPassword',
         },
       });
+    }
+
+    console.log(user.isTwoFactorEnabled, 'user.isTwoFactorEnabled');
+
+    if (user.isTwoFactorEnabled) {
+      if (!loginDto.otpCode) {
+        return {
+          requiresTwoFactor: true,
+          token: '',
+          refreshToken: '',
+          tokenExpires: 0,
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+          } as User,
+        };
+      }
+
+      if (!user.twoFactorSecret) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            twoFactor: 'twoFactorSecretNotSet',
+          },
+        });
+      }
+
+      const isCodeValid = this.twoFactorAuthService.verifyTwoFactorAuthCode(
+        loginDto.otpCode,
+        user.twoFactorSecret,
+      );
+
+      if (!isCodeValid) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            otpCode: 'invalidOtpCode',
+          },
+        });
+      }
     }
 
     const hash = crypto
@@ -203,6 +248,8 @@ export class AuthService {
     const user = await this.usersService.create({
       ...dto,
       email: dto.email,
+      firstName: dto.firstName || null,
+      lastName: dto.lastName || null,
       role: {
         id: RoleEnum.user,
       },
@@ -211,6 +258,14 @@ export class AuthService {
       },
       isVerified: VerifiedEnum.Unverified,
     });
+
+    // Generate 2FA secret for the new user
+    const { secret, otpauthUrl } =
+      await this.twoFactorAuthService.generateTwoFactorSecret(user as User);
+
+    // Generate QR code for the secret
+    const qrCodeDataURL =
+      await this.twoFactorAuthService.generateQrCodeDataURL(otpauthUrl);
 
     //1. create confirm email otp
     await this.otpService.create(
@@ -245,7 +300,9 @@ export class AuthService {
 
     return {
       userId: user.id,
-      isVerified: user.isVerified,
+      isVerified: user.isVerified as VerifiedEnum,
+      twoFactorSecret: secret,
+      qrCodeDataURL,
     };
   }
 
@@ -617,6 +674,69 @@ export class AuthService {
     }
 
     return this.sessionService.deleteById(data.sessionId);
+  }
+
+  async validateTwoFactorAuth(
+    validateTwoFactorAuthDto: ValidateTwoFactorAuthDto,
+  ): Promise<LoginResponseDto> {
+    const { email, otpCode } = validateTwoFactorAuthDto;
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: {
+          email: 'notFound',
+        },
+      });
+    }
+
+    if (!user.isTwoFactorEnabled || !user.twoFactorSecret) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: {
+          twoFactor: 'twoFactorNotEnabled',
+        },
+      });
+    }
+
+    const isCodeValid = this.twoFactorAuthService.verifyTwoFactorAuthCode(
+      otpCode,
+      user.twoFactorSecret,
+    );
+
+    if (!isCodeValid) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: {
+          otpCode: 'invalidOtpCode',
+        },
+      });
+    }
+
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    const session = await this.sessionService.create({
+      user,
+      hash,
+    });
+
+    const { token, refreshToken, tokenExpires } = await this.getTokensData({
+      id: user.id,
+      role: user.role,
+      sessionId: session.id,
+      hash,
+    });
+
+    return {
+      refreshToken,
+      token,
+      tokenExpires,
+      user,
+    };
   }
 
   private async getTokensData(data: {

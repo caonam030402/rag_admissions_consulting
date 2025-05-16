@@ -7,6 +7,7 @@ import type {
   IRequestConfirmOtp,
   IRequestGenerateOtp,
   IResponseGenerateOtp,
+  IValidateTwoFactorAuth,
 } from "@/types/auth";
 import http from "@/utils/http";
 
@@ -31,10 +32,8 @@ export const authService = {
     });
   },
   // Server side
-  loginWithEmail: (body: IAuth) => {
-    return http.post<{
-      id: number;
-    }>("auth/email/login", {
+  loginWithEmail: (body: IAuth & { otpCode?: string }) => {
+    return http.post<IAuthResponse>("auth/email/login", {
       body,
     });
   },
@@ -54,12 +53,17 @@ export const authService = {
     });
   },
   logout: () => {
-    console.log(1231231212333333333333333333)
+    console.log(1231231212333333333333333333);
 
     return http.post<IAuthResponse>("auth/logout", { body: {} });
   },
   confirmOtp: (body: IRequestConfirmOtp) => {
     return http.post<IAuthResponse>("auth/email/confirm/otp", {
+      body,
+    });
+  },
+  validateTwoFactorAuth: (body: IValidateTwoFactorAuth) => {
+    return http.post<IAuthResponse>("auth/2fa/validate", {
       body,
     });
   },

@@ -15,4 +15,11 @@ export class LoginResponseDto {
     type: () => User,
   })
   user: User;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'Indicates if two-factor authentication is required',
+    required: false,
+  })
+  requiresTwoFactor?: boolean;
 }

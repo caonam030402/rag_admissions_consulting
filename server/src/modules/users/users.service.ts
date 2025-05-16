@@ -96,7 +96,10 @@ export class UsersService {
       }
     }
 
-    return this.usersRepository.create(clonedPayload);
+    return this.usersRepository.create({
+      ...clonedPayload,
+      isTwoFactorEnabled: true,
+    });
   }
 
   findManyWithPagination({

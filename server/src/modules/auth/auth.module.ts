@@ -11,6 +11,7 @@ import { SessionModule } from '../session/session.module';
 import { UsersModule } from '../users/users.module';
 import { OtpsModule } from '../otps/otps.module';
 import { JwtWsStrategy } from './strategies/jwt-ws.strategy';
+import { TwoFactorAuthService } from './two-factor-auth.service';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { JwtWsStrategy } from './strategies/jwt-ws.strategy';
     JwtRefreshStrategy,
     AnonymousStrategy,
     JwtWsStrategy,
+    TwoFactorAuthService,
   ],
   exports: [AuthService, JwtWsStrategy],
 })

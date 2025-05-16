@@ -8,6 +8,7 @@ export interface IAuthResponse {
   refreshToken?: string;
   tokenExpires?: number;
   user: IUser | null;
+  requiresTwoFactor?: boolean;
 }
 
 export interface IAuthErrorResponse {
@@ -30,7 +31,7 @@ interface IUserSession extends IUser {
 }
 
 declare module "next-auth" {
-  interface Session extends IAuthResponse {}
+  interface Session extends IAuthResponse { }
   interface User extends IUserSession {
     error?: string;
   }
@@ -64,4 +65,9 @@ interface IResponseGenerateOtp {
     id: number;
   };
   expiresTime: number;
+}
+
+export interface IValidateTwoFactorAuth {
+  email: string;
+  otpCode: string;
 }

@@ -18,6 +18,9 @@ const rules = authValidation.pick({
 
 export default function useLogin() {
   const [isLoading, setIsLoading] = useState(false);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [userPassword, setUserPassword] = useState<string>("");
   const { handleJump } = useJump();
 
   const form = useForm<IFormTypeAuth>({
@@ -27,13 +30,18 @@ export default function useLogin() {
   const handleLogin = async (body: IFormTypeLogin) => {
     setIsLoading(true);
 
-    const res = await authCredential<IFormTypeLogin>({
+    // Create login data with possible OTP code
+    const loginCredentials = {
       trigger: ETriggerCredentials.LOGIN,
-      email: body.email,
-      password: body.password,
-      googleCode: body.googleCode,
+      email: requiresTwoFactor ? userEmail : body.email,
+      password: requiresTwoFactor ? userPassword : body.password,
       key: body.key,
-    });
+      googleCode: body.googleCode, // Keep for form validation
+      // Add otpCode for 2FA if we have the googleCode field
+      ...(body.googleCode ? { otpCode: body.googleCode } : {}),
+    };
+
+    const res = await authCredential<IFormTypeLogin>(loginCredentials);
 
     const error = JSON.parse(res?.error || "{}");
     if (res?.error) {
@@ -45,8 +53,15 @@ export default function useLogin() {
       });
 
       setIsLoading(false);
+    } else if (res?.requiresTwoFactor) {
+      // Store credentials for when user enters 2FA code
+      setRequiresTwoFactor(true);
+      setUserEmail(body.email);
+      setUserPassword(body.password);
+      toast.success("Please enter your Google Authenticator code");
+      setIsLoading(false);
     } else {
-      toast.success("Login successfully !");
+      toast.success("Login successfully!");
       handleJump({
         url: PATH.OVERVIEW,
       });
@@ -54,9 +69,11 @@ export default function useLogin() {
       setIsLoading(false);
     }
   };
+
   return {
     form,
     isLoading,
     handleLogin,
+    requiresTwoFactor,
   };
 }

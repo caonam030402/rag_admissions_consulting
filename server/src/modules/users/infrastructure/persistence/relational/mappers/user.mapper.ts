@@ -17,6 +17,8 @@ export class UserMapper {
     domainEntity.firstName = raw.firstName;
     domainEntity.lastName = raw.lastName;
     domainEntity.isVerified = raw.isVerified;
+    domainEntity.isTwoFactorEnabled = raw.isTwoFactorEnabled;
+    domainEntity.twoFactorSecret = raw.twoFactorSecret;
     domainEntity.avatar = raw.avatar;
     if (raw.photo) {
       domainEntity.photo = FileMapper.toDomain(raw.photo);
@@ -65,6 +67,8 @@ export class UserMapper {
     persistenceEntity.previousPassword = domainEntity.previousPassword;
     persistenceEntity.provider = domainEntity.provider;
     persistenceEntity.socialId = domainEntity.socialId;
+    persistenceEntity.isTwoFactorEnabled = domainEntity.isTwoFactorEnabled;
+    persistenceEntity.twoFactorSecret = domainEntity.twoFactorSecret;
     persistenceEntity.firstName = domainEntity.firstName;
     persistenceEntity.lastName = domainEntity.lastName;
     persistenceEntity.photo = photo;

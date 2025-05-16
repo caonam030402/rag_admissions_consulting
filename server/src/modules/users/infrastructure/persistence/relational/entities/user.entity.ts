@@ -105,6 +105,24 @@ export class UserEntity extends EntityRelationalHelper {
   lastName: string | null;
 
   @ApiProperty({
+    type: String,
+    description: 'Two-factor authentication secret',
+    required: false,
+  })
+  @Column({ type: String, nullable: true })
+  @Exclude({ toPlainOnly: true })
+  twoFactorSecret?: string | null;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'Whether two-factor authentication is enabled',
+    default: false,
+  })
+  @Column({ type: Boolean, default: false })
+  @Expose({ groups: ['me', 'admin'] })
+  isTwoFactorEnabled: boolean;
+
+  @ApiProperty({
     type: () => FileEntity,
   })
   @OneToOne(() => FileEntity, {
