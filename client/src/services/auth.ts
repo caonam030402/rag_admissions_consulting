@@ -54,6 +54,8 @@ export const authService = {
     });
   },
   logout: () => {
+    console.log(1231231212333333333333333333)
+
     return http.post<IAuthResponse>("auth/logout", { body: {} });
   },
   confirmOtp: (body: IRequestConfirmOtp) => {

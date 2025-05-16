@@ -43,7 +43,7 @@ export class AuthService {
     private mailService: MailService,
     private configService: ConfigService<AllConfigType>,
     private otpService: OtpsService,
-  ) {}
+  ) { }
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
     const user = await this.usersService.findByEmail(loginDto.email);
@@ -608,6 +608,14 @@ export class AuthService {
   }
 
   async logout(data: Pick<JwtRefreshPayloadType, 'sessionId'>) {
+    const session = await this.sessionService.findById(data.sessionId);
+
+    if (session) {
+      await this.usersService.update(session.user.id, {
+        isVerified: VerifiedEnum.Unverified,
+      });
+    }
+
     return this.sessionService.deleteById(data.sessionId);
   }
 

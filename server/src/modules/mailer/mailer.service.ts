@@ -43,10 +43,10 @@ export class MailerService {
       from: mailOptions.from
         ? mailOptions.from
         : `"${this.configService.get('mail.defaultName', {
-            infer: true,
-          })}" <${this.configService.get('mail.defaultEmail', {
-            infer: true,
-          })}>`,
+          infer: true,
+        })}" <${this.configService.get('mail.defaultEmail', {
+          infer: true,
+        })}>`,
       html: mailOptions.html ? mailOptions.html : html,
     });
   }

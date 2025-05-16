@@ -4,9 +4,10 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 import { authCredential } from "@/configs/auth";
-import { ETriggerCredentials } from "@/constants";
+import { ETriggerCredentials, PATH } from "@/constants";
 import type { IFormTypeAuth, IFormTypeLogin } from "@/types/form";
 import authValidation from "@/validations/authValidation";
+import useJump from "@/hooks/useJump";
 
 const rules = authValidation.pick({
   email: true,
@@ -17,6 +18,7 @@ const rules = authValidation.pick({
 
 export default function useLogin() {
   const [isLoading, setIsLoading] = useState(false);
+  const { handleJump } = useJump();
 
   const form = useForm<IFormTypeAuth>({
     resolver: zodResolver(rules),
@@ -45,6 +47,10 @@ export default function useLogin() {
       setIsLoading(false);
     } else {
       toast.success("Login successfully !");
+      handleJump({
+        url: PATH.OVERVIEW,
+      });
+
       setIsLoading(false);
     }
   };

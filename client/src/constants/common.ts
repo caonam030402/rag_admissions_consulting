@@ -6,6 +6,7 @@ export const PATH = {
   DATASET: "/admin/manager/data-source",
   CONFIGURATION: "/admin/manager/configuration",
   OVERVIEW: "/admin/manager/overview",
+  VERIFY: "/admin/verify",
 };
 
 export const PUBLIC_PAGES = [

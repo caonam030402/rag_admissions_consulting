@@ -2,6 +2,7 @@ import { signOut } from "@/configs/auth";
 import { clearLocalStorage } from "@/utils/clientStorage";
 
 import { ENameLocalS } from "./common";
+import { authService } from "@/services";
 
 export const userMenuOptions: IMenuUserOption[] = [
   {
@@ -42,7 +43,8 @@ export const userMenuOptions: IMenuUserOption[] = [
         id: "6",
         title: "Log Out",
         href: "",
-        action: () => {
+        action: async () => {
+          await authService.logout();
           clearLocalStorage({ key: ENameLocalS.PROFILE });
           signOut();
         },

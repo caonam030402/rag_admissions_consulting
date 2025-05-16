@@ -55,7 +55,7 @@ export default function Header() {
       </NavbarContent>
       <NavbarContent justify="end">
         <Button as={Link} color="primary">
-          Sign Up
+          Liên hệ trực tiếp
         </Button>
       </NavbarContent>
     </Navbar>

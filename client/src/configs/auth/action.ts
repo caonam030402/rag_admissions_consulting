@@ -26,7 +26,7 @@ export async function authCredential<T>(body: IAuthCredentials & T) {
 }
 
 export async function signOut() {
-  clearCookies({ key: ENameCookie.ACCESS_TOKEN });
   await authService.logout();
+  clearCookies({ key: ENameCookie.ACCESS_TOKEN });
   await _signOut({ redirectTo: PATH.LOGIN });
 }

@@ -34,7 +34,7 @@ import { Response } from 'express';
   version: '1',
 })
 export class AuthController {
-  constructor(private readonly service: AuthService) {}
+  constructor(private readonly service: AuthService) { }
 
   @SerializeOptions({
     groups: ['me'],
@@ -132,6 +132,7 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.NO_CONTENT)
   public async logout(@Request() request): Promise<void> {
+    console.log(12312312)
     await this.service.logout({
       sessionId: request.user.sessionId,
     });
