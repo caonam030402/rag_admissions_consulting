@@ -1,6 +1,10 @@
 import Image from "next/image";
 
-export default function Logo() {
+interface IProps {
+  isOnlyIcon?: boolean;
+}
+
+export default function Logo({ isOnlyIcon = false }: IProps) {
   return (
     <div className="flex gap-2">
       <Image
@@ -10,7 +14,7 @@ export default function Logo() {
         height={500}
         className="size-8"
       />
-      <div className="text-xl font-bold">ChatBot IUH</div>
+      {!isOnlyIcon && <div className="text-xl font-bold">ChatBot IUH</div>}
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { type UseFormReturn } from "react-hook-form";
 import Input from "@/components/common/Input";
 import Logo from "@/components/common/Logo";
 import type { IFormTypeAuth } from "@/types/form";
+import { Card } from "@heroui/card";
 
 interface IProps {
   handleSubmitMail: (data: any) => void;
@@ -49,13 +50,13 @@ export default function FormSignUp({
 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center">
-      <div className="w-full max-w-[600px] space-y-6">
+      <Card shadow="sm" className="w-full max-w-[450px] space-y-9 p-10">
         <form
           onSubmit={onSubmit}
-          className="flex w-full flex-col items-start space-y-6"
+          className="flex w-full flex-col items-center space-y-8"
         >
           <div className="flex items-center gap-2">
-            <Logo />
+            <Logo isOnlyIcon />
             <h1 className="text-center text-2xl font-bold">{title}</h1>
           </div>
           <Input
@@ -125,7 +126,7 @@ export default function FormSignUp({
           </Button>
         </form>
         {description}
-      </div>
+      </Card>
     </div>
   );
 }

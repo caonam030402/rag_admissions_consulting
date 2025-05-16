@@ -13,7 +13,7 @@ const Input = forwardRef<HTMLInputElement, IProps>(
         {children}
       </InputUI>
     );
-  },
+  }
 );
 
 Input.displayName = "Input";

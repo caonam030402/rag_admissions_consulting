@@ -1,11 +1,10 @@
-/* eslint-disable jsx-a11y/media-has-caption */
 import React from "react";
 
 import Logo from "@/components/common/Logo";
 
 export default function IntroSection() {
   return (
-    <div className="h-full w-1/2 bg-[url('https://lf-scm-us.feishucdn.com/larksuite/global_registration_web/static/image/left-bg.cc3d00d0.png')] bg-cover p-10">
+    <div className="h-full w-1/3 bg-[url('https://lf-scm-us.feishucdn.com/larksuite/global_registration_web/static/image/left-bg.cc3d00d0.png')] bg-cover p-10">
       <Logo />
       <div className="flex h-[90%] flex-col items-center justify-center text-center">
         <div className="h-[500px] w-[90%] overflow-hidden rounded-3xl border-[15px] border-white">

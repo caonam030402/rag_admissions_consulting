@@ -5,13 +5,11 @@ import React from "react";
 import FormAuth from "@/components/business/FormAuth";
 import useLogin from "@/hooks/features/auth/useLogin";
 
-import IntroSection from "./IntroSection";
-
 export default function Login() {
   const { form, isLoading, handleLogin } = useLogin();
 
   return (
-    <section className="flex h-screen text-sm">
+    <section className="flex h-screen text-sm bg-primary">
       <FormAuth
         form={form}
         isLogin
@@ -20,7 +18,6 @@ export default function Login() {
         title="Welcome back!"
         labelAction="Login"
       />
-      <IntroSection />
     </section>
   );
 }
