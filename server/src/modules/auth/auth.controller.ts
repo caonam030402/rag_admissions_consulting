@@ -235,7 +235,7 @@ export class AuthController {
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
         errors: {
-          otpCode: 'invalidOtpCode',
+          otpCode: 'Mã google không hợp lệ',
         },
       });
     }

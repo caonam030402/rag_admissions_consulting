@@ -128,7 +128,7 @@ export class AuthService {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
           errors: {
-            otpCode: 'invalidOtpCode',
+            otpCode: 'Mã google không hợp lệ',
           },
         });
       }
@@ -709,7 +709,7 @@ export class AuthService {
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
         errors: {
-          otpCode: 'invalidOtpCode',
+          otpCode: 'mã google không hợp lệ',
         },
       });
     }
