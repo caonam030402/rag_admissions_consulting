@@ -7,6 +7,7 @@ export const PATH = {
   CONFIGURATION: "/admin/manager/configuration",
   OVERVIEW: "/admin/manager/overview",
   VERIFY: "/admin/verify",
+  ACCOUNT_MANAGER: "/admin/manager/account-manager",
 };
 
 export const PUBLIC_PAGES = [
@@ -17,6 +18,7 @@ export const PUBLIC_PAGES = [
   PATH.DATASET,
   PATH.CONFIGURATION,
   PATH.OVERVIEW,
+  PATH.ACCOUNT_MANAGER,
 ];
 
 export enum ENameCookie {

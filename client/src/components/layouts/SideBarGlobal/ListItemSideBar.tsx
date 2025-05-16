@@ -5,6 +5,7 @@ import {
   Database,
   SlidersHorizontal,
   SquaresFour,
+  Users,
 } from "@phosphor-icons/react";
 import React from "react";
 
@@ -32,6 +33,13 @@ export const listSidebarItems = [
     title: "Datasets",
     href: PATH.DATASET,
     icon: <Database size={25} />,
+    children: [],
+  },
+  {
+    id: "3",
+    title: "Account Manager",
+    href: PATH.ACCOUNT_MANAGER,
+    icon: <Users size={25} />,
     children: [],
   },
   {
