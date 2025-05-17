@@ -25,11 +25,10 @@ const authHandler = auth((req) => {
 
   const isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
   const isProtected = !isPublicPage && !req.auth;
-  const isRejected =
-    req.auth &&
-    (req.nextUrl.pathname === PATH.LOGIN);
+  const isRejected = req.auth && req.nextUrl.pathname === PATH.LOGIN;
 
   const isVerified = req.auth?.user?.isVerified === EVerified.VERIFIED;
+
   if (isProtected) {
     const newUrl = new URL(PATH.LOGIN, req.nextUrl.origin);
     return Response.redirect(newUrl);
@@ -37,6 +36,7 @@ const authHandler = auth((req) => {
 
   if (
     !isVerified &&
+    !isPublicPage &&
     req.nextUrl.pathname !== PATH.VERIFY &&
     req.nextUrl.pathname !== PATH.LOGIN
   ) {
