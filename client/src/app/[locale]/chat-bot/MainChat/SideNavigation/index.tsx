@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import {
   Books,
   Calculator,
@@ -8,9 +9,9 @@ import {
   GraduationCap,
   LightbulbFilament,
   List,
+  MapTrifold,
   X,
 } from "@phosphor-icons/react";
-import { v4 as uuidv4 } from "uuid";
 
 import Button from "@/components/common/Button";
 import { ActorType } from "@/enums/systemChat";
@@ -19,9 +20,17 @@ import { useChatStore } from "@/stores/chat";
 import { formatSurveyData } from "@/utils/common";
 
 import AdmissionPredictor from "../AdmissionPredictor";
+import CampusTour from "../CampusTour";
 import SurveyForm from "../SurveyForm";
 
-const NavigationItems = [
+interface NavigationItem {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  action: string;
+}
+
+const NavigationItems: NavigationItem[] = [
   {
     icon: <LightbulbFilament size={28} weight="fill" />,
     label: "Khảo sát chọn ngành",
@@ -33,6 +42,12 @@ const NavigationItems = [
     label: "Dự đoán trúng tuyển",
     description: "Tính toán khả năng trúng tuyển theo điểm thi",
     action: "predictor",
+  },
+  {
+    icon: <MapTrifold size={28} weight="fill" />,
+    label: "Tham quan ảo",
+    description: "Trải nghiệm tham quan khuôn viên trường trực tuyến",
+    action: "campusTour",
   },
   {
     icon: <Books size={28} weight="fill" />,
@@ -54,10 +69,18 @@ const NavigationItems = [
   },
 ];
 
+// Map of action types to chat queries
+const ACTION_QUERIES: Record<string, string> = {
+  majors: "Trường có những ngành đào tạo nào?",
+  scholarships: "Thông tin về học bổng và hỗ trợ tài chính?",
+  statistics: "Điểm chuẩn các ngành những năm gần đây là bao nhiêu?",
+};
+
 export default function SideNavigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [showSurvey, setShowSurvey] = useState(false);
   const [showPredictor, setShowPredictor] = useState(false);
+  const [showCampusTour, setShowCampusTour] = useState(false);
   const { addMessage, setTyping, setError } = useChatStore();
 
   // Handle sending a message via chat system
@@ -72,7 +95,6 @@ export default function SideNavigation() {
 
     // Close sidebar on mobile
     setIsOpen(false);
-
     setTyping(true);
 
     try {
@@ -92,30 +114,32 @@ export default function SideNavigation() {
     }
   };
 
-  const handleSurveySubmit = async (data: any) => {
+  const handleSurveySubmit = async (data: Record<string, unknown>) => {
     const content = formatSurveyData(data);
     setShowSurvey(false);
     await sendMessage(content);
   };
 
   const handleAction = (action: string) => {
+    // Handle modal actions
     if (action === "survey") {
       setShowSurvey(true);
-    } else if (action === "predictor") {
+      return;
+    } 
+    
+    if (action === "predictor") {
       setShowPredictor(true);
-    } else {
-      // Handle other actions by sending specific queries to chat
-      const queries = {
-        majors: "Trường có những ngành đào tạo nào?",
-        scholarships: "Thông tin về học bổng và hỗ trợ tài chính?",
-        statistics: "Điểm chuẩn các ngành những năm gần đây là bao nhiêu?",
-      };
+      return;
+    } 
+    
+    if (action === "campusTour") {
+      setShowCampusTour(true);
+      return;
+    }
 
-      // Check if action exists in queries map
-      if (action in queries) {
-        const messageText = queries[action as keyof typeof queries];
-        sendMessage(messageText);
-      }
+    // Handle chat query actions
+    if (action in ACTION_QUERIES) {
+      sendMessage(ACTION_QUERIES[action]);
     }
   };
 
@@ -139,9 +163,6 @@ export default function SideNavigation() {
         } fixed z-10 h-full w-80 border-r border-gray-200 bg-white shadow-md transition-transform duration-300 md:relative md:shadow-none`}
       >
         <div className="flex h-full flex-col p-6">
-          <h3 className="mb-6 text-xl font-semibold text-gray-800">
-            Trợ lý tuyển sinh
-          </h3>
           <div className="space-y-5">
             {NavigationItems.map((item, index) => (
               <button
@@ -174,21 +195,25 @@ export default function SideNavigation() {
         </div>
       </div>
 
-      {/* Survey modal */}
+      {/* Feature modals */}
       {showSurvey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <SurveyForm
-            onSubmit={handleSurveySubmit}
-            onClose={() => setShowSurvey(false)}
-          />
-        </div>
+        <SurveyForm
+          onSubmit={handleSurveySubmit}
+          onClose={() => setShowSurvey(false)}
+        />
       )}
 
-      {/* Admission Predictor modal */}
       {showPredictor && (
         <AdmissionPredictor
           onSubmit={sendMessage}
           onClose={() => setShowPredictor(false)}
+        />
+      )}
+
+      {showCampusTour && (
+        <CampusTour
+          onSubmit={sendMessage}
+          onClose={() => setShowCampusTour(false)}
         />
       )}
     </>
