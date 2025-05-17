@@ -1,14 +1,15 @@
 "use client";
 
+import React, { useState } from "react";
 import {
   Books,
+  Calculator,
   ChartBar,
   GraduationCap,
   LightbulbFilament,
   List,
   X,
 } from "@phosphor-icons/react";
-import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import Button from "@/components/common/Button";
@@ -17,6 +18,7 @@ import { chatService } from "@/services/chat";
 import { useChatStore } from "@/stores/chat";
 import { formatSurveyData } from "@/utils/common";
 
+import AdmissionPredictor from "../AdmissionPredictor";
 import SurveyForm from "../SurveyForm";
 
 const NavigationItems = [
@@ -25,6 +27,12 @@ const NavigationItems = [
     label: "Khảo sát chọn ngành",
     description: "Chưa biết nên học ngành gì? Hãy làm khảo sát!",
     action: "survey",
+  },
+  {
+    icon: <Calculator size={28} weight="fill" />,
+    label: "Dự đoán trúng tuyển",
+    description: "Tính toán khả năng trúng tuyển theo điểm thi",
+    action: "predictor",
   },
   {
     icon: <Books size={28} weight="fill" />,
@@ -49,6 +57,7 @@ const NavigationItems = [
 export default function SideNavigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [showSurvey, setShowSurvey] = useState(false);
+  const [showPredictor, setShowPredictor] = useState(false);
   const { addMessage, setTyping, setError } = useChatStore();
 
   // Handle sending a message via chat system
@@ -92,6 +101,8 @@ export default function SideNavigation() {
   const handleAction = (action: string) => {
     if (action === "survey") {
       setShowSurvey(true);
+    } else if (action === "predictor") {
+      setShowPredictor(true);
     } else {
       // Handle other actions by sending specific queries to chat
       const queries = {
@@ -171,6 +182,14 @@ export default function SideNavigation() {
             onClose={() => setShowSurvey(false)}
           />
         </div>
+      )}
+
+      {/* Admission Predictor modal */}
+      {showPredictor && (
+        <AdmissionPredictor
+          onSubmit={sendMessage}
+          onClose={() => setShowPredictor(false)}
+        />
       )}
     </>
   );
