@@ -3,8 +3,9 @@
 import { Switch } from "@heroui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Sparkle } from "@phosphor-icons/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
 
 import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
@@ -31,8 +32,9 @@ const defaultValues: WelcomeSettingValidation = {
 };
 
 export default function WelcomeSetting() {
-  const { setIsDirty } = useConfiguration();
+  const { setIsDirty, registerSaveFunction, unregisterSaveFunction } = useConfiguration();
   const [localIsDirty, setLocalIsDirty] = useState(false);
+  const tabKey = useRef(3); // WelcomeSetting tab key is 3
   
   const {
     control,
@@ -74,25 +76,41 @@ export default function WelcomeSetting() {
     autoSuggestions
   ]);
 
-  const onSubmit = async (data: WelcomeSettingValidation) => {
+  const saveConfiguration = async () => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const data = await handleSubmit(async (formData) => {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        
+        // After successful save, reset the form with the new data as baseline
+        reset(formData);
+        
+        // Reset the dirty states
+        setLocalIsDirty(false);
+        setIsDirty(false);
+        
+        // Show success feedback
+        toast.success("Welcome settings saved successfully");
+        return formData;
+      })();
       
-      // After successful save, reset the form with the new data as baseline
-      reset(data);
-      
-      // Reset the dirty states
-      setLocalIsDirty(false);
-      setIsDirty(false);
-      
-      // Show success feedback
-      alert(`Saved!\n${JSON.stringify(data, null, 2)}`);
+      return true; // Return success
     } catch (error) {
-      console.error("Failed to save settings:", error);
-      alert("Failed to save settings. Please try again.");
+      console.error("Error saving configuration:", error);
+      toast.error("Failed to save welcome settings");
+      return false; // Return failure
     }
   };
+  
+  // Register the save function when component mounts
+  useEffect(() => {
+    registerSaveFunction(tabKey.current, saveConfiguration);
+    
+    // Unregister when component unmounts
+    return () => {
+      unregisterSaveFunction(tabKey.current);
+    };
+  }, [registerSaveFunction, unregisterSaveFunction]);
 
   return (
     <Card
@@ -114,22 +132,12 @@ export default function WelcomeSetting() {
             >
               AI Agent
             </Button>
-            {localIsDirty && (
-              <Button
-                color="primary"
-                variant="solid"
-                size="sm"
-                onClick={handleSubmit(onSubmit)}
-              >
-                Save Changes
-              </Button>
-            )}
           </div>
         </div>
       }
       className="h-[calc(100vh-210px)]"
     >
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form>
         {/* Welcome Content Section */}
         <div>
           <div>

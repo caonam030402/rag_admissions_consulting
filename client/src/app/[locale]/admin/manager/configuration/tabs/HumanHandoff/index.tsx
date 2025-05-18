@@ -2,15 +2,16 @@
 
 import { Switch } from "@heroui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
 
 import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
 import {
   defaultValues,
-  humanHandoffSchema,
   type HumanHandoffFormValues,
+  humanHandoffSchema,
 } from "@/validations/humanHandoffValidation";
 
 import { useConfiguration } from "../../ConfigurationContext";
@@ -21,8 +22,9 @@ import WorkingDaysSelector from "./components/WorkingDaysSelector";
 import WorkingHoursSelector from "./components/WorkingHoursSelector";
 
 export default function HumanHandoff() {
-  const { setIsDirty } = useConfiguration();
-  
+  const { setIsDirty, registerSaveFunction, unregisterSaveFunction } = useConfiguration();
+  const tabKey = useRef(4); // HumanHandoff tab key is 4
+
   const methods = useForm<HumanHandoffFormValues>({
     defaultValues,
     resolver: zodResolver(humanHandoffSchema),
@@ -38,15 +40,34 @@ export default function HumanHandoff() {
     setIsDirty(formState.isDirty);
   }, [formState.isDirty, setIsDirty]);
 
-  const handleSubmit = async () => {
-    // Here you would implement the save logic
-    // For example:
-    // await saveHumanHandoffSettings(methods.getValues());
-    
-    // Reset the dirty state after successful save
-    methods.reset(methods.getValues());
-    setIsDirty(false);
+  const saveConfiguration = async () => {
+    try {
+      // Here you would implement the save logic
+      // For example:
+      // await saveHumanHandoffSettings(methods.getValues());
+      
+      // Reset the dirty state after successful save
+      methods.reset(methods.getValues());
+      setIsDirty(false);
+      
+      toast.success("Human handoff settings saved successfully");
+      return true; // Return success
+    } catch (error) {
+      console.error("Error saving human handoff settings:", error);
+      toast.error("Failed to save human handoff settings");
+      return false; // Return failure
+    }
   };
+  
+  // Register the save function when component mounts
+  useEffect(() => {
+    registerSaveFunction(tabKey.current, saveConfiguration);
+    
+    // Unregister when component unmounts
+    return () => {
+      unregisterSaveFunction(tabKey.current);
+    };
+  }, [registerSaveFunction, unregisterSaveFunction]);
 
   return (
     <Card
@@ -65,15 +86,6 @@ export default function HumanHandoff() {
               isSelected={enabled}
               onValueChange={(value) => setValue("enabled", value)}
             />
-            {formState.isDirty && (
-              <Button
-                color="primary"
-                size="sm"
-                onClick={handleSubmit}
-              >
-                Save Changes
-              </Button>
-            )}
           </div>
         </div>
       }

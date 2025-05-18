@@ -1,10 +1,8 @@
 import React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
-import Button from "@/components/common/Button";
-import Input from "@/components/common/Input";
-import type { HumanHandoffFormValues } from "@/validations/humanHandoffValidation";
 import Textarea from "@/components/common/Textarea";
+import type { HumanHandoffFormValues } from "@/validations/humanHandoffValidation";
 
 interface TriggerPatternInputProps {
   disabled?: boolean;
@@ -13,11 +11,8 @@ interface TriggerPatternInputProps {
 export default function TriggerPatternInput({
   disabled,
 }: TriggerPatternInputProps) {
-  const { control, setValue } = useFormContext<HumanHandoffFormValues>();
+  const { control } = useFormContext<HumanHandoffFormValues>();
 
-  const handleReset = () => {
-    setValue("triggerPattern", "123123123");
-  };
 
   return (
     <div className="my-4">

@@ -1,5 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { PencilSimple } from "@phosphor-icons/react";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 
 import Button from "@/components/common/Button";
@@ -8,6 +10,11 @@ import Select from "@/components/common/Select";
 import { predefinedThemes } from "@/data/themes";
 import type { ColorScheme } from "@/types/appearance";
 import { validateHexColor } from "@/utils/colorValidator";
+import {
+  type AppearanceFormValues,
+  appearanceSchema,
+  defaultAppearanceValues,
+} from "@/validations/appearanceValidation";
 
 import { useConfiguration } from "../../ConfigurationContext";
 import { ColorInput } from "./components/ColorInput";
@@ -23,143 +30,106 @@ const fontOptions = [
 ];
 
 export default function Appearance() {
-  const { setIsDirty } = useConfiguration();
-  const [selectedTheme, setSelectedTheme] = useState<string>("cosmic-chills");
-  const [customColors, setCustomColors] = useState<ColorScheme>({
-    layoutBackground: "#0a0e18",
-    minimizedBackground: "#ffffff",
-    inputBackground: "#212121",
-    inputFontColor: "#fff9f5",
-    primaryButton: "#7a5af5",
-    borderColor: "#363636",
-    copilotReplyBackground: "#141822",
-    copilotFontColor: "#d5d5d5",
-    userReplyBackground: "#1b1b1b",
-    userFontColor: "#ffffff",
-  });
-  const [selectedFont, setSelectedFont] = useState<string>("Lato");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [colorErrors, setColorErrors] = useState<Record<string, string>>({});
-  const [initialState, setInitialState] = useState({
-    theme: "cosmic-chills",
-    colors: { ...customColors },
-    font: "Lato",
-  });
+  const { setIsDirty, registerSaveFunction, unregisterSaveFunction } = useConfiguration();
+  const tabKey = useRef(2); // Appearance tab key is 2
   
-  // Local state to track if form has actual changes
-  const [hasLocalChanges, setHasLocalChanges] = useState(false);
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isDirty, isSubmitting },
+    reset,
+  } = useForm<AppearanceFormValues>({
+    resolver: zodResolver(appearanceSchema),
+    defaultValues: defaultAppearanceValues,
+  });
+
+  const selectedTheme = watch("theme");
+  const colors = watch("colors");
+  const [isEditing, setIsEditing] = React.useState(false);
 
   // Track changes to mark the form as dirty
   useEffect(() => {
-    const hasThemeChanged = selectedTheme !== initialState.theme;
-    const hasFontChanged = selectedFont !== initialState.font;
-    
-    // Check if any color has changed
-    const hasColorsChanged = Object.keys(customColors).some(
-      (key) => customColors[key as keyof ColorScheme] !== initialState.colors[key as keyof ColorScheme]
-    );
-    
-    // Check if there are actual changes
-    const hasActualChanges = hasThemeChanged || hasFontChanged || hasColorsChanged || isEditing;
-    setHasLocalChanges(hasActualChanges);
-    
-    // Only update the global dirty state if there are actual changes
-    setIsDirty(hasActualChanges);
-  }, [selectedTheme, customColors, selectedFont, isEditing, setIsDirty, initialState]);
+    setIsDirty(isDirty || isEditing);
+  }, [isDirty, isEditing, setIsDirty]);
 
   // Function to handle color change
   const handleColorChange = (key: keyof ColorScheme, value: string) => {
-    setCustomColors((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-
-    // Validate color and set error
-    if (!validateHexColor(value)) {
-      setColorErrors((prev) => ({
-        ...prev,
-        [key]: "Please enter a valid hex color code.",
-      }));
-    } else {
-      setColorErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[key];
-        return newErrors;
-      });
-    }
+    setValue(`colors.${key}`, value, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
   // Function to save configuration to server
   const saveConfiguration = async () => {
-    // Check if there are any validation errors
-    if (Object.keys(colorErrors).length > 0) {
-      toast.error("Please fix the color format errors before saving");
-      return;
-    }
-
     try {
-      setIsLoading(true);
-      const currentTheme =
-        selectedTheme === "custom"
-          ? customColors
-          : predefinedThemes.find((theme) => theme.id === selectedTheme)
-              ?.colors || customColors;
-
-      const config = {
-        appearance: {
-          theme: selectedTheme,
-          colors: currentTheme,
-          font: selectedFont,
-        },
-      };
-
-      // Send to server API
-      const response = await fetch("/api/configuration/appearance", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(config),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save configuration");
-      }
-
-      toast.success("Appearance settings saved successfully");
-      setIsEditing(false);
+      const data = await handleSubmit(async (formData) => {
+        const config = {
+          appearance: {
+            theme: formData.theme,
+            colors: formData.colors,
+            font: formData.font,
+          },
+        };
+  
+        // Send to server API
+        const response = await fetch("/api/configuration/appearance", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(config),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to save configuration");
+        }
+  
+        toast.success("Appearance settings saved successfully");
+        setIsEditing(false);
+  
+        // Update form with current values to reset dirty state
+        reset(formData);
+        return formData;
+      })();
       
-      // Update the initial state to match current state after saving
-      setInitialState({
-        theme: selectedTheme,
-        colors: { ...customColors },
-        font: selectedFont,
-      });
-      
-      // Reset change tracking
-      setHasLocalChanges(false);
+      return true; // Return success
     } catch (error) {
       console.error("Error saving configuration:", error);
       toast.error("Failed to save configuration");
-    } finally {
-      setIsLoading(false);
+      return false; // Return failure
     }
   };
 
+  // Register the save function when component mounts
+  useEffect(() => {
+    registerSaveFunction(tabKey.current, saveConfiguration);
+    
+    // Unregister when component unmounts
+    return () => {
+      unregisterSaveFunction(tabKey.current);
+    };
+  }, [registerSaveFunction, unregisterSaveFunction]);
+
   // Handle theme selection
   const handleThemeSelect = (themeId: string) => {
-    setSelectedTheme(themeId);
+    setValue("theme", themeId, { shouldDirty: true });
     setIsEditing(false);
-    setColorErrors({});
 
-    // Update customColors with the selected theme's colors if not custom
+    // Update colors with the selected theme's colors if not custom
     if (themeId !== "custom") {
       const selectedThemeColors = predefinedThemes.find(
-        (theme) => theme.id === themeId
+        (theme) => theme.id === themeId,
       )?.colors;
+
       if (selectedThemeColors) {
-        setCustomColors(selectedThemeColors);
+        Object.entries(selectedThemeColors).forEach(([key, value]) => {
+          setValue(`colors.${key as keyof ColorScheme}`, value, {
+            shouldDirty: true,
+          });
+        });
       }
     }
   };
@@ -175,7 +145,7 @@ export default function Appearance() {
   // Renders a section of color inputs
   const renderColorSection = (
     title: string,
-    colorInputs: Array<{ label: string; key: keyof ColorScheme }>
+    colorInputs: Array<{ label: string; key: keyof ColorScheme }>,
   ) => {
     return (
       <div>
@@ -185,10 +155,10 @@ export default function Appearance() {
             <ColorInput
               key={input.key}
               label={input.label}
-              value={customColors[input.key]}
+              value={colors[input.key]}
               onChange={(value) => handleColorChange(input.key, value)}
               disabled={isColorInputDisabled}
-              error={colorErrors[input.key]}
+              error={errors.colors?.[input.key]?.message}
               validateHexColor={validateHexColor}
             />
           ))}
@@ -217,20 +187,9 @@ export default function Appearance() {
                 size="sm"
                 startContent={<PencilSimple size={15} />}
                 onClick={toggleEditMode}
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
                 {isEditing ? "Cancel Edit" : "Edit Theme"}
-              </Button>
-            )}
-            {hasLocalChanges && (
-              <Button
-                color="primary"
-                variant="solid" 
-                size="sm"
-                onClick={saveConfiguration}
-                disabled={isLoading || Object.keys(colorErrors).length > 0}
-              >
-                {isLoading ? "Saving..." : "Save Changes"}
               </Button>
             )}
           </div>
@@ -276,22 +235,28 @@ export default function Appearance() {
         <div>
           <h3 className="mb-2 font-medium">Font</h3>
           <p className="mb-2 text-xs">Text style for the copilot interface.</p>
-          <Select
-            items={fontOptions}
-            selectedKeys={[selectedFont]}
-            onSelectionChange={(keys) => {
-              const selected = Array.from(keys)[0] as string;
-              if (selected) {
-                setSelectedFont(selected);
-              }
-            }}
-            isDisabled={isColorInputDisabled}
-            className="w-full"
-          >
-            {fontOptions.map((font) => (
-              <div key={font.key}>{font.label}</div>
-            ))}
-          </Select>
+          <Controller
+            name="font"
+            control={control}
+            render={({ field }) => (
+              <Select
+                items={fontOptions}
+                selectedKeys={[field.value]}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as string;
+                  if (selected) {
+                    field.onChange(selected);
+                  }
+                }}
+                isDisabled={isColorInputDisabled}
+                className="w-full"
+              >
+                {fontOptions.map((font) => (
+                  <div key={font.key}>{font.label}</div>
+                ))}
+              </Select>
+            )}
+          />
         </div>
       </div>
     </Card>
