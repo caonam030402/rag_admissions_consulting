@@ -1,4 +1,4 @@
-from langchain_openai import OpenAI
+from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from shared.constant import gemini_model, openai_model
 from langchain_ollama.llms import OllamaLLM
@@ -19,7 +19,7 @@ class LLms:
                 )
             return lmm
         elif type_model == ModelType.OPENAI:
-            lmm = OpenAI(
+            lmm = ChatOpenAI(
                     model=openai_model,
                     streaming=True,
                     temperature=0,

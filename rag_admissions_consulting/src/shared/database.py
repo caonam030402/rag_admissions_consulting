@@ -1,30 +1,46 @@
 import os
 import time
 import psycopg2
-from psycopg2 import pool
+import psycopg2.pool
 from loguru import logger
 
 import sys
 sys.path.append("..")
 from config import getEnv
-class DatabaseConnection:
-    _connection_pool = None
-    _cache = {}
 
-    @classmethod
-    def initialize_pool(cls):
-        if cls._connection_pool is None:
+# Create a connection pool
+connection_pool = None
+# Flag to track if we're using in-memory mode
+using_memory_mode = False
+
+class DatabaseConnection:
+    _cache = {}
+    # In-memory storage for when database is unavailable
+    _memory_users = {}
+    _memory_conversations = {}
+    _memory_messages = {}
+    _next_id = {"users": 1, "conversations": 1, "messages": 1}
+
+    @staticmethod
+    def initialize_pool(min_connections=2, max_connections=10):
+        """Initialize the connection pool"""
+        global connection_pool, using_memory_mode
+        if connection_pool is None:
             try:
-                # Increased connection pool size for better concurrency
-                cls._connection_pool = pool.SimpleConnectionPool(
-                    minconn=5,
-                    maxconn=20,
-                    dsn=getEnv("DATABASE_URL")
+                connection_pool = psycopg2.pool.ThreadedConnectionPool(
+                    minconn=min_connections,
+                    maxconn=max_connections,
+                    user="postgres",
+                    password="postgres",
+                    host="localhost",
+                    port="5432",
+                    database="rag_admission"
                 )
-                logger.info("Database connection pool initialized successfully")
+                logger.info("Connection pool created successfully")
             except Exception as e:
-                logger.error(f"Error initializing database pool: {e}")
-                raise
+                logger.error(f"Error creating connection pool: {e}")
+                logger.warning("Falling back to in-memory storage for faster operation")
+                using_memory_mode = True
 
     @classmethod
     def get_cache(cls, key):
@@ -45,28 +61,108 @@ class DatabaseConnection:
         for k in expired_keys:
             del cls._cache[k]
 
-    @classmethod
-    def get_connection(cls):
-        if cls._connection_pool is None:
-            cls.initialize_pool()
-        return cls._connection_pool.getconn()
+    @staticmethod
+    def get_connection():
+        """Get a connection from the pool or None if in memory mode"""
+        global connection_pool, using_memory_mode
+        if using_memory_mode:
+            return None
+        if connection_pool is None:
+            DatabaseConnection.initialize_pool()
+            if using_memory_mode:
+                return None
+        return connection_pool.getconn()
 
-    @classmethod
-    def return_connection(cls, connection):
-        cls._connection_pool.putconn(connection)
+    @staticmethod
+    def return_connection(conn):
+        """Return a connection to the pool"""
+        global connection_pool, using_memory_mode
+        if not using_memory_mode and connection_pool is not None and conn is not None:
+            connection_pool.putconn(conn)
 
     @classmethod
     def close_all_connections(cls):
-        if cls._connection_pool is not None:
-            cls._connection_pool.closeall()
+        global connection_pool, using_memory_mode
+        if not using_memory_mode and connection_pool is not None:
+            connection_pool.closeall()
             logger.info("All database connections closed")
 
+    @classmethod
+    def memory_get_or_create_user(cls, email):
+        """In-memory version of user operations"""
+        # Check if user exists by email
+        for user_id, user_data in cls._memory_users.items():
+            if user_data["email"] == email:
+                return user_id
+        
+        # Create new user
+        user_id = cls._next_id["users"]
+        cls._next_id["users"] += 1
+        cls._memory_users[user_id] = {
+            "email": email,
+            "created_at": time.time()
+        }
+        return user_id
+    
+    @classmethod
+    def memory_create_conversation(cls, user_id):
+        """Create a new conversation in memory"""
+        conv_id = cls._next_id["conversations"]
+        cls._next_id["conversations"] += 1
+        cls._memory_conversations[conv_id] = {
+            "user_id": user_id,
+            "created_at": time.time(),
+            "updated_at": time.time()
+        }
+        return conv_id
+    
+    @classmethod
+    def memory_add_message(cls, conversation_id, role, content):
+        """Add a message to memory storage"""
+        msg_id = cls._next_id["messages"]
+        cls._next_id["messages"] += 1
+        cls._memory_messages[msg_id] = {
+            "conversation_id": conversation_id,
+            "role": role,
+            "content": content,
+            "created_at": time.time()
+        }
+        # Update conversation time
+        if conversation_id in cls._memory_conversations:
+            cls._memory_conversations[conversation_id]["updated_at"] = time.time()
+        return msg_id
+    
+    @classmethod
+    def memory_get_conversation_messages(cls, conversation_id, limit=10):
+        """Get messages for a conversation from memory"""
+        messages = [
+            {"id": msg_id, **msg_data}
+            for msg_id, msg_data in cls._memory_messages.items()
+            if msg_data["conversation_id"] == conversation_id
+        ]
+        # Sort by created_at
+        messages.sort(key=lambda x: x["created_at"])
+        return messages[-limit:] if len(messages) > limit else messages
+
 def setup_database():
-    """Setup database tables"""
+    """Set up the database tables if they don't exist"""
+    # Initialize the connection pool
+    DatabaseConnection.initialize_pool()
+    
+    global using_memory_mode
+    if using_memory_mode:
+        logger.info("Using in-memory storage mode")
+        return
+    
+    conn = None
     try:
         conn = DatabaseConnection.get_connection()
+        if conn is None:  # Double-check in case mode changed
+            logger.info("Using in-memory storage mode")
+            return
+            
         cur = conn.cursor()
-
+        
         # Create users table
         cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -75,29 +171,38 @@ def setup_database():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """)
-
-        # Create chat history table with user_id reference
+        
+        # Create conversations table
         cur.execute("""
-        CREATE TABLE IF NOT EXISTS chat_history (
+        CREATE TABLE IF NOT EXISTS conversations (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id),
-            conversation_id VARCHAR(255) NOT NULL,
+            title VARCHAR(255),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """)
+        
+        # Create messages table
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS messages (
+            id SERIAL PRIMARY KEY,
+            conversation_id INTEGER REFERENCES conversations(id),
             role VARCHAR(50) NOT NULL,
             content TEXT NOT NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-        
-        -- Add indexes for better query performance
-        CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id);
-        CREATE INDEX IF NOT EXISTS idx_chat_history_conversation_id ON chat_history(conversation_id);
-        CREATE INDEX IF NOT EXISTS idx_chat_history_timestamp ON chat_history(timestamp)
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
         """)
-
+        
         conn.commit()
+        logger.info("Database setup completed successfully")
+        
     except Exception as e:
         if conn:
             conn.rollback()
-        raise
+        logger.error(f"Error setting up database: {e}")
+        using_memory_mode = True
+        logger.warning("Falling back to in-memory storage mode")
     finally:
         if conn:
             DatabaseConnection.return_connection(conn)

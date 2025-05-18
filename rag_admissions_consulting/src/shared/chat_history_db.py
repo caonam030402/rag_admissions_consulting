@@ -1,18 +1,68 @@
 from loguru import logger
-from .database import DatabaseConnection
+from .database import DatabaseConnection, using_memory_mode
 from .enum import RoleType
 import uuid
 import json
+import time
+from typing import List, Dict, Any
 
 class ChatHistoryManager:
-    def __init__(self, user_id=None):
-        self._messages = []
+    def __init__(self, user_id: int):
         self.user_id = user_id
-        self.conversation_id = str(uuid.uuid4())
+        self.conversation_id = self._get_or_create_conversation()
+        self._messages = []
         self._cache_key = f"chat_history:{self.user_id}:{self.conversation_id}"
         self._recent_messages = []
         self._is_fully_loaded = False
         # Don't load messages on initialization to start fresh each time
+
+    def _get_or_create_conversation(self) -> int:
+        """Get the most recent conversation or create a new one"""
+        if using_memory_mode:
+            # Check for existing conversation in memory
+            for conv_id, conv_data in DatabaseConnection._memory_conversations.items():
+                if conv_data["user_id"] == self.user_id:
+                    return conv_id
+            
+            # Create new conversation in memory
+            return DatabaseConnection.memory_create_conversation(self.user_id)
+            
+        conn = None
+        try:
+            conn = DatabaseConnection.get_connection()
+            if conn is None:  # Using memory mode
+                return DatabaseConnection.memory_create_conversation(self.user_id)
+                
+            cur = conn.cursor()
+            
+            # Get the most recent conversation
+            cur.execute(
+                "SELECT id FROM conversations WHERE user_id = %s ORDER BY updated_at DESC LIMIT 1",
+                (self.user_id,)
+            )
+            result = cur.fetchone()
+            
+            if result:
+                return result[0]
+            
+            # Create a new conversation
+            cur.execute(
+                "INSERT INTO conversations (user_id) VALUES (%s) RETURNING id",
+                (self.user_id,)
+            )
+            conversation_id = cur.fetchone()[0]
+            conn.commit()
+            return conversation_id
+            
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logger.error(f"Error getting/creating conversation: {e}")
+            # Fallback to memory storage
+            return DatabaseConnection.memory_create_conversation(self.user_id)
+        finally:
+            if conn:
+                DatabaseConnection.return_connection(conn)
 
     def load_recent_messages(self, limit=10):
         """Load only recent messages for the current conversation using optimized batch loading"""
@@ -106,54 +156,98 @@ class ChatHistoryManager:
             if conn:
                 DatabaseConnection.return_connection(conn)
 
-    def append_message(self, role: RoleType, content: str):
-        """Add a new message to the chat history with optimized memory-first approach"""
-        # Create new message with minimal data
-        new_message = {"role": role, "content": content, "conversation_id": self.conversation_id}
-        
-        # Update memory immediately using efficient list operations
-        self._recent_messages.append(new_message)
-        if len(self._recent_messages) > 10:
-            self._recent_messages.pop(0)
+    def append_message(self, role: RoleType, content: str) -> None:
+        """Add a message to the conversation"""
+        if using_memory_mode:
+            DatabaseConnection.memory_add_message(self.conversation_id, role, content)
+            return
             
-        if self._is_fully_loaded:
-            self.messages.append(new_message)
-            
-        # Update cache with increased TTL for active conversations
-        DatabaseConnection.set_cache(self._cache_key, self._recent_messages, ttl=1800)  # 30 minutes TTL
-        
-        # Save to database using connection pooling
+        conn = None
         try:
             conn = DatabaseConnection.get_connection()
+            if conn is None:  # Using memory mode
+                DatabaseConnection.memory_add_message(self.conversation_id, role, content)
+                return
+                
             cur = conn.cursor()
             
+            # Insert the message
             cur.execute(
-                """
-                INSERT INTO chat_history 
-                    (user_id, conversation_id, role, content) 
-                VALUES 
-                    (%s, %s, %s, %s)
-                """,
-                (self.user_id, self.conversation_id, role, content)
+                "INSERT INTO messages (conversation_id, role, content) VALUES (%s, %s, %s)",
+                (self.conversation_id, role, content)
+            )
+            
+            # Update the conversation's updated_at timestamp
+            cur.execute(
+                "UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+                (self.conversation_id,)
             )
             
             conn.commit()
-            logger.info(f"Message saved to database: {role}")
             
         except Exception as e:
-            logger.error(f"Error saving message to database: {e}")
             if conn:
                 conn.rollback()
+            logger.error(f"Error appending message: {e}")
+            # Fallback to memory storage
+            DatabaseConnection.memory_add_message(self.conversation_id, role, content)
         finally:
             if conn:
                 DatabaseConnection.return_connection(conn)
 
-    def get_conversation_context(self, max_messages=5):
-        """Get the recent conversation context for the current conversation"""
-        # Use recent messages for context
-        conversation_messages = [msg for msg in self._recent_messages 
-                               if msg["conversation_id"] == self.conversation_id]
-        return conversation_messages[-max_messages:] if conversation_messages else []
+    def get_conversation_context(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get recent messages from the conversation"""
+        if using_memory_mode:
+            messages = DatabaseConnection.memory_get_conversation_messages(self.conversation_id, limit)
+            return [
+                {
+                    "role": msg["role"],
+                    "content": msg["content"]
+                }
+                for msg in messages
+            ]
+            
+        conn = None
+        try:
+            conn = DatabaseConnection.get_connection()
+            if conn is None:  # Using memory mode
+                return DatabaseConnection.memory_get_conversation_messages(self.conversation_id, limit)
+                
+            cur = conn.cursor()
+            
+            # Get recent messages
+            cur.execute(
+                """
+                SELECT role, content
+                FROM messages
+                WHERE conversation_id = %s
+                ORDER BY created_at DESC
+                LIMIT %s
+                """,
+                (self.conversation_id, limit)
+            )
+            
+            # Convert to list of dicts
+            messages = [
+                {
+                    "role": role,
+                    "content": content
+                }
+                for role, content in cur.fetchall()
+            ]
+            
+            # Reverse to get chronological order
+            messages.reverse()
+            
+            return messages
+            
+        except Exception as e:
+            logger.error(f"Error getting conversation context: {e}")
+            # Fallback to memory storage
+            return DatabaseConnection.memory_get_conversation_messages(self.conversation_id, limit)
+        finally:
+            if conn:
+                DatabaseConnection.return_connection(conn)
 
     @property
     def messages(self):
