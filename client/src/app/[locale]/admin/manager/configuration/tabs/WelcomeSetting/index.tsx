@@ -3,7 +3,7 @@
 import { Switch } from "@heroui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Sparkle } from "@phosphor-icons/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import Button from "@/components/common/Button";
@@ -13,6 +13,8 @@ import InputAddMore from "@/components/common/InputAddMore";
 import Textarea from "@/components/common/Textarea";
 import type { WelcomeSettingValidation } from "@/validations";
 import { welcomeSettingValidation } from "@/validations";
+
+import { useConfiguration } from "../../ConfigurationContext";
 
 const MAX_TITLE = 50;
 const MAX_SUBTITLE = 100;
@@ -29,11 +31,15 @@ const defaultValues: WelcomeSettingValidation = {
 };
 
 export default function WelcomeSetting() {
+  const { setIsDirty } = useConfiguration();
+  const [localIsDirty, setLocalIsDirty] = useState(false);
+  
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty, dirtyFields },
     watch,
+    reset,
   } = useForm<WelcomeSettingValidation>({
     resolver: zodResolver(welcomeSettingValidation),
     defaultValues,
@@ -44,12 +50,48 @@ export default function WelcomeSetting() {
   const subtitle = watch("subtitle");
   const conversationStarters = watch("conversationStarters");
   const placeholderText = watch("placeholderText");
-  //   const autoSuggestions = watch("autoSuggestions");
+  const autoSuggestions = watch("autoSuggestions");
 
-  const onSubmit = (data: WelcomeSettingValidation) => {
-    // TODO: Save logic here
-    // e.g. await api.saveWelcomeSettings(data)
-    alert(`Saved!\n${JSON.stringify(data, null, 2)}`);
+  // Track all fields for changes
+  useEffect(() => {
+    const hasChanges = isDirty && Object.keys(dirtyFields).length > 0;
+    setLocalIsDirty(hasChanges);
+    
+    // Update the global dirty state - this is critical for tab switching
+    if (hasChanges) {
+      setIsDirty(true);
+    } else {
+      setIsDirty(false);
+    }
+  }, [
+    isDirty, 
+    dirtyFields, 
+    setIsDirty, 
+    title, 
+    subtitle, 
+    conversationStarters, 
+    placeholderText, 
+    autoSuggestions
+  ]);
+
+  const onSubmit = async (data: WelcomeSettingValidation) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+      // After successful save, reset the form with the new data as baseline
+      reset(data);
+      
+      // Reset the dirty states
+      setLocalIsDirty(false);
+      setIsDirty(false);
+      
+      // Show success feedback
+      alert(`Saved!\n${JSON.stringify(data, null, 2)}`);
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      alert("Failed to save settings. Please try again.");
+    }
   };
 
   return (
@@ -63,14 +105,26 @@ export default function WelcomeSetting() {
               of interactions for a smooth user experience.
             </p>
           </div>
-          <Button
-            color="primary"
-            variant="ghost"
-            size="sm"
-            startContent={<Sparkle size={15} weight="fill" />}
-          >
-            AI Agent
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              color="primary"
+              variant="ghost"
+              size="sm"
+              startContent={<Sparkle size={15} weight="fill" />}
+            >
+              AI Agent
+            </Button>
+            {localIsDirty && (
+              <Button
+                color="primary"
+                variant="solid"
+                size="sm"
+                onClick={handleSubmit(onSubmit)}
+              >
+                Save Changes
+              </Button>
+            )}
+          </div>
         </div>
       }
       className="h-[calc(100vh-210px)]"
@@ -158,9 +212,9 @@ export default function WelcomeSetting() {
                     control,
                     formState: { errors },
                     getValues: () => conversationStarters,
-                    setError: (name, error) => {},
-                    clearErrors: (name) => {},
-                    unregister: (name) => {},
+                    setError: (_name, _error) => {},
+                    clearErrors: (_name) => {},
+                    unregister: (_name) => {},
                   }}
                   rules={{
                     maxLength: {

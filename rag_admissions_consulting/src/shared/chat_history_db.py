@@ -1,283 +1,93 @@
 from loguru import logger
-from .database import DatabaseConnection, using_memory_mode
-from .enum import RoleType
+import requests
 import uuid
-import json
-import time
+import os
 from typing import List, Dict, Any
+from .enum import RoleType
+
+# Cấu hình URL API
+API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:5000/api/v1")
+CHAT_API_URL = f"{API_BASE_URL}/chatbots/history"
 
 class ChatHistoryManager:
-    def __init__(self, user_id: int):
+    def __init__(self, user_id: int, email: str):
+        """Khởi tạo ChatHistoryManager với user_id và email"""
         self.user_id = user_id
-        self.conversation_id = self._get_or_create_conversation()
-        self._messages = []
-        self._cache_key = f"chat_history:{self.user_id}:{self.conversation_id}"
-        self._recent_messages = []
-        self._is_fully_loaded = False
-        # Don't load messages on initialization to start fresh each time
-
-    def _get_or_create_conversation(self) -> int:
-        """Get the most recent conversation or create a new one"""
-        if using_memory_mode:
-            # Check for existing conversation in memory
-            for conv_id, conv_data in DatabaseConnection._memory_conversations.items():
-                if conv_data["user_id"] == self.user_id:
-                    return conv_id
-            
-            # Create new conversation in memory
-            return DatabaseConnection.memory_create_conversation(self.user_id)
-            
-        conn = None
-        try:
-            conn = DatabaseConnection.get_connection()
-            if conn is None:  # Using memory mode
-                return DatabaseConnection.memory_create_conversation(self.user_id)
-                
-            cur = conn.cursor()
-            
-            # Get the most recent conversation
-            cur.execute(
-                "SELECT id FROM conversations WHERE user_id = %s ORDER BY updated_at DESC LIMIT 1",
-                (self.user_id,)
-            )
-            result = cur.fetchone()
-            
-            if result:
-                return result[0]
-            
-            # Create a new conversation
-            cur.execute(
-                "INSERT INTO conversations (user_id) VALUES (%s) RETURNING id",
-                (self.user_id,)
-            )
-            conversation_id = cur.fetchone()[0]
-            conn.commit()
-            return conversation_id
-            
-        except Exception as e:
-            if conn:
-                conn.rollback()
-            logger.error(f"Error getting/creating conversation: {e}")
-            # Fallback to memory storage
-            return DatabaseConnection.memory_create_conversation(self.user_id)
-        finally:
-            if conn:
-                DatabaseConnection.return_connection(conn)
-
-    def load_recent_messages(self, limit=10):
-        """Load only recent messages for the current conversation using optimized batch loading"""
-        try:
-            # Try to get from cache first with increased TTL
-            cached_data = DatabaseConnection.get_cache(self._cache_key)
-            if cached_data:
-                self._recent_messages = cached_data['value']
-                logger.info(f"Loaded {len(self._recent_messages)} messages from cache")
-                return
-
-            # Use connection pooling with context manager for automatic cleanup
-            conn = DatabaseConnection.get_connection()
-            cur = conn.cursor()
-            
-            if self.user_id:
-                # Load only recent messages with optimized query
-                query = """
-                    SELECT role, content, conversation_id 
-                    FROM chat_history 
-                    WHERE user_id = %s 
-                    ORDER BY timestamp DESC
-                    LIMIT %s
-                """
-                cur.execute(query, (self.user_id, limit))
-            else:
-                query = """
-                    SELECT role, content, conversation_id 
-                    FROM chat_history 
-                    WHERE conversation_id = %s 
-                    ORDER BY timestamp DESC
-                    LIMIT %s
-                """
-                cur.execute(query, (self.conversation_id, limit))
-            
-            self._recent_messages = []
-            for role, content, conv_id in cur.fetchall():
-                self._recent_messages.insert(0, {"role": role, "content": content, "conversation_id": conv_id})
-            
-            # Cache the results with longer TTL for frequently accessed conversations
-            DatabaseConnection.set_cache(self._cache_key, self._recent_messages, ttl=1800)  # 30 minutes TTL
-            logger.info(f"Loaded {len(self._recent_messages)} recent messages from database")
-            
-        except Exception as e:
-            logger.error(f"Error loading recent messages from database: {e}")
-            raise
-        finally:
-            if conn:
-                DatabaseConnection.return_connection(conn)
-                
-        # Clear expired cache entries periodically
-        DatabaseConnection.clear_expired_cache()
-
-    def load_all_messages(self):
-        """Load all messages if needed"""
-        if self._is_fully_loaded:
-            return
-
-        try:
-            conn = DatabaseConnection.get_connection()
-            cur = conn.cursor()
-            
-            if self.user_id:
-                query = """
-                    SELECT role, content, conversation_id 
-                    FROM chat_history 
-                    WHERE user_id = %s 
-                    ORDER BY timestamp ASC
-                """
-                cur.execute(query, (self.user_id,))
-            else:
-                query = """
-                    SELECT role, content, conversation_id 
-                    FROM chat_history 
-                    WHERE conversation_id = %s 
-                    ORDER BY timestamp ASC
-                """
-                cur.execute(query, (self.conversation_id,))
-            
-            self._messages = []
-            for role, content, conv_id in cur.fetchall():
-                self._messages.append({"role": role, "content": content, "conversation_id": conv_id})
-            
-            self._is_fully_loaded = True
-            logger.info(f"Loaded all {len(self.messages)} messages from database")
-            
-        except Exception as e:
-            logger.error(f"Error loading all messages from database: {e}")
-            raise
-        finally:
-            if conn:
-                DatabaseConnection.return_connection(conn)
+        self.email = email
+        self.conversation_id = str(uuid.uuid4())
+        logger.info(f"Tạo cuộc hội thoại mới với ID: {self.conversation_id}")
+        
+        # Cache cho tin nhắn trong phiên hiện tại
+        self._current_session_messages = []
 
     def append_message(self, role: RoleType, content: str) -> None:
-        """Add a message to the conversation"""
-        if using_memory_mode:
-            DatabaseConnection.memory_add_message(self.conversation_id, role, content)
-            return
-            
-        conn = None
+        """Lưu tin nhắn qua API và cache trong phiên hiện tại"""
+        # Tạo dữ liệu tin nhắn
+        message_data = {
+            "email": self.email,
+            "role": role,
+            "content": content,
+            "conversationId": self.conversation_id
+        }
+        
+        # Cache tin nhắn trong phiên hiện tại
+        self._current_session_messages.append({"role": role, "content": content})
+        
+        # Lưu tin nhắn qua API
         try:
-            conn = DatabaseConnection.get_connection()
-            if conn is None:  # Using memory mode
-                DatabaseConnection.memory_add_message(self.conversation_id, role, content)
-                return
-                
-            cur = conn.cursor()
+            logger.info(f"Đang lưu tin nhắn {role} qua API")
+            response = requests.post(CHAT_API_URL, json=message_data, timeout=10)
             
-            # Insert the message
-            cur.execute(
-                "INSERT INTO messages (conversation_id, role, content) VALUES (%s, %s, %s)",
-                (self.conversation_id, role, content)
-            )
-            
-            # Update the conversation's updated_at timestamp
-            cur.execute(
-                "UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = %s",
-                (self.conversation_id,)
-            )
-            
-            conn.commit()
-            
+            if 200 <= response.status_code < 300:
+                result = response.json()
+                logger.info(f"Lưu tin nhắn thành công, ID: {result.get('id', 'unknown')}")
+            else:
+                logger.error(f"Lỗi khi lưu tin nhắn: HTTP {response.status_code}")
+                logger.error(f"Chi tiết: {response.text}")
         except Exception as e:
-            if conn:
-                conn.rollback()
-            logger.error(f"Error appending message: {e}")
-            # Fallback to memory storage
-            DatabaseConnection.memory_add_message(self.conversation_id, role, content)
-        finally:
-            if conn:
-                DatabaseConnection.return_connection(conn)
+            logger.error(f"Không thể kết nối đến API: {str(e)}")
 
     def get_conversation_context(self, limit: int = 10) -> List[Dict[str, Any]]:
-        """Get recent messages from the conversation"""
-        if using_memory_mode:
-            messages = DatabaseConnection.memory_get_conversation_messages(self.conversation_id, limit)
+        """Lấy tin nhắn gần đây của cuộc hội thoại"""
+        try:
+            # Thử lấy từ API trước
+            params = {
+                "page": 1,
+                "limit": limit,
+                "filterByField": "conversationId",
+                "filterByValue": self.conversation_id,
+                "orderField": "createdAt",
+                "orderDirection": "ASC"
+            }
+            
+            response = requests.get(CHAT_API_URL, params=params, timeout=10)
+            
+            if 200 <= response.status_code < 300:
+                result = response.json()
+                if "data" in result and result["data"]:
+                    messages = [
+                        {"role": msg["role"], "content": msg["content"]} 
+                        for msg in result["data"]
+                    ]
+                    logger.info(f"Lấy được {len(messages)} tin nhắn từ API")
+                    return messages
+            
+            # Nếu không lấy được từ API, dùng cache của phiên hiện tại
+            logger.info("Sử dụng tin nhắn từ phiên hiện tại")
             return [
-                {
-                    "role": msg["role"],
-                    "content": msg["content"]
-                }
-                for msg in messages
+                {"role": msg["role"], "content": msg["content"]}
+                for msg in self._current_session_messages[-limit:]
             ]
-            
-        conn = None
-        try:
-            conn = DatabaseConnection.get_connection()
-            if conn is None:  # Using memory mode
-                return DatabaseConnection.memory_get_conversation_messages(self.conversation_id, limit)
-                
-            cur = conn.cursor()
-            
-            # Get recent messages
-            cur.execute(
-                """
-                SELECT role, content
-                FROM messages
-                WHERE conversation_id = %s
-                ORDER BY created_at DESC
-                LIMIT %s
-                """,
-                (self.conversation_id, limit)
-            )
-            
-            # Convert to list of dicts
-            messages = [
-                {
-                    "role": role,
-                    "content": content
-                }
-                for role, content in cur.fetchall()
-            ]
-            
-            # Reverse to get chronological order
-            messages.reverse()
-            
-            return messages
             
         except Exception as e:
-            logger.error(f"Error getting conversation context: {e}")
-            # Fallback to memory storage
-            return DatabaseConnection.memory_get_conversation_messages(self.conversation_id, limit)
-        finally:
-            if conn:
-                DatabaseConnection.return_connection(conn)
-
-    @property
-    def messages(self):
-        """Lazy load all messages only when needed"""
-        if not self._is_fully_loaded:
-            self.load_all_messages()
-        return self._messages
-
+            logger.error(f"Lỗi khi lấy tin nhắn: {str(e)}")
+            # Trả về tin nhắn từ phiên hiện tại nếu có lỗi
+            return [
+                {"role": msg["role"], "content": msg["content"]}
+                for msg in self._current_session_messages[-limit:]
+            ]
+            
     def clear_history(self):
-        """Clear all chat history from database for the current conversation"""
-        try:
-            conn = DatabaseConnection.get_connection()
-            cur = conn.cursor()
-            
-            if self.user_id:
-                cur.execute("DELETE FROM chat_history WHERE user_id = %s AND conversation_id = %s", (self.user_id, self.conversation_id))
-            else:
-                cur.execute("DELETE FROM chat_history WHERE conversation_id = %s", (self.conversation_id,))
-            
-            conn.commit()
-            self._recent_messages = []
-            self._messages = []
-            self._is_fully_loaded = True
-            logger.info("Chat history cleared successfully")
-            
-        except Exception as e:
-            logger.error(f"Error clearing chat history: {e}")
-            if conn:
-                conn.rollback()
-            raise
-        finally:
-            if conn:
-                DatabaseConnection.return_connection(conn)
+        """Xóa lịch sử chat trong phiên hiện tại"""
+        self._current_session_messages = []
+        logger.info("Đã xóa lịch sử chat trong phiên hiện tại")

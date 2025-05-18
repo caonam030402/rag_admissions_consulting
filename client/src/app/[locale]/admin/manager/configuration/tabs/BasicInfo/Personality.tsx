@@ -2,7 +2,11 @@ import React from "react";
 
 import RatioGroup from "@/components/common/RadioGroup";
 
-export default function Personality() {
+interface PersonalityProps {
+  onChange?: () => void;
+}
+
+export default function Personality({ onChange }: PersonalityProps) {
   const personality = [
     { title: "Professional 🧐", value: "1" },
     { title: "Sassy 🤪", value: "2" },
@@ -11,10 +15,16 @@ export default function Personality() {
     { title: "Humorous 😉", value: "5" },
     { title: "Friendly 😚", value: "6" },
   ];
+  
+  const handlePersonalityChange = (key: string) => {
+    console.log(key);
+    onChange?.();
+  };
+
   return (
     <div>
       <div className="mb-2 text-sm">Personality</div>
-      <RatioGroup items={personality} action={(key) => console.log(key)} />
+      <RatioGroup items={personality} action={handlePersonalityChange} />
     </div>
   );
 }

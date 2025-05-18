@@ -6,7 +6,11 @@ import React, { useState } from "react";
 
 import Button from "@/components/common/Button";
 
-export default function Avatar() {
+interface AvatarProps {
+  onChange?: () => void;
+}
+
+export default function Avatar({ onChange }: AvatarProps) {
   const [preview, setPreview] = useState<string | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -15,6 +19,7 @@ export default function Avatar() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
+        onChange?.();
       };
       reader.readAsDataURL(file);
     }
@@ -22,6 +27,7 @@ export default function Avatar() {
 
   const handleRemoveImage = () => {
     setPreview(null);
+    onChange?.();
   };
 
   return (

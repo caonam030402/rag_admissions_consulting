@@ -1,17 +1,21 @@
 "use client";
 
+import React, { useCallback } from "react";
 import { Spacer } from "@heroui/spacer";
-import React from "react";
 
 import Button from "@/components/common/Button";
 import Tab from "@/components/common/Tab";
 
+import { ConfigurationProvider, useConfiguration } from "./ConfigurationContext";
+import UnsavedChangesModal from "./components/UnsavedChangesModal";
 import Appearance from "./tabs/Appearance";
 import BasicInfo from "./tabs/BasicInfo";
 import HumanHandoff from "./tabs/HumanHandoff";
 import WelcomeSetting from "./tabs/WelcomeSetting";
 
-export default function page() {
+function ConfigurationContent() {
+  const { handleTabChange, saveChanges, isDirty, currentTabKey } = useConfiguration();
+
   const listTab = [
     {
       title: "Basic Info",
@@ -34,6 +38,11 @@ export default function page() {
       content: <HumanHandoff />,
     },
   ];
+
+  const handleSave = useCallback(async () => {
+    await saveChanges();
+  }, [saveChanges]);
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -44,12 +53,30 @@ export default function page() {
             optimal performance.
           </div>
         </div>
-        <Button size="md" color="primary">
+        <Button
+          size="md"
+          color="primary"
+          onClick={handleSave}
+          disabled={!isDirty}
+        >
           Save changes
         </Button>
       </div>
       <Spacer y={2} />
-      <Tab listTab={listTab} />
+      <Tab
+        listTab={listTab}
+        onSelectionChange={(key) => handleTabChange(Number(key))}
+        selectedKey={String(currentTabKey)}
+      />
+      <UnsavedChangesModal />
     </div>
+  );
+}
+
+export default function ConfigurationPage() {
+  return (
+    <ConfigurationProvider>
+      <ConfigurationContent />
+    </ConfigurationProvider>
   );
 }

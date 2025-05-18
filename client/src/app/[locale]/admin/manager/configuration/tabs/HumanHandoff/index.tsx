@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
+import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
 import {
   defaultValues,
@@ -12,36 +13,40 @@ import {
   type HumanHandoffFormValues,
 } from "@/validations/humanHandoffValidation";
 
+import { useConfiguration } from "../../ConfigurationContext";
 import AgentAliasInput from "./components/AgentAliasInput";
 import TimezoneSelector from "./components/TimezoneSelector";
 import TriggerPatternInput from "./components/TriggerPatternInput";
 import WorkingDaysSelector from "./components/WorkingDaysSelector";
 import WorkingHoursSelector from "./components/WorkingHoursSelector";
 
-interface HumanHandoffProps {
-  onFormChange?: (isDirty: boolean) => void;
-}
-
-export default function HumanHandoff({ onFormChange }: HumanHandoffProps) {
+export default function HumanHandoff() {
+  const { setIsDirty } = useConfiguration();
+  
   const methods = useForm<HumanHandoffFormValues>({
     defaultValues,
     resolver: zodResolver(humanHandoffSchema),
     mode: "onChange",
   });
 
-  const { watch, setValue } = methods;
+  const { watch, setValue, formState } = methods;
   const enabled = watch("enabled");
   const allowSystemMessages = watch("allowSystemMessages");
 
-  // Notify parent component about form changes
+  // Track form changes to update the global dirty state
   useEffect(() => {
-    const subscription = methods.watch(() => {
-      if (onFormChange) {
-        onFormChange(methods.formState.isDirty);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [methods, onFormChange]);
+    setIsDirty(formState.isDirty);
+  }, [formState.isDirty, setIsDirty]);
+
+  const handleSubmit = async () => {
+    // Here you would implement the save logic
+    // For example:
+    // await saveHumanHandoffSettings(methods.getValues());
+    
+    // Reset the dirty state after successful save
+    methods.reset(methods.getValues());
+    setIsDirty(false);
+  };
 
   return (
     <Card
@@ -55,10 +60,21 @@ export default function HumanHandoff({ onFormChange }: HumanHandoffProps) {
               live agents for better user support.
             </p>
           </div>
-          <Switch
-            isSelected={enabled}
-            onValueChange={(value) => setValue("enabled", value)}
-          />
+          <div className="flex items-center gap-3">
+            <Switch
+              isSelected={enabled}
+              onValueChange={(value) => setValue("enabled", value)}
+            />
+            {formState.isDirty && (
+              <Button
+                color="primary"
+                size="sm"
+                onClick={handleSubmit}
+              >
+                Save Changes
+              </Button>
+            )}
+          </div>
         </div>
       }
     >

@@ -1,5 +1,5 @@
 import { PencilSimple } from "@phosphor-icons/react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 
 import Button from "@/components/common/Button";
@@ -9,6 +9,7 @@ import { predefinedThemes } from "@/data/themes";
 import type { ColorScheme } from "@/types/appearance";
 import { validateHexColor } from "@/utils/colorValidator";
 
+import { useConfiguration } from "../../ConfigurationContext";
 import { ColorInput } from "./components/ColorInput";
 import { ThemeThumbnail } from "./components/ThemeThumbnail";
 
@@ -22,6 +23,7 @@ const fontOptions = [
 ];
 
 export default function Appearance() {
+  const { setIsDirty } = useConfiguration();
   const [selectedTheme, setSelectedTheme] = useState<string>("cosmic-chills");
   const [customColors, setCustomColors] = useState<ColorScheme>({
     layoutBackground: "#0a0e18",
@@ -39,6 +41,32 @@ export default function Appearance() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [colorErrors, setColorErrors] = useState<Record<string, string>>({});
+  const [initialState, setInitialState] = useState({
+    theme: "cosmic-chills",
+    colors: { ...customColors },
+    font: "Lato",
+  });
+  
+  // Local state to track if form has actual changes
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
+
+  // Track changes to mark the form as dirty
+  useEffect(() => {
+    const hasThemeChanged = selectedTheme !== initialState.theme;
+    const hasFontChanged = selectedFont !== initialState.font;
+    
+    // Check if any color has changed
+    const hasColorsChanged = Object.keys(customColors).some(
+      (key) => customColors[key as keyof ColorScheme] !== initialState.colors[key as keyof ColorScheme]
+    );
+    
+    // Check if there are actual changes
+    const hasActualChanges = hasThemeChanged || hasFontChanged || hasColorsChanged || isEditing;
+    setHasLocalChanges(hasActualChanges);
+    
+    // Only update the global dirty state if there are actual changes
+    setIsDirty(hasActualChanges);
+  }, [selectedTheme, customColors, selectedFont, isEditing, setIsDirty, initialState]);
 
   // Function to handle color change
   const handleColorChange = (key: keyof ColorScheme, value: string) => {
@@ -101,6 +129,16 @@ export default function Appearance() {
 
       toast.success("Appearance settings saved successfully");
       setIsEditing(false);
+      
+      // Update the initial state to match current state after saving
+      setInitialState({
+        theme: selectedTheme,
+        colors: { ...customColors },
+        font: selectedFont,
+      });
+      
+      // Reset change tracking
+      setHasLocalChanges(false);
     } catch (error) {
       console.error("Error saving configuration:", error);
       toast.error("Failed to save configuration");
@@ -184,15 +222,17 @@ export default function Appearance() {
                 {isEditing ? "Cancel Edit" : "Edit Theme"}
               </Button>
             )}
-            <Button
-              color="primary"
-              variant="solid"
-              size="sm"
-              onClick={saveConfiguration}
-              disabled={isLoading || Object.keys(colorErrors).length > 0}
-            >
-              {isLoading ? "Saving..." : "Save Changes"}
-            </Button>
+            {hasLocalChanges && (
+              <Button
+                color="primary"
+                variant="solid" 
+                size="sm"
+                onClick={saveConfiguration}
+                disabled={isLoading || Object.keys(colorErrors).length > 0}
+              >
+                {isLoading ? "Saving..." : "Save Changes"}
+              </Button>
+            )}
           </div>
         </div>
       }
@@ -249,7 +289,7 @@ export default function Appearance() {
             className="w-full"
           >
             {fontOptions.map((font) => (
-              <React.Fragment key={font.key}>{font.label}</React.Fragment>
+              <div key={font.key}>{font.label}</div>
             ))}
           </Select>
         </div>

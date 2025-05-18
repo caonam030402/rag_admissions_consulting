@@ -7,8 +7,10 @@ interface IProps extends TabsProps {
     key: number | string;
     content: React.ReactNode;
   }[];
+  onSelectionChange?: (key: React.Key) => void;
+  selectedKey?: string;
 }
-export default function Tab({ listTab, ...props }: IProps) {
+export default function Tab({ listTab, onSelectionChange, selectedKey, ...props }: IProps) {
   return (
     <Tabs
       classNames={{
@@ -18,6 +20,8 @@ export default function Tab({ listTab, ...props }: IProps) {
         tab: "max-w-fit px-0 h-10",
       }}
       variant="underlined"
+      onSelectionChange={onSelectionChange}
+      selectedKey={selectedKey}
       {...props}
     >
       {listTab.map((item) => (

@@ -127,9 +127,11 @@ async def chat_endpoint(request: ChatRequest):
 async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None]:
     # Get or create user - now async
     user_id = await get_or_create_user(request.user_email)
-    
-    # Initialize chat history manager
-    chat_manager = ChatHistoryManager(user_id)
+        
+    # Khởi tạo chat history manager với id và email của người dùng
+    # Email sẽ được dùng để tạo user trong database khi chat lần đầu
+    chat_manager = ChatHistoryManager(user_id, email=request.user_email)
+    logger.info(f"Xử lý yêu cầu chat từ user: {request.user_email}")
     
     # Use cached components or initialize on demand if they failed during startup
     global llm_cache, retriever_cache
