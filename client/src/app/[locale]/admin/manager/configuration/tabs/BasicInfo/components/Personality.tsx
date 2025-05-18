@@ -1,30 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import RatioGroup from "@/components/common/RadioGroup";
+import { personalityOptions } from "@/constants/adminConfig";
 
 interface PersonalityProps {
-  onChange?: () => void;
+  onChange?: (value: string) => void;
+  value?: string;
 }
 
-export default function Personality({ onChange }: PersonalityProps) {
-  const personality = [
-    { title: "Professional 🧐", value: "1" },
-    { title: "Sassy 🤪", value: "2" },
-    { title: "Empathetic 🥺", value: "3" },
-    { title: "Formal 🤓", value: "4" },
-    { title: "Humorous 😉", value: "5" },
-    { title: "Friendly 😚", value: "6" },
-  ];
-  
+export default function Personality({ onChange, value }: PersonalityProps) {
+  const [personalityValue, setPersonalityValue] = useState(value || "1");
+
+  useEffect(() => {
+    if (value !== undefined) {
+      setPersonalityValue(value);
+    }
+  }, [value]);
+
   const handlePersonalityChange = (key: string) => {
-    console.log(key);
-    onChange?.();
+    setPersonalityValue(key);
+    onChange?.(key);
   };
 
   return (
     <div>
       <div className="mb-2 text-sm">Personality</div>
-      <RatioGroup items={personality} action={handlePersonalityChange} />
+      <RatioGroup 
+        items={personalityOptions} 
+        action={handlePersonalityChange} 
+        defaultValue={personalityValue}
+      />
     </div>
   );
 }

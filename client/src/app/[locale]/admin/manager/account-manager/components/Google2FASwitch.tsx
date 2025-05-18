@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
 import { Switch } from "@heroui/switch";
+import React, { useState } from "react";
+
 import { useAccountManager } from "./AccountManagerContext";
 
 interface Google2FASwitchProps {

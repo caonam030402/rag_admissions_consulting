@@ -32,6 +32,7 @@ export default withSentryConfig(
           'cdn.pixabay.com',
           'images.unsplash.com',
           'plus.unsplash.com',
+          'i.pravatar.cc',
         ],
       },
     }),

@@ -1,15 +1,17 @@
 "use client";
 
-import React from "react";
-import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import React from "react";
+
 import TableList from "@/components/common/Table";
+
 import { useAccountManager } from "./AccountManagerContext";
-import SecretCodeCell from "./SecretCodeCell";
-import Google2FASwitch from "./Google2FASwitch";
 import ActionButtons from "./ActionButtons";
 import CreateUserModal from "./CreateUserModal";
+import Google2FASwitch from "./Google2FASwitch";
 import QRCodeDialog from "./QRCodeDialog";
+import SecretCodeCell from "./SecretCodeCell";
 
 export default function UserTable() {
   const {
@@ -78,7 +80,7 @@ export default function UserTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="w-1/3">
           <Input
             placeholder="Search users..."
@@ -88,7 +90,7 @@ export default function UserTable() {
             startContent={
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-gray-400"
+                className="size-4 text-gray-400"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >

@@ -2,11 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PencilSimple } from "@phosphor-icons/react";
 import React, { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
 
 import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
 import Select from "@/components/common/Select";
+import { fontOptions } from "@/constants/adminConfig";
 import { predefinedThemes } from "@/data/themes";
 import type { ColorScheme } from "@/types/appearance";
 import { validateHexColor } from "@/utils/colorValidator";
@@ -20,26 +20,17 @@ import { useConfiguration } from "../../ConfigurationContext";
 import { ColorInput } from "./components/ColorInput";
 import { ThemeThumbnail } from "./components/ThemeThumbnail";
 
-// Font options for the select component
-const fontOptions = [
-  { key: "Lato", label: "Lato" },
-  { key: "Inter", label: "Inter" },
-  { key: "Roboto", label: "Roboto" },
-  { key: "Open Sans", label: "Open Sans" },
-  { key: "Montserrat", label: "Montserrat" },
-];
-
 export default function Appearance() {
-  const { setIsDirty, registerSaveFunction, unregisterSaveFunction } = useConfiguration();
-  const tabKey = useRef(2); // Appearance tab key is 2
-  
+  const { setIsDirty, registerSaveFunction, unregisterSaveFunction } =
+    useConfiguration();
+  const tabKey = useRef(2);
+
   const {
     control,
     handleSubmit,
     watch,
     setValue,
     formState: { errors, isDirty, isSubmitting },
-    reset,
   } = useForm<AppearanceFormValues>({
     resolver: zodResolver(appearanceSchema),
     defaultValues: defaultAppearanceValues,
@@ -64,49 +55,15 @@ export default function Appearance() {
 
   // Function to save configuration to server
   const saveConfiguration = async () => {
-    try {
-      const data = await handleSubmit(async (formData) => {
-        const config = {
-          appearance: {
-            theme: formData.theme,
-            colors: formData.colors,
-            font: formData.font,
-          },
-        };
-  
-        // Send to server API
-        const response = await fetch("/api/configuration/appearance", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(config),
-        });
-  
-        if (!response.ok) {
-          throw new Error("Failed to save configuration");
-        }
-  
-        toast.success("Appearance settings saved successfully");
-        setIsEditing(false);
-  
-        // Update form with current values to reset dirty state
-        reset(formData);
-        return formData;
-      })();
-      
-      return true; // Return success
-    } catch (error) {
-      console.error("Error saving configuration:", error);
-      toast.error("Failed to save configuration");
-      return false; // Return failure
-    }
+    handleSubmit(async (formData) => {
+      console.log(formData);
+    })();
   };
 
   // Register the save function when component mounts
   useEffect(() => {
     registerSaveFunction(tabKey.current, saveConfiguration);
-    
+
     // Unregister when component unmounts
     return () => {
       unregisterSaveFunction(tabKey.current);

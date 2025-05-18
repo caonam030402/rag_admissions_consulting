@@ -1,20 +1,24 @@
 "use client";
 
-import React, { useCallback } from "react";
 import { Spacer } from "@heroui/spacer";
+import React, { useCallback } from "react";
 
 import Button from "@/components/common/Button";
 import Tab from "@/components/common/Tab";
 
-import { ConfigurationProvider, useConfiguration } from "./ConfigurationContext";
 import UnsavedChangesModal from "./components/UnsavedChangesModal";
+import {
+  ConfigurationProvider,
+  useConfiguration,
+} from "./ConfigurationContext";
 import Appearance from "./tabs/Appearance";
 import BasicInfo from "./tabs/BasicInfo";
 import HumanHandoff from "./tabs/HumanHandoff";
 import WelcomeSetting from "./tabs/WelcomeSetting";
 
 function ConfigurationContent() {
-  const { handleTabChange, saveChanges, isDirty, currentTabKey } = useConfiguration();
+  const { handleTabChange, saveChanges, isDirty, currentTabKey } =
+    useConfiguration();
 
   const listTab = [
     {

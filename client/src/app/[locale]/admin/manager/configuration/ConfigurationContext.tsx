@@ -1,8 +1,8 @@
 import React, {
   createContext,
-  useCallback,
   useContext,
   useMemo,
+  useCallback,
   useState,
 } from "react";
 
@@ -24,7 +24,10 @@ interface ConfigurationContextType {
   saveChanges: () => Promise<void>;
   discardChanges: () => void;
   currentTabKey: number;
-  registerSaveFunction: (tabKey: number, saveFunction: () => Promise<boolean>) => void;
+  registerSaveFunction: (
+    tabKey: number,
+    saveFunction: () => Promise<boolean>,
+  ) => void;
   unregisterSaveFunction: (tabKey: number) => void;
 }
 
@@ -59,18 +62,36 @@ export const ConfigurationProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  const registerSaveFunction = useCallback((tabKey: number, saveFunction: () => Promise<boolean>) => {
-    setSaveFunctions(prev => {
-      const tabName = getTabName(tabKey);
-      if (tabName) {
-        return { ...prev, [tabName]: saveFunction };
-      }
-      return prev;
-    });
-  }, []);
+  const getTabName = (tabKey: number): keyof SaveFunctions | null => {
+    switch (tabKey) {
+      case 1:
+        return "basicInfo";
+      case 2:
+        return "appearance";
+      case 3:
+        return "welcomeSetting";
+      case 4:
+        return "humanHandoff";
+      default:
+        return null;
+    }
+  };
+
+  const registerSaveFunction = useCallback(
+    (tabKey: number, saveFunction: () => Promise<boolean>) => {
+      setSaveFunctions((prev) => {
+        const tabName = getTabName(tabKey);
+        if (tabName) {
+          return { ...prev, [tabName]: saveFunction };
+        }
+        return prev;
+      });
+    },
+    [],
+  );
 
   const unregisterSaveFunction = useCallback((tabKey: number) => {
-    setSaveFunctions(prev => {
+    setSaveFunctions((prev) => {
       const tabName = getTabName(tabKey);
       if (tabName && prev[tabName]) {
         const newSaveFunctions = { ...prev };
@@ -81,35 +102,15 @@ export const ConfigurationProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, []);
 
-  const getTabName = (tabKey: number): keyof SaveFunctions | null => {
-    switch (tabKey) {
-      case 1: return 'basicInfo';
-      case 2: return 'appearance';
-      case 3: return 'welcomeSetting';
-      case 4: return 'humanHandoff';
-      default: return null;
-    }
-  };
-
-  console.log("ConfigurationContext state:", {
-    isDirty,
-    hasChanges,
-    currentTabKey,
-  });
 
   const handleTabChange = useCallback(
     (newTabKey: number) => {
-      console.log("Trying to change tab to:", newTabKey, "Current state:", {
-        isDirty,
-        hasChanges,
-      });
+
 
       if (isDirty && newTabKey !== currentTabKey) {
-        console.log("Showing confirmation modal for tab change");
         setIsModalOpen(true);
         setPendingTabChange(newTabKey);
       } else {
-        console.log("Changing tab directly to:", newTabKey);
         setCurrentTabKey(newTabKey);
         setIsDirty(false);
         setHasChanges(false);
@@ -141,7 +142,7 @@ export const ConfigurationProvider: React.FC<{ children: React.ReactNode }> = ({
         if (success) {
           setIsDirty(false);
           setHasChanges(false);
-          
+
           if (pendingTabChange !== null) {
             setCurrentTabKey(pendingTabChange);
             setPendingTabChange(null);

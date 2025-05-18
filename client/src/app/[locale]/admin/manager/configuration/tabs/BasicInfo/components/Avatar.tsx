@@ -2,24 +2,32 @@
 
 import { Camera, X } from "@phosphor-icons/react";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import Button from "@/components/common/Button";
 
 interface AvatarProps {
-  onChange?: () => void;
+  onChange?: (value: string) => void;
+  value?: string;
 }
 
-export default function Avatar({ onChange }: AvatarProps) {
-  const [preview, setPreview] = useState<string | null>(null);
+export default function Avatar({ onChange, value }: AvatarProps) {
+  const [preview, setPreview] = useState<string | null>(value || null);
+
+  useEffect(() => {
+    if (value !== undefined) {
+      setPreview(value || null);
+    }
+  }, [value]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview(reader.result as string);
-        onChange?.();
+        const imageData = reader.result as string;
+        setPreview(imageData);
+        onChange?.(imageData);
       };
       reader.readAsDataURL(file);
     }
@@ -27,7 +35,7 @@ export default function Avatar({ onChange }: AvatarProps) {
 
   const handleRemoveImage = () => {
     setPreview(null);
-    onChange?.();
+    onChange?.("");
   };
 
   return (

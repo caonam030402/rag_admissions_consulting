@@ -5,15 +5,7 @@ import { Controller, useFormContext } from "react-hook-form";
 
 import { cn } from "@/libs/utils";
 import type { HumanHandoffFormValues } from "@/validations/humanHandoffValidation";
-
-const timezones = [
-  { value: "Asia/Kolkata+05:30", label: "Asia/Kolkata+05:30" },
-  { value: "UTC+00:00", label: "UTC+00:00" },
-  { value: "America/New_York-05:00", label: "America/New_York-05:00" },
-  { value: "Europe/London+00:00", label: "Europe/London+00:00" },
-  { value: "Europe/Paris+01:00", label: "Europe/Paris+01:00" },
-  { value: "Asia/Tokyo+09:00", label: "Asia/Tokyo+09:00" },
-];
+import { listTimezone } from "@/constants/adminConfig";
 
 interface TimezoneSelectorProps {
   disabled?: boolean;
@@ -43,7 +35,7 @@ export default function TimezoneSelector({ disabled }: TimezoneSelectorProps) {
             className="w-full"
             isDisabled={disabled}
           >
-            {timezones.map((timezone) => (
+            {listTimezone.map((timezone) => (
               <SelectItem key={timezone.value} value={timezone.value}>
                 {timezone.label}
               </SelectItem>

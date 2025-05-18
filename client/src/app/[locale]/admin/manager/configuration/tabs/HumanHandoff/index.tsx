@@ -6,7 +6,6 @@ import React, { useEffect, useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 
-import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
 import {
   defaultValues,
@@ -22,7 +21,8 @@ import WorkingDaysSelector from "./components/WorkingDaysSelector";
 import WorkingHoursSelector from "./components/WorkingHoursSelector";
 
 export default function HumanHandoff() {
-  const { setIsDirty, registerSaveFunction, unregisterSaveFunction } = useConfiguration();
+  const { setIsDirty, registerSaveFunction, unregisterSaveFunction } =
+    useConfiguration();
   const tabKey = useRef(4); // HumanHandoff tab key is 4
 
   const methods = useForm<HumanHandoffFormValues>({
@@ -45,11 +45,11 @@ export default function HumanHandoff() {
       // Here you would implement the save logic
       // For example:
       // await saveHumanHandoffSettings(methods.getValues());
-      
+
       // Reset the dirty state after successful save
       methods.reset(methods.getValues());
       setIsDirty(false);
-      
+
       toast.success("Human handoff settings saved successfully");
       return true; // Return success
     } catch (error) {
@@ -58,11 +58,11 @@ export default function HumanHandoff() {
       return false; // Return failure
     }
   };
-  
+
   // Register the save function when component mounts
   useEffect(() => {
     registerSaveFunction(tabKey.current, saveConfiguration);
-    
+
     // Unregister when component unmounts
     return () => {
       unregisterSaveFunction(tabKey.current);

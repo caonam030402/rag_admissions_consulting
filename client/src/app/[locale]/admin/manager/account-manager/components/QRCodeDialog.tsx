@@ -1,14 +1,15 @@
 "use client";
 
-import React from "react";
 import { Button } from "@heroui/button";
 import {
   Modal,
-  ModalContent,
-  ModalHeader,
   ModalBody,
+  ModalContent,
   ModalFooter,
+  ModalHeader,
 } from "@heroui/modal";
+import React from "react";
+
 import { useAccountManager } from "./AccountManagerContext";
 
 export default function QRCodeDialog() {
@@ -31,7 +32,7 @@ export default function QRCodeDialog() {
             </p>
 
             {qrCodeData?.qrCodeUrl && (
-              <div className="border p-4 rounded-lg bg-white">
+              <div className="rounded-lg border bg-white p-4">
                 <img
                   src={qrCodeData.qrCodeUrl}
                   alt="QR Code for Google Authenticator"
@@ -42,8 +43,8 @@ export default function QRCodeDialog() {
             )}
 
             <div className="w-full">
-              <h3 className="text-sm font-bold mb-1">Secret Code:</h3>
-              <div className="font-mono bg-gray-100 p-2 rounded text-center select-all">
+              <h3 className="mb-1 text-sm font-bold">Secret Code:</h3>
+              <div className="select-all rounded bg-gray-100 p-2 text-center font-mono">
                 {qrCodeData?.secretCode}
               </div>
             </div>

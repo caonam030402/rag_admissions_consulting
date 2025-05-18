@@ -3,9 +3,9 @@
 import { Switch } from "@heroui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Sparkle } from "@phosphor-icons/react";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
+import { type FieldValues } from "react-hook-form";
 
 import Button from "@/components/common/Button";
 import Card from "@/components/common/Card";
@@ -24,29 +24,49 @@ const MAX_CONVERSATION_LENGTH = 100;
 const MAX_PLACEHOLDER = 100;
 
 const defaultValues: WelcomeSettingValidation = {
-  title: "",
-  subtitle: "",
+  title: "Ned",
+  subtitle: "I am a helpful assistant.",
   conversationStarters: [],
-  placeholderText: "",
+  placeholderText: "Type your question ...",
   autoSuggestions: true,
 };
 
 export default function WelcomeSetting() {
-  const { setIsDirty, registerSaveFunction, unregisterSaveFunction } = useConfiguration();
-  const [localIsDirty, setLocalIsDirty] = useState(false);
-  const tabKey = useRef(3); // WelcomeSetting tab key is 3
-  
+  const { setIsDirty, registerSaveFunction, unregisterSaveFunction } =
+    useConfiguration();
+  const tabKey = useRef(3);
+
+  // Main form for the entire component
   const {
     control,
     handleSubmit,
     formState: { errors, isDirty, dirtyFields },
     watch,
-    reset,
   } = useForm<WelcomeSettingValidation>({
     resolver: zodResolver(welcomeSettingValidation),
     defaultValues,
     mode: "onChange",
   });
+
+  // Separate form specifically for InputAddMore
+  const inputAddMoreForm = useForm<FieldValues>({
+    defaultValues: {
+      conversationStarters0: "",
+      conversationStarters1: "",
+    },
+  });
+
+  // Initialize InputAddMore with existing conversationStarters if available
+  useEffect(() => {
+    const existingStarters = watch("conversationStarters");
+    if (existingStarters && existingStarters.length > 0) {
+      existingStarters.forEach((starter, index) => {
+        if (starter) {
+          inputAddMoreForm.setValue(`conversationStarters${index}`, starter);
+        }
+      });
+    }
+  }, []);
 
   const title = watch("title");
   const subtitle = watch("subtitle");
@@ -57,8 +77,7 @@ export default function WelcomeSetting() {
   // Track all fields for changes
   useEffect(() => {
     const hasChanges = isDirty && Object.keys(dirtyFields).length > 0;
-    setLocalIsDirty(hasChanges);
-    
+
     // Update the global dirty state - this is critical for tab switching
     if (hasChanges) {
       setIsDirty(true);
@@ -66,46 +85,27 @@ export default function WelcomeSetting() {
       setIsDirty(false);
     }
   }, [
-    isDirty, 
-    dirtyFields, 
-    setIsDirty, 
-    title, 
-    subtitle, 
-    conversationStarters, 
-    placeholderText, 
-    autoSuggestions
+    isDirty,
+    dirtyFields,
+    setIsDirty,
+    title,
+    subtitle,
+    conversationStarters,
+    placeholderText,
+    autoSuggestions,
   ]);
 
   const saveConfiguration = async () => {
-    try {
-      const data = await handleSubmit(async (formData) => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        
-        // After successful save, reset the form with the new data as baseline
-        reset(formData);
-        
-        // Reset the dirty states
-        setLocalIsDirty(false);
-        setIsDirty(false);
-        
-        // Show success feedback
-        toast.success("Welcome settings saved successfully");
-        return formData;
-      })();
-      
-      return true; // Return success
-    } catch (error) {
-      console.error("Error saving configuration:", error);
-      toast.error("Failed to save welcome settings");
-      return false; // Return failure
-    }
+    return handleSubmit(async (formData) => {
+      console.log(formData);
+      return true;
+    })();
   };
-  
+
   // Register the save function when component mounts
   useEffect(() => {
     registerSaveFunction(tabKey.current, saveConfiguration);
-    
+
     // Unregister when component unmounts
     return () => {
       unregisterSaveFunction(tabKey.current);
@@ -211,27 +211,39 @@ export default function WelcomeSetting() {
             <Controller
               name="conversationStarters"
               control={control}
-              render={({ field }) => (
-                <InputAddMore
-                  name="conversationStarters"
-                  max={MAX_CONVERSATION}
-                  form={{
-                    ...field,
-                    control,
-                    formState: { errors },
-                    getValues: () => conversationStarters,
-                    setError: (_name, _error) => {},
-                    clearErrors: (_name) => {},
-                    unregister: (_name) => {},
-                  }}
-                  rules={{
-                    maxLength: {
-                      value: MAX_CONVERSATION_LENGTH,
-                      message: `Max ${MAX_CONVERSATION_LENGTH} characters`,
-                    },
-                  }}
-                />
-              )}
+              render={({ field }) => {
+                // Sync conversationStarters from InputAddMore to main form
+                useEffect(() => {
+                  const subscription = inputAddMoreForm.watch((value) => {
+                    // Collect all values from inputAddMoreForm that start with 'conversationStarters'
+                    const values = Object.entries(value)
+                      .filter(
+                        ([key, val]) =>
+                          key.startsWith("conversationStarters") && val,
+                      )
+                      .map(([_, val]) => val as string);
+
+                    // Update the main form's conversationStarters field
+                    field.onChange(values);
+                  });
+
+                  return () => subscription.unsubscribe();
+                }, [field, inputAddMoreForm]);
+
+                return (
+                  <InputAddMore
+                    name="conversationStarters"
+                    max={MAX_CONVERSATION}
+                    form={inputAddMoreForm}
+                    rules={{
+                      maxLength: {
+                        value: MAX_CONVERSATION_LENGTH,
+                        message: `Max ${MAX_CONVERSATION_LENGTH} characters`,
+                      },
+                    }}
+                  />
+                );
+              }}
             />
           </div>
 
