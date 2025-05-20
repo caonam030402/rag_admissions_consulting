@@ -11,23 +11,23 @@ import { PATH } from "@/constants/common";
 
 const listNav = [
   {
-    title: "Product",
+    title: "Trang chủ",
     link: "/",
   },
   {
-    title: "Solutions",
+    title: "Tuyển sinh",
     link: "/",
   },
   {
-    title: "Blog",
+    title: "Giới thiệu",
     link: "/",
   },
   {
-    title: "Trust",
+    title: "Tin tức",
     link: "/",
   },
   {
-    title: "Pricing",
+    title: "Liên hệ",
     link: "/",
   },
 ];
@@ -40,11 +40,11 @@ export default function Header() {
           <Logo />
         </Link>
       </NavbarBrand>
-      <NavbarContent className="hidden gap-9 sm:flex" justify="start">
+      <NavbarContent className="hidden gap-6 sm:flex" justify="start">
         {listNav.map((nav) => {
           return (
             <Link
-              className="text-[15px] font-medium text-gray-800"
+              className="text-[14px] font-medium text-gray-800"
               href={nav.link}
               key={nav.title}
             >

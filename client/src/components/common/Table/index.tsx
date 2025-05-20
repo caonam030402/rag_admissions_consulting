@@ -34,7 +34,7 @@ export default function TableList({
   const bottomContent = useMemo(() => {
     return (
       <div className="flex items-center justify-between p-2">
-        <div className="text-sm">Total 85 items</div>
+        <div className="text-sm">Total 5 items</div>
         <Pagination
           isCompact
           showControls
