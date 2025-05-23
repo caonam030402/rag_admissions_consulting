@@ -37,6 +37,7 @@ context_cache: Dict[str, ConversationContextManager] = {}  # Cache by conversati
 retriever_cache = None
 llm_cache = None
 ood_agent_cache = None
+rag_agent_cache = None  # Add RAG agent cache
 
 
 # Setup database on startup
@@ -46,8 +47,8 @@ async def startup_event():
         # First, check database connection
         setup_database()
 
-        # Pre-initialize LLM and retriever
-        global llm_cache, retriever_cache, ood_agent_cache
+        # Pre-initialize components
+        global llm_cache, retriever_cache, ood_agent_cache, rag_agent_cache
         logger.info("Initializing LLM...")
         llm_cache = LLms.getLLm(ModelType.OPENAI)
 
@@ -60,6 +61,13 @@ async def startup_event():
         logger.info("Initializing OOD agent...")
         ood_agent_cache = OODAgent(
             similarity_threshold=OOD_SIMILARITY_THRESHOLD, enabled=ENABLE_OOD_DETECTION
+        )
+        
+        logger.info("Initializing RAG agent...")
+        rag_agent_cache = RagAgent(
+            llm=llm_cache,
+            retriever=retriever_cache,
+            ood_agent=ood_agent_cache
         )
 
         logger.info("Startup successful!")
@@ -190,7 +198,7 @@ async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None
     )
 
     # Use cached components or initialize on demand if they failed during startup
-    global llm_cache, retriever_cache, ood_agent_cache
+    global llm_cache, retriever_cache, ood_agent_cache, rag_agent_cache
     if not llm_cache:
         logger.info("LLM not initialized during startup, initializing now...")
         llm_cache = LLms.getLLm(ModelType.OPENAI)
@@ -205,10 +213,14 @@ async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None
         ood_agent_cache = OODAgent(
             similarity_threshold=OOD_SIMILARITY_THRESHOLD, enabled=ENABLE_OOD_DETECTION
         )
-
-    llm = llm_cache
-    retriever = retriever_cache
-    ood_agent = ood_agent_cache
+        
+    if not rag_agent_cache:
+        logger.info("RAG agent not initialized during startup, initializing now...")
+        rag_agent_cache = RagAgent(
+            llm=llm_cache,
+            retriever=retriever_cache,
+            ood_agent=ood_agent_cache
+        )
 
     # Get conversation context
     context = context_manager.get_conversation_context()
@@ -226,12 +238,11 @@ async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None
 
     try:
         full_response = ""
-        async for token in RagAgent.answer_question_stream(
+        # Use the RAG agent instance with the new interface
+        async for token in rag_agent_cache.answer_question_stream(
             question=request.message,
-            llm=llm,
-            retriever=retriever,
-            chat_history=[(msg["role"], msg["content"]) for msg in context],
-            ood_agent=ood_agent,
+            user_id=str(user_id),  # Convert user_id to string for consistency
+            metadata={"conversation_id": conversation_id}
         ):
             full_response += token
             yield json.dumps(

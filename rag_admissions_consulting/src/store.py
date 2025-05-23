@@ -10,11 +10,16 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.documents import Document
 from typing import List, Dict, Any
 
+# Define EmptyRetriever at module level
+class EmptyRetriever(BaseRetriever):
+    def _get_relevant_documents(self, query: str) -> List[Document]:
+        logger.warning(f"Using empty retriever for query: {query}")
+        return []
 
 class Store:
     def __init__(
         self,
-        index_name: str = "test2",
+        index_name: str = "ragtest1",
         search_kwargs: str = {"k": 3},
         search_type: str = "similarity",
     ):
@@ -110,16 +115,6 @@ class Store:
             logger.error(
                 "This may mean the database doesn't contain relevant documents"
             )
-            # Return a dummy retriever that returns no results
-            from langchain_core.retrievers import BaseRetriever
-            from langchain_core.documents import Document
-            from typing import List
-
-            class EmptyRetriever(BaseRetriever):
-                def _get_relevant_documents(self, query: str) -> List[Document]:
-                    logger.warning(f"Using empty retriever for query: {query}")
-                    return []
-
             logger.warning("Returning empty retriever as fallback")
             return EmptyRetriever()
 

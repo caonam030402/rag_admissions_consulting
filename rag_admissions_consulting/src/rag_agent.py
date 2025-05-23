@@ -6,32 +6,154 @@ from langchain import hub
 from functools import lru_cache
 from loguru import logger
 from ood_agent import OODAgent
+from shared.conversation_memory import ConversationMemory
+from typing import List, Dict, Any, Optional, Tuple
+import numpy as np
 
 # Simple in-memory cache for responses
 response_cache = {}
 
 
 class RagAgent:
-    def rag_chain(llm, retriever):
-        logger.info("Creating RAG chain with prompt template")
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                (
-                    "system",
-                    "Here is information that might be relevant to the question:\n\n{context}",
-                ),
-                ("human", "{input}"),
-            ]
-        )
+    def __init__(self, llm, retriever, ood_agent: Optional[OODAgent] = None):
+        self.llm = llm
+        self.retriever = retriever
+        self.ood_agent = ood_agent
+        self.conversation_memories: Dict[str, ConversationMemory] = {}
+        self.response_cache = {}
+        
+    def get_or_create_memory(self, user_id: str) -> ConversationMemory:
+        """Get or create a conversation memory for a user."""
+        if user_id not in self.conversation_memories:
+            self.conversation_memories[user_id] = ConversationMemory(user_id=user_id)
+        return self.conversation_memories[user_id]
 
-        # Not using qa_prompt from hub as it may be causing issues
-        logger.info("Creating question_answer_chain")
-        question_answer_chain = create_stuff_documents_chain(llm, prompt)
-        logger.info("Creating retrieval chain")
-        rag_chain = create_retrieval_chain(retriever, question_answer_chain)
-        logger.info("RAG chain created successfully")
+    def create_enhanced_prompt(self, question: str, memory: ConversationMemory) -> str:
+        """Create an enhanced prompt using conversation context and user preferences."""
+        recent_context = memory.get_formatted_history()
+        user_preferences = memory.user_preferences
+        
+        # Build context-aware prompt
+        context_parts = []
+        if recent_context:
+            context_str = "\n".join([f"{msg['role']}: {msg['content']}" for msg in recent_context[-3:]])
+            context_parts.append(f"Recent conversation:\n{context_str}")
+            
+        if user_preferences:
+            pref_str = "\n".join([f"{k}: {v}" for k, v in user_preferences.items()])
+            context_parts.append(f"User preferences:\n{pref_str}")
+            
+        context = "\n\n".join(context_parts)
+        
+        # Combine with original question
+        if context:
+            return f"{context}\n\nCurrent question: {question}"
+        return question
+
+    def enhance_retrieval(self, question: str, memory: ConversationMemory) -> List[Dict]:
+        """Enhance retrieval by considering conversation context."""
+        # Get recent relevant context
+        recent_messages = memory.get_recent_messages(3)
+        relevant_context = [msg.content for msg in recent_messages if msg.role == "human"]
+        
+        # Perform retrieval for both current question and context
+        all_docs = []
+        
+        # Retrieve for current question
+        current_docs = self.retriever.get_relevant_documents(question)
+        all_docs.extend(current_docs)
+        
+        # Retrieve for context if available
+        for context in relevant_context:
+            context_docs = self.retriever.get_relevant_documents(context)
+            all_docs.extend(context_docs)
+            
+        # Remove duplicates and sort by relevance
+        unique_docs = self._deduplicate_documents(all_docs)
+        return unique_docs
+
+    def _deduplicate_documents(self, docs: List[Dict]) -> List[Dict]:
+        """Remove duplicate documents and sort by relevance."""
+        seen_contents = set()
+        unique_docs = []
+        
+        for doc in docs:
+            content_hash = hash(doc.page_content)
+            if content_hash not in seen_contents:
+                seen_contents.add(content_hash)
+                unique_docs.append(doc)
+                
+        return unique_docs[:5]  # Return top 5 most relevant docs
+
+    def rag_chain(self):
+        """Create RAG chain with enhanced prompt template."""
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_prompt),
+            ("system", "Here is relevant information from the knowledge base:\n\n{context}"),
+            ("system", "Recent conversation and user preferences:\n\n{chat_history}"),
+            ("human", "{input}")
+        ])
+        
+        question_answer_chain = create_stuff_documents_chain(self.llm, prompt)
+        rag_chain = create_retrieval_chain(self.retriever, question_answer_chain)
         return rag_chain
+
+    async def answer_question_stream(
+        self,
+        question: str,
+        user_id: str,
+        metadata: Dict[str, Any] = None
+    ):
+        """Stream responses with enhanced context awareness."""
+        logger.info(f"Processing question for user {user_id}: {question[:50]}...")
+        
+        # Get or create conversation memory
+        memory = self.get_or_create_memory(user_id)
+        
+        # Add the current question to memory
+        memory.add_message("human", question, metadata)
+        
+        # Check if this is a follow-up question
+        is_followup = self.is_simple_followup(question)
+        
+        try:
+            # Enhanced retrieval
+            docs = self.enhance_retrieval(question, memory)
+            
+            # OOD detection (skip for follow-ups)
+            if self.ood_agent and not is_followup:
+                is_ood, explanation = self.ood_agent.is_out_of_domain(question, docs)
+                if is_ood:
+                    ood_response = self.ood_agent.get_ood_response(question)
+                    memory.add_message("assistant", ood_response)
+                    for token in ood_response:
+                        yield token
+                    return
+            
+            # Create enhanced prompt
+            enhanced_question = self.create_enhanced_prompt(question, memory)
+            
+            # Get RAG chain response
+            rag_chain = self.rag_chain()
+            response_tokens = []
+            
+            async for token in rag_chain.astream({
+                "input": enhanced_question,
+                "chat_history": memory.get_formatted_history()
+            }):
+                if "answer" in token:
+                    response_tokens.append(token["answer"])
+                    yield token["answer"]
+            
+            # Add response to memory
+            full_response = "".join(response_tokens)
+            memory.add_message("assistant", full_response)
+            
+        except Exception as e:
+            logger.error(f"Error in streaming response: {str(e)}")
+            error_msg = "Xin lỗi, tôi gặp sự cố khi xử lý câu hỏi của bạn."
+            memory.add_message("assistant", error_msg)
+            yield error_msg
 
     @staticmethod
     def is_simple_followup(question: str) -> bool:
@@ -76,184 +198,20 @@ class RagAgent:
         # If very short, likely a follow-up
         return len(question.split()) <= 3
 
-    @staticmethod
-    async def answer_question_stream(
-        question: str,
-        llm,
-        retriever,
-        chat_history: list = None,
-        ood_agent: OODAgent = None,
-    ):
-        """Stream responses token by token"""
-        logger.info(f"Processing question: {question[:50]}...")
+    def update_user_preferences(self, user_id: str, preferences: Dict[str, Any]) -> None:
+        """Update user preferences for personalization."""
+        memory = self.get_or_create_memory(user_id)
+        memory.update_user_preferences(preferences)
 
-        # Clear the response cache if it grows too large (prevent memory issues)
-        if len(response_cache) > 1000:
-            logger.info("Clearing response cache (exceeds 1000 entries)")
-            response_cache.clear()
+    def save_conversation_state(self, user_id: str, filepath: str) -> None:
+        """Save conversation state to file."""
+        if user_id in self.conversation_memories:
+            self.conversation_memories[user_id].save_to_file(filepath)
 
-        # Check if this is likely a follow-up question that needs context
-        is_followup = RagAgent.is_simple_followup(question)
-        if is_followup:
-            logger.info(f"Detected simple follow-up question: '{question}'")
-
-            # For follow-up questions with minimal context, skip OOD detection
-            skip_ood = True
-        else:
-            skip_ood = False
-
-        # Retrieve documents for OOD detection and RAG processing
-        try:
-            docs = retriever.get_relevant_documents(question)
-            logger.info(f"Retrieved {len(docs)} documents from Pinecone")
-            for i, doc in enumerate(docs):
-                logger.info(
-                    f"Document {i+1} content sample: {doc.page_content[:100]}..."
-                )
-                logger.info(f"Document {i+1} metadata: {doc.metadata}")
-
-            # Check if the question is out-of-domain
-            if ood_agent and not skip_ood:
-                is_ood, explanation = ood_agent.is_out_of_domain(question, docs)
-                if is_ood:
-                    logger.info(f"Question detected as OOD: {explanation}")
-                    ood_response = ood_agent.get_ood_response(question)
-
-                    # Cache the OOD response
-                    cache_key = question.lower().strip()
-                    response_cache[cache_key] = [ood_response]
-
-                    # Return the OOD response token by token
-                    for token in ood_response:
-                        yield token
-                    return
-
-        except Exception as e:
-            logger.error(f"Error retrieving documents: {e}")
-            # Continue with empty docs - the chain will handle it
-
-        # Check if question is in cache
-        cache_key = question.lower().strip()
-        if cache_key in response_cache:
-            logger.info("Question found in cache, returning cached response")
-            cached_response = response_cache[cache_key]
-            # Return the cached response token by token to maintain streaming behavior
-            for token in cached_response:
-                yield token
-            return
-
-        logger.info("Creating RAG chain for streaming response")
-        rag_chain = RagAgent.rag_chain(llm, retriever)
-
-        logger.info("Starting streaming response generation")
-        response_tokens = []
-        try:
-            async for token in rag_chain.astream(
-                {
-                    "input": question,  # Use "input" here as that's what the retrieval chain expects
-                    "chat_history": chat_history or [],
-                }
-            ):
-                logger.debug(f"Token received: {token.keys()}")
-                if "answer" in token:
-                    response_tokens.append(token["answer"])
-                    yield token["answer"]
-
-            logger.info(f"Streaming complete, cached {len(response_tokens)} tokens")
-
-            # Cache the response after streaming (only if we have tokens)
-            if response_tokens:
-                response_cache[cache_key] = response_tokens
-
-        except Exception as e:
-            logger.error(f"Error in streaming response: {str(e)}")
-            # Return a simple error message that can be shown to the user
-            error_msg = "Xin lỗi, tôi gặp sự cố khi xử lý câu hỏi của bạn."
-            yield error_msg
-            response_cache[cache_key] = [error_msg]
-
-    @staticmethod
-    def answer_question(
-        question: str,
-        llm,
-        retriever,
-        chat_history: list = None,
-        ood_agent: OODAgent = None,
-    ):
-        """Non-streaming version for compatibility"""
-        logger.info(f"Processing question (non-streaming): {question[:50]}...")
-
-        # Check if this is likely a follow-up question that needs context
-        is_followup = RagAgent.is_simple_followup(question)
-        if is_followup:
-            logger.info(f"Detected simple follow-up question: '{question}'")
-            # For follow-up questions with minimal context, skip OOD detection
-            skip_ood = True
-        else:
-            skip_ood = False
-
-        # Check cache first
-        cache_key = question.lower().strip()
-        if cache_key in response_cache:
-            logger.info("Question found in cache, returning cached response")
-            cached_answer = "".join(response_cache[cache_key])
-            return {
-                "answer": cached_answer,
-                "updated_history": (chat_history or [])
-                + [{"question": question, "answer": cached_answer}],
-            }
-
-        # Retrieve documents for OOD detection
-        try:
-            docs = retriever.get_relevant_documents(question)
-            logger.info(f"Retrieved {len(docs)} documents from Pinecone")
-
-            # Check if the question is out-of-domain
-            if ood_agent and not skip_ood:
-                is_ood, explanation = ood_agent.is_out_of_domain(question, docs)
-                if is_ood:
-                    logger.info(f"Question detected as OOD: {explanation}")
-                    ood_response = ood_agent.get_ood_response(question)
-
-                    # Cache the OOD response
-                    response_cache[cache_key] = [ood_response]
-
-                    return {
-                        "answer": ood_response,
-                        "updated_history": (chat_history or [])
-                        + [{"question": question, "answer": ood_response}],
-                    }
-        except Exception as e:
-            logger.error(f"Error in OOD detection: {str(e)}")
-            # Continue with normal processing
-
-        logger.info("Creating RAG chain for non-streaming response")
-        try:
-            rag_chain = RagAgent.rag_chain(llm, retriever)
-
-            logger.info("Invoking RAG chain")
-            response = rag_chain.invoke(
-                {
-                    "input": question,  # Use "input" here as that's what the retrieval chain expects
-                    "chat_history": chat_history or [],
-                }
-            )
-
-            logger.info("Response received, caching")
-            # Cache the response
-            response_cache[cache_key] = [response["answer"]]
-
-            return {
-                "answer": response["answer"],
-                "updated_history": (chat_history or [])
-                + [{"question": question, "answer": response["answer"]}],
-            }
-        except Exception as e:
-            logger.error(f"Error in non-streaming response: {str(e)}")
-            error_msg = "Xin lỗi, tôi gặp sự cố khi xử lý câu hỏi của bạn."
-            response_cache[cache_key] = [error_msg]
-            return {
-                "answer": error_msg,
-                "updated_history": (chat_history or [])
-                + [{"question": question, "answer": error_msg}],
-            }
+    def load_conversation_state(self, filepath: str) -> str:
+        """Load conversation state from file and return user_id."""
+        memory = ConversationMemory.load_from_file(filepath)
+        if memory.user_id:
+            self.conversation_memories[memory.user_id] = memory
+            return memory.user_id
+        return None

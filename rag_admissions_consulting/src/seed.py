@@ -20,7 +20,7 @@ def seed_data(type: FileDataType = FileDataType.PDF):
     text_chunks = helper.text_split(extracted_data)
     
     # embeddings
-    embeddings_model = embeddings.get_embeddings(ModelType.OLLAMA)
+    embeddings_model = embeddings.get_embeddings(ModelType.HUGGINGFACE)
     
     # upload to pinecone
     store.uploadToStore(text_chunks, embeddings_model)
