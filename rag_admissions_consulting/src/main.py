@@ -11,14 +11,11 @@ from store import store
 from embeddings import embeddings
 from shared.database import DatabaseConnection, setup_database, using_memory_mode
 from shared.chat_history_db import ChatHistoryManager
-from shared.context_manager import ConversationContextManager
 from loguru import logger
 import json
 import asyncio
 from functools import lru_cache
 import sys
-from ood_agent import OODAgent
-from ood_config import OOD_SIMILARITY_THRESHOLD, ENABLE_OOD_DETECTION
 
 app = FastAPI()
 
@@ -33,11 +30,8 @@ app.add_middleware(
 
 # Cache for expensive operations
 user_cache: Dict[str, int] = {}
-context_cache: Dict[str, ConversationContextManager] = {}  # Cache by conversation_id
 retriever_cache = None
 llm_cache = None
-ood_agent_cache = None
-rag_agent_cache = None  # Add RAG agent cache
 
 
 # Setup database on startup
@@ -47,28 +41,16 @@ async def startup_event():
         # First, check database connection
         setup_database()
 
-        # Pre-initialize components
-        global llm_cache, retriever_cache, ood_agent_cache, rag_agent_cache
+        # Pre-initialize LLM and retriever
+        global llm_cache, retriever_cache
         logger.info("Initializing LLM...")
-        llm_cache = LLms.getLLm(ModelType.OPENAI)
+        llm_cache = LLms.getLLm(ModelType.GEMINI)
 
         logger.info("Initializing embedding model...")
         embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)
 
         logger.info("Initializing retriever...")
         retriever_cache = store.getRetriever(embedding)
-
-        logger.info("Initializing OOD agent...")
-        ood_agent_cache = OODAgent(
-            similarity_threshold=OOD_SIMILARITY_THRESHOLD, enabled=ENABLE_OOD_DETECTION
-        )
-        
-        logger.info("Initializing RAG agent...")
-        rag_agent_cache = RagAgent(
-            llm=llm_cache,
-            retriever=retriever_cache,
-            ood_agent=ood_agent_cache
-        )
 
         logger.info("Startup successful!")
     except Exception as e:
@@ -86,7 +68,6 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     user_email: str
-    conversation_id: Optional[str] = None
 
 
 async def get_or_create_user(user_email: str):
@@ -141,42 +122,6 @@ async def get_or_create_user(user_email: str):
             DatabaseConnection.return_connection(conn)
 
 
-def get_context_manager(
-    user_id: int, user_email: str, conversation_id: Optional[str] = None
-) -> ConversationContextManager:
-    """Get or create a context manager for the conversation"""
-    # If we have a conversation ID and it's in the cache, return it
-    if conversation_id and conversation_id in context_cache:
-        logger.info(f"Using cached context manager for conversation {conversation_id}")
-        return context_cache[conversation_id]
-
-    # Create a new chat history manager
-    chat_manager = ChatHistoryManager(user_id, email=user_email)
-
-    # If we had a conversation ID but it wasn't in cache, use that ID
-    if conversation_id:
-        chat_manager.conversation_id = conversation_id
-        logger.info(
-            f"Created new context manager with provided conversation ID: {conversation_id}"
-        )
-
-    # Create a context manager
-    context_manager = ConversationContextManager(chat_manager)
-
-    # Cache it
-    context_cache[chat_manager.conversation_id] = context_manager
-
-    # Clean up the cache if it gets too large
-    if len(context_cache) > 1000:
-        # Remove oldest entries (simple approach)
-        keys_to_remove = list(context_cache.keys())[:-100]  # Keep the 900 most recent
-        for key in keys_to_remove:
-            del context_cache[key]
-        logger.info(f"Cleaned context cache, removed {len(keys_to_remove)} old entries")
-
-    return context_manager
-
-
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     return StreamingResponse(
@@ -188,17 +133,13 @@ async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None
     # Get or create user - now async
     user_id = await get_or_create_user(request.user_email)
 
-    # Get or create context manager
-    context_manager = get_context_manager(
-        user_id, request.user_email, request.conversation_id
-    )
-    conversation_id = context_manager.history_manager.conversation_id
-    logger.info(
-        f"Xử lý yêu cầu chat từ user: {request.user_email}, conversation: {conversation_id}"
-    )
+    # Khởi tạo chat history manager với id và email của người dùng
+    # Email sẽ được dùng để tạo user trong database khi chat lần đầu
+    chat_manager = ChatHistoryManager(user_id, email=request.user_email)
+    logger.info(f"Xử lý yêu cầu chat từ user: {request.user_email}")
 
     # Use cached components or initialize on demand if they failed during startup
-    global llm_cache, retriever_cache, ood_agent_cache, rag_agent_cache
+    global llm_cache, retriever_cache
     if not llm_cache:
         logger.info("LLM not initialized during startup, initializing now...")
         llm_cache = LLms.getLLm(ModelType.OPENAI)
@@ -208,70 +149,49 @@ async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None
         embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)
         retriever_cache = store.getRetriever(embedding)
 
-    if not ood_agent_cache:
-        logger.info("OOD agent not initialized during startup, initializing now...")
-        ood_agent_cache = OODAgent(
-            similarity_threshold=OOD_SIMILARITY_THRESHOLD, enabled=ENABLE_OOD_DETECTION
-        )
-        
-    if not rag_agent_cache:
-        logger.info("RAG agent not initialized during startup, initializing now...")
-        rag_agent_cache = RagAgent(
-            llm=llm_cache,
-            retriever=retriever_cache,
-            ood_agent=ood_agent_cache
-        )
+    llm = llm_cache
+    retriever = retriever_cache
 
     # Get conversation context
-    context = context_manager.get_conversation_context()
+    context = chat_manager.get_conversation_context()
 
-    # Log context for debugging
-    logger.info(f"Retrieved {len(context)} messages from conversation context")
-    if context:
-        for i, msg in enumerate(context[-3:]):  # Log the last 3 messages
-            logger.info(
-                f"Context message {i}: {msg['role']} - {msg['content'][:50]}..."
-            )
-
-    # Save user message asynchronously through the context manager
-    asyncio.create_task(save_message(context_manager, RoleType.USER, request.message))
+    # Save user message asynchronously
+    asyncio.create_task(save_message(chat_manager, RoleType.USER, request.message))
 
     try:
         full_response = ""
-        # Use the RAG agent instance with the new interface
-        async for token in rag_agent_cache.answer_question_stream(
+        async for token in RagAgent.answer_question_stream(
             question=request.message,
-            user_id=str(user_id),  # Convert user_id to string for consistency
-            metadata={"conversation_id": conversation_id}
+            llm=llm,
+            retriever=retriever,
+            chat_history=[(msg["role"], msg["content"]) for msg in context],
         ):
             full_response += token
             yield json.dumps(
-                {"delta": token, "conversation_id": conversation_id}
+                {"delta": token, "conversation_id": chat_manager.conversation_id}
             ) + "\n"
 
-        # Save assistant's complete message asynchronously through context manager
+        # Save assistant's complete message asynchronously
         asyncio.create_task(
-            save_message(context_manager, RoleType.ASSISTANT, full_response)
+            save_message(chat_manager, RoleType.ASSISTANT, full_response)
         )
 
     except Exception as e:
         logger.error(f"Error generating response: {e}")
         error_message = "Xin lỗi, tôi đang gặp sự cố kỹ thuật. Vui lòng thử lại sau."
         yield json.dumps(
-            {"delta": error_message, "conversation_id": conversation_id}
+            {"delta": error_message, "conversation_id": chat_manager.conversation_id}
         ) + "\n"
         # Still save the error message
         asyncio.create_task(
-            save_message(context_manager, RoleType.ASSISTANT, error_message)
+            save_message(chat_manager, RoleType.ASSISTANT, error_message)
         )
 
 
-async def save_message(
-    context_manager: ConversationContextManager, role: RoleType, content: str
-):
-    """Asynchronously save message using context manager"""
+async def save_message(chat_manager: ChatHistoryManager, role: RoleType, content: str):
+    """Asynchronously save message to database"""
     try:
-        await asyncio.to_thread(context_manager.append_message, role, content)
+        await asyncio.to_thread(chat_manager.append_message, role, content)
     except Exception as e:
         logger.error(f"Error saving message: {e}")
 
