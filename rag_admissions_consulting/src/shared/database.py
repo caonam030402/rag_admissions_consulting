@@ -4,14 +4,12 @@ import psycopg2
 import psycopg2.pool
 from loguru import logger
 
-import sys
-sys.path.append("..")
-from config import getEnv
 
 # Create a connection pool
 connection_pool = None
 # Flag to track if we're using in-memory mode
 using_memory_mode = False
+
 
 class DatabaseConnection:
     _cache = {}
@@ -34,7 +32,7 @@ class DatabaseConnection:
                     password="postgres",
                     host="localhost",
                     port="5432",
-                    database="rag_admission"
+                    database="rag_admission",
                 )
                 logger.info("Connection pool created successfully")
             except Exception as e:
@@ -48,16 +46,14 @@ class DatabaseConnection:
 
     @classmethod
     def set_cache(cls, key, value, ttl=300):  # 5 minutes TTL by default
-        cls._cache[key] = {
-            'value': value,
-            'expires_at': time.time() + ttl
-        }
+        cls._cache[key] = {"value": value, "expires_at": time.time() + ttl}
 
     @classmethod
     def clear_expired_cache(cls):
         current_time = time.time()
-        expired_keys = [k for k, v in cls._cache.items() 
-                       if current_time > v['expires_at']]
+        expired_keys = [
+            k for k, v in cls._cache.items() if current_time > v["expires_at"]
+        ]
         for k in expired_keys:
             del cls._cache[k]
 
@@ -94,16 +90,13 @@ class DatabaseConnection:
         for user_id, user_data in cls._memory_users.items():
             if user_data["email"] == email:
                 return user_id
-        
+
         # Create new user
         user_id = cls._next_id["users"]
         cls._next_id["users"] += 1
-        cls._memory_users[user_id] = {
-            "email": email,
-            "created_at": time.time()
-        }
+        cls._memory_users[user_id] = {"email": email, "created_at": time.time()}
         return user_id
-    
+
     @classmethod
     def memory_create_conversation(cls, user_id):
         """Create a new conversation in memory"""
@@ -112,10 +105,10 @@ class DatabaseConnection:
         cls._memory_conversations[conv_id] = {
             "user_id": user_id,
             "created_at": time.time(),
-            "updated_at": time.time()
+            "updated_at": time.time(),
         }
         return conv_id
-    
+
     @classmethod
     def memory_add_message(cls, conversation_id, role, content):
         """Add a message to memory storage"""
@@ -125,13 +118,13 @@ class DatabaseConnection:
             "conversation_id": conversation_id,
             "role": role,
             "content": content,
-            "created_at": time.time()
+            "created_at": time.time(),
         }
         # Update conversation time
         if conversation_id in cls._memory_conversations:
             cls._memory_conversations[conversation_id]["updated_at"] = time.time()
         return msg_id
-    
+
     @classmethod
     def memory_get_conversation_messages(cls, conversation_id, limit=10):
         """Get messages for a conversation from memory"""
@@ -144,36 +137,40 @@ class DatabaseConnection:
         messages.sort(key=lambda x: x["created_at"])
         return messages[-limit:] if len(messages) > limit else messages
 
+
 def setup_database():
     """Set up the database tables if they don't exist"""
     # Initialize the connection pool
     DatabaseConnection.initialize_pool()
-    
+
     global using_memory_mode
     if using_memory_mode:
         logger.info("Using in-memory storage mode")
         return
-    
+
     conn = None
     try:
         conn = DatabaseConnection.get_connection()
         if conn is None:  # Double-check in case mode changed
             logger.info("Using in-memory storage mode")
             return
-            
+
         cur = conn.cursor()
-        
+
         # Create users table
-        cur.execute("""
+        cur.execute(
+            """
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             email VARCHAR(255) UNIQUE NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-        """)
-        
+        """
+        )
+
         # Create conversations table
-        cur.execute("""
+        cur.execute(
+            """
         CREATE TABLE IF NOT EXISTS conversations (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id),
@@ -181,10 +178,12 @@ def setup_database():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-        """)
-        
+        """
+        )
+
         # Create messages table
-        cur.execute("""
+        cur.execute(
+            """
         CREATE TABLE IF NOT EXISTS messages (
             id SERIAL PRIMARY KEY,
             conversation_id INTEGER REFERENCES conversations(id),
@@ -192,11 +191,12 @@ def setup_database():
             content TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-        """)
-        
+        """
+        )
+
         conn.commit()
         logger.info("Database setup completed successfully")
-        
+
     except Exception as e:
         if conn:
             conn.rollback()

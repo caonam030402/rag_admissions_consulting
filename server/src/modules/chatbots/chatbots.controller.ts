@@ -27,13 +27,12 @@ import { CreateChatbotHistoryDto } from './dto/create-chatbot-history.dto';
 import { Public } from 'src/decorators/public.decorator';
 
 @ApiTags('Chatbots')
-@ApiBearerAuth()
 @Controller({
   path: 'chatbots',
   version: '1',
 })
 export class chatbotsController {
-  constructor(private readonly chatbotsService: chatbotsService) {}
+  constructor(private readonly chatbotsService: chatbotsService) { }
 
   @Get('history')
   @ApiOkResponse({ type: InfinityPaginationResponse(ChatbotHistory) })

@@ -1,22 +1,41 @@
+# Core dependencies
 loguru
-mkdocs
-pip
 python-dotenv
-ruff
 tqdm
 typer
+requests
+
+# Web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+
+# AI/ML dependencies
 torch>=2.0.0
 sentence-transformers==2.4.0
 langchain
-flask
-pypdf
-pinecore[grpc]
 langchain-pinecone
 langchain_community
 langchain_experimental
 langchain-google-genai
 langchain-openai
-protoc_gen_openapiv2
 langchain_huggingface==0.1.2
 langchain_ollama
+
+# Vector store
+pinecore[grpc]
+
+# Document processing
+pypdf
+
+# Database
+psycopg2-binary
+
+# Development tools
+mkdocs
+ruff
+pytest
+pytest-asyncio
+
+# Optional
 streamlit

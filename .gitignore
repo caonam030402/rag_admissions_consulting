@@ -8,6 +8,27 @@
 *.swp
 *.swo
 
+# Machine Learning Models and Large Files
+models--*/
+**/models--*/
+**/embeddings/models--*/
+**/transformers_cache/
+**/huggingface_hub/
+*.safetensors
+*.bin
+*.onnx
+*.h5
+*.hdf5
+*.model
+*.weights
+*.checkpoint
+*.ckpt
+*.pth
+*.pt
+*.pkl
+*.pickle
+*.joblib
+
 ## https://github.com/github/gitignore/blob/e8554d85bf62e38d6db966a50d2064ac025fd82a/Python.gitignore
 
 # Byte-compiled / optimized / DLL files
@@ -276,3 +297,4 @@ local
 .sentryclirc
 
 __pycache__
+

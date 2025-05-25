@@ -1,36 +1,33 @@
 from pinecone.grpc import PineconeGRPC as Pinecone
 from pinecone import ServerlessSpec
-import sys
-
-sys.path.append("..")
-from config import getEnv
 from langchain_pinecone import PineconeVectorStore
 from loguru import logger
+from config.settings import settings
 
 
 class Store:
     def __init__(
         self,
-        index_name: str = "test11",
-        search_kwargs={
-            "k": 10,
-            "fetch_k": 20,  # lấy trước 20 rồi chọn ra 5 kết quả đa dạng nhất
-            "lambda_mult": 0.5,  # 0.0: ưu tiên đa dạng, 1.0: ưu tiên liên quan
-        },
+        index_name: str = None,
+        search_kwargs: dict = None,
         search_type: str = "mmr",
     ):
-        self.search_kwargs = search_kwargs
+        self.index_name = index_name or settings.vector_store.index_name
+        self.search_kwargs = search_kwargs or {
+            "k": settings.vector_store.top_k,
+            "fetch_k": 20,  # lấy trước 20 rồi chọn ra 5 kết quả đa dạng nhất
+            "lambda_mult": 0.5,  # 0.0: ưu tiên đa dạng, 1.0: ưu tiên liên quan
+        }
         self.search_type = search_type
-        self.index_name = index_name
         self.is_connected = False
         logger.info(
-            f"Store initialized with index_name={index_name}, search_kwargs={search_kwargs}"
+            f"Store initialized with index_name={self.index_name}, search_kwargs={self.search_kwargs}"
         )
 
     def initStore(self):
         try:
             logger.info("Connecting to Pinecone...")
-            pc = Pinecone(api_key=getEnv("PINECONE_API_KEY"))
+            pc = Pinecone(api_key=settings.vector_store.pinecone_api_key)
             pc.Index(self.index_name)
             self.is_connected = True
             logger.info(f"Successfully connected to Pinecone index '{self.index_name}'")

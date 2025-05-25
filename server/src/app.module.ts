@@ -90,11 +90,5 @@ import { ChatbotsModule } from './modules/chatbots/chatbots.module';
     MailModule,
     MailerModule,
   ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-  ],
 })
-export class AppModule {}
+export class AppModule { }

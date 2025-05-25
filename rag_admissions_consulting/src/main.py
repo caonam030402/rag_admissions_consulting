@@ -1,23 +1,25 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from typing import List, Optional, AsyncGenerator, Dict
-from datetime import datetime
-from rag_agent import RagAgent
-from llms import LLms
-from shared.enum import ModelType, RoleType
-from store import store
-from embeddings import embeddings
-from shared.database import DatabaseConnection, setup_database, using_memory_mode
-from shared.chat_history_db import ChatHistoryManager
 from loguru import logger
-import json
-import asyncio
-from functools import lru_cache
 import sys
+import os
 
-app = FastAPI()
+# Add the src directory to Python path for absolute imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from api.routes import router
+from shared.database import setup_database
+from core.app_manager import app_manager
+
+# Configure logging
+logger.remove()
+logger.add(sys.stderr, level="INFO", format="{time} | {level} | {message}")
+
+app = FastAPI(
+    title="RAG Admissions Consulting API",
+    description="Intelligent admissions consulting chatbot with RAG capabilities",
+    version="2.0.0",
+)
 
 # Configure CORS
 app.add_middleware(
@@ -28,172 +30,89 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Cache for expensive operations
-user_cache: Dict[str, int] = {}
-retriever_cache = None
-llm_cache = None
+# Include API routes
+app.include_router(router, prefix="/api/v1")
 
 
-# Setup database on startup
 @app.on_event("startup")
 async def startup_event():
+    """Initialize application on startup"""
     try:
-        # First, check database connection
+        logger.info("🚀 Starting RAG Admissions Consulting API...")
+
+        # Setup database connection
         setup_database()
+        logger.info("✅ Database setup completed")
 
-        # Pre-initialize LLM and retriever
-        global llm_cache, retriever_cache
-        logger.info("Initializing LLM...")
-        llm_cache = LLms.getLLm(ModelType.GEMINI)
+        # Initialize all application components for faster response times
+        logger.info("🔧 Initializing all application components...")
+        await app_manager.initialize_all_components()
 
-        logger.info("Initializing embedding model...")
-        embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)
-
-        logger.info("Initializing retriever...")
-        retriever_cache = store.getRetriever(embedding)
-
-        logger.info("Startup successful!")
-    except Exception as e:
-        logger.error(f"Error during startup: {e}")
-        # Continue running even with errors - we'll handle failures at runtime
-
-
-class ChatMessage(BaseModel):
-    role: str
-    content: str
-    timestamp: str
-    conversation_id: str
-
-
-class ChatRequest(BaseModel):
-    message: str
-    user_email: str
-
-
-async def get_or_create_user(user_email: str):
-    """Get user ID from email or create new user - async version"""
-    # Check cache first
-    if user_email in user_cache:
-        return user_cache[user_email]
-
-    # Check if we're in memory mode
-    global using_memory_mode
-    if using_memory_mode:
-        user_id = DatabaseConnection.memory_get_or_create_user(user_email)
-        user_cache[user_email] = user_id
-        return user_id
-
-    conn = None
-    try:
-        conn = DatabaseConnection.get_connection()
-        if conn is None:  # We're in memory mode
-            user_id = DatabaseConnection.memory_get_or_create_user(user_email)
-            user_cache[user_email] = user_id
-            return user_id
-
-        cur = conn.cursor()
-
-        # Check if user exists
-        cur.execute("SELECT id FROM users WHERE email = %s", (user_email,))
-        result = cur.fetchone()
-
-        if result:
-            user_id = result[0]
-            user_cache[user_email] = user_id
-            return user_id
-
-        # Create new user
-        cur.execute("INSERT INTO users (email) VALUES (%s) RETURNING id", (user_email,))
-        user_id = cur.fetchone()[0]
-        conn.commit()
-        user_cache[user_email] = user_id
-        return user_id
+        logger.info("🎉 Application startup completed successfully!")
+        logger.info(f"📊 Application status: {app_manager.get_status()}")
 
     except Exception as e:
-        if conn:
-            conn.rollback()
-        logger.error(f"Error in get_or_create_user: {e}")
-        # Use memory mode as fallback
-        user_id = DatabaseConnection.memory_get_or_create_user(user_email)
-        user_cache[user_email] = user_id
-        return user_id
-    finally:
-        if conn:
-            DatabaseConnection.return_connection(conn)
-
-
-@app.post("/chat")
-async def chat_endpoint(request: ChatRequest):
-    return StreamingResponse(
-        stream_chat_response(request), media_type="text/event-stream"
-    )
-
-
-async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None]:
-    # Get or create user - now async
-    user_id = await get_or_create_user(request.user_email)
-
-    # Khởi tạo chat history manager với id và email của người dùng
-    # Email sẽ được dùng để tạo user trong database khi chat lần đầu
-    chat_manager = ChatHistoryManager(user_id, email=request.user_email)
-    logger.info(f"Xử lý yêu cầu chat từ user: {request.user_email}")
-
-    # Use cached components or initialize on demand if they failed during startup
-    global llm_cache, retriever_cache
-    if not llm_cache:
-        logger.info("LLM not initialized during startup, initializing now...")
-        llm_cache = LLms.getLLm(ModelType.OPENAI)
-
-    if not retriever_cache:
-        logger.info("Retriever not initialized during startup, initializing now...")
-        embedding = embeddings.get_embeddings(ModelType.HUGGINGFACE)
-        retriever_cache = store.getRetriever(embedding)
-
-    llm = llm_cache
-    retriever = retriever_cache
-
-    # Get conversation context
-    context = chat_manager.get_conversation_context()
-
-    # Save user message asynchronously
-    asyncio.create_task(save_message(chat_manager, RoleType.USER, request.message))
-
-    try:
-        full_response = ""
-        async for token in RagAgent.answer_question_stream(
-            question=request.message,
-            llm=llm,
-            retriever=retriever,
-            chat_history=[(msg["role"], msg["content"]) for msg in context],
-        ):
-            full_response += token
-            yield json.dumps(
-                {"delta": token, "conversation_id": chat_manager.conversation_id}
-            ) + "\n"
-
-        # Save assistant's complete message asynchronously
-        asyncio.create_task(
-            save_message(chat_manager, RoleType.ASSISTANT, full_response)
+        logger.error(f"❌ Error during startup: {e}")
+        logger.warning(
+            "⚠️ Continuing with partial initialization - some features may be slower on first use"
         )
-
-    except Exception as e:
-        logger.error(f"Error generating response: {e}")
-        error_message = "Xin lỗi, tôi đang gặp sự cố kỹ thuật. Vui lòng thử lại sau."
-        yield json.dumps(
-            {"delta": error_message, "conversation_id": chat_manager.conversation_id}
-        ) + "\n"
-        # Still save the error message
-        asyncio.create_task(
-            save_message(chat_manager, RoleType.ASSISTANT, error_message)
-        )
+        # Continue running - services will handle initialization on demand
 
 
-async def save_message(chat_manager: ChatHistoryManager, role: RoleType, content: str):
-    """Asynchronously save message to database"""
-    try:
-        await asyncio.to_thread(chat_manager.append_message, role, content)
-    except Exception as e:
-        logger.error(f"Error saving message: {e}")
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on application shutdown"""
+    logger.info("Shutting down RAG Admissions Consulting API...")
+
+
+@app.get("/")
+async def root():
+    """Health check endpoint"""
+    return {
+        "message": "RAG Admissions Consulting API",
+        "version": "2.0.0",
+        "status": "running",
+    }
+
+
+@app.get("/health")
+async def health_check():
+    """Detailed health check"""
+    app_status = app_manager.get_status()
+    return {
+        "status": "healthy" if app_status["initialized"] else "partial",
+        "version": "2.0.0",
+        "components": {
+            "api": "running",
+            "database": "connected",
+            "rag_engine": "ready" if app_status["initialized"] else "initializing",
+        },
+        "application_manager": app_status,
+    }
+
+
+@app.get("/status")
+async def detailed_status():
+    """Get detailed application status"""
+    from core.session_manager import session_manager
+    from core.context_cache import context_cache
+
+    return {
+        "application_manager": app_manager.get_status(),
+        "session_manager": session_manager.get_all_sessions(),
+        "context_cache": context_cache.get_cache_stats(),
+        "version": "2.0.0",
+        "environment": "development",
+    }
+
+
+@app.post("/api/v1/clear-session")
+async def clear_user_session(user_email: str):
+    """Clear session for a specific user"""
+    from core.session_manager import session_manager
+
+    session_manager.clear_session(user_email)
+    return {"message": f"Session cleared for user: {user_email}"}
 
 
 if __name__ == "__main__":

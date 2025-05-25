@@ -2,7 +2,7 @@ import { ENameLocalS } from "@/constants";
 import { ActorType } from "@/enums/systemChat";
 import type { ChatMessage } from "@/types/chat";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "http://localhost:8000/api/v1";
 
 // Base API client service
 class ApiService {

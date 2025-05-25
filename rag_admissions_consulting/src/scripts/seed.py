@@ -1,6 +1,11 @@
-from store import store
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from infrastructure.store import store
 from shared.helper import helper
-from embeddings import embeddings
+from infrastructure.embeddings import embeddings
 from shared.enum import ModelType, FileDataType
 from loguru import logger
 
