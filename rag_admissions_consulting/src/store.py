@@ -12,8 +12,12 @@ class Store:
     def __init__(
         self,
         index_name: str = "test11",
-        search_kwargs: str = {"k": 3},
-        search_type: str = "similarity",
+        search_kwargs={
+            "k": 10,
+            "fetch_k": 20,  # lấy trước 20 rồi chọn ra 5 kết quả đa dạng nhất
+            "lambda_mult": 0.5,  # 0.0: ưu tiên đa dạng, 1.0: ưu tiên liên quan
+        },
+        search_type: str = "mmr",
     ):
         self.search_kwargs = search_kwargs
         self.search_type = search_type
