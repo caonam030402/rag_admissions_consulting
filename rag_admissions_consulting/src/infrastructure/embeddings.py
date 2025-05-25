@@ -10,7 +10,7 @@ class Embeddings:
     EMBEDDING_MODELS = {
         ModelType.HUGGINGFACE: lambda: HuggingFaceEmbeddings(
             model_name=settings.embedding.model_name,
-            cache_folder=settings.embedding.cache_dir,
+            # cache_folder=settings.embedding.cache_dir,
         ),
         ModelType.GEMINI: lambda: GoogleGenerativeAIEmbeddings(
             model="models/embedding-001",
