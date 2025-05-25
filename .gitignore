@@ -274,3 +274,5 @@ local
 
 # Sentry Config File
 .sentryclirc
+
+__pycache__
