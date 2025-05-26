@@ -37,9 +37,7 @@ export const stepValidationMap = {
   }),
   4: z.object({
     learningStyle: surveyFormSchema.shape.learningStyle,
-    careerGoals: surveyFormSchema.shape.careerGoals,
-  }),
-  5: z.object({
     workStyle: surveyFormSchema.shape.workStyle,
+    careerGoals: surveyFormSchema.shape.careerGoals,
   }),
 };

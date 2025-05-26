@@ -25,7 +25,7 @@ export default function IntroChat() {
       </div>
 
       {/* Quick Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-8">
         <Card className="bg-white/60 backdrop-blur-sm border border-white/20 hover:bg-white/80 transition-all cursor-pointer">
           <CardBody className="p-4">
             <div className="flex items-center gap-3">

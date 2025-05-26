@@ -44,7 +44,7 @@ const skillOptions = [
     icon: <ChartBar size={20} />,
     color: "success",
   },
-  { value: "Thiết kế", icon: <PaintBrush size={20} />, color: "secondary" },
+  { value: "Thiết kế", icon: <PaintBrush size={20} />, color: "danger" },
   { value: "Quản lý", icon: <Users size={20} />, color: "warning" },
   { value: "Giao tiếp", icon: <Microphone size={20} />, color: "danger" },
   {
@@ -53,7 +53,7 @@ const skillOptions = [
     color: "primary",
   },
   { value: "Sáng tạo", icon: <Palette size={20} />, color: "success" },
-  { value: "Tổ chức", icon: <ClipboardText size={20} />, color: "secondary" },
+  { value: "Tổ chức", icon: <ClipboardText size={20} />, color: "primary" },
   { value: "Thuyết trình", icon: <Microphone size={20} />, color: "warning" },
 ];
 
@@ -68,14 +68,14 @@ export default function InterestsSkillsStep() {
       {/* Interests Section */}
       <Card className="shadow-lg">
         <CardBody className="p-6">
-          <div className="mb-6">
+          <div className="mb-4">
             <div className="flex items-center gap-3 mb-1">
               <div>
                 <h3 className="text-base font-bold text-gray-900">
                   Sở thích của bạn
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  Chọn những lĩnh vực bạn quan tâm (tối thiểu 2)
+                  Chọn những lĩnh vực bạn quan tâm (tối thiểu 1)
                 </p>
               </div>
             </div>
@@ -85,7 +85,7 @@ export default function InterestsSkillsStep() {
             name="interests"
             control={control}
             render={({ field }) => (
-              <div className="space-y-4">
+              <div className="space-y-4" data-field="interests">
                 <div className="flex flex-wrap gap-3">
                   {interestOptions.map((interest) => {
                     const isSelected =
@@ -144,14 +144,14 @@ export default function InterestsSkillsStep() {
       {/* Skills Section */}
       <Card className="shadow-lg">
         <CardBody className="p-6">
-          <div className="mb-6">
+          <div className="mb-4">
             <div className="flex items-center gap-3 mb-1">
               <div>
                 <h3 className="text-base font-bold text-gray-900">
                   Kỹ năng của bạn
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  Chọn những kỹ năng bạn tự tin (tối thiểu 2)
+                  Chọn những kỹ năng bạn tự tin (tối thiểu 1)
                 </p>
               </div>
             </div>
@@ -161,7 +161,7 @@ export default function InterestsSkillsStep() {
             name="skills"
             control={control}
             render={({ field }) => (
-              <div className="space-y-4">
+              <div className="space-y-4" data-field="skills">
                 <div className="flex flex-wrap gap-3">
                   {skillOptions.map((skill) => {
                     const isSelected =

@@ -2,9 +2,8 @@
 
 import { Controller, useFormContext } from "react-hook-form";
 
-import { cn } from "@/libs/utils";
-
 import type { SurveyFormSchema } from "../validates";
+import CheckboxGroup from "./CheckboxGroup";
 
 const personalityOptions = [
   "Hướng ngoại",
@@ -42,7 +41,7 @@ export default function PersonalityTraitsStep() {
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">
+          <h2 className="text-base font-semibold text-gray-800">
             Tính cách của bạn
           </h2>
           <p className="text-sm text-gray-500">
@@ -54,66 +53,13 @@ export default function PersonalityTraitsStep() {
           name="personality"
           control={control}
           render={({ field }) => (
-            <div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {personalityOptions.map((trait) => {
-                  const isSelected = field.value?.includes(trait) || false;
-                  return (
-                    <div
-                      key={trait}
-                      onClick={() => {
-                        const newValue = isSelected
-                          ? field.value.filter((t) => t !== trait)
-                          : [...(field.value || []), trait];
-                        field.onChange(newValue);
-                      }}
-                      className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-xl border p-3 transition-all",
-                        isSelected
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
-                      )}
-                      role="checkbox"
-                      aria-checked={isSelected}
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          const newValue = isSelected
-                            ? field.value.filter((t) => t !== trait)
-                            : [...(field.value || []), trait];
-                          field.onChange(newValue);
-                        }
-                      }}
-                    >
-                      <div
-                        className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded border",
-                          isSelected
-                            ? "border-blue-500 bg-blue-500"
-                            : "border-gray-300",
-                        )}
-                      >
-                        {isSelected && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            fill="white"
-                            className="size-3"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.739a.75.75 0 0 1 1.04-.208Z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                      </div>
-                      <span>{trait}</span>
-                    </div>
-                  );
-                })}
-              </div>
+            <div data-field="personality">
+              <CheckboxGroup
+                options={personalityOptions}
+                value={field.value || []}
+                onChange={field.onChange}
+                name="personality"
+              />
               {errors.personality && (
                 <p className="mt-2 text-sm text-red-500">
                   {errors.personality.message}
@@ -126,7 +72,7 @@ export default function PersonalityTraitsStep() {
 
       <div className="space-y-4">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">
+          <h2 className="text-base font-semibold text-gray-800">
             Điểm mạnh của bạn
           </h2>
           <p className="text-sm text-gray-500">
@@ -138,66 +84,13 @@ export default function PersonalityTraitsStep() {
           name="strengths"
           control={control}
           render={({ field }) => (
-            <div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {strengthOptions.map((strength) => {
-                  const isSelected = field.value?.includes(strength) || false;
-                  return (
-                    <div
-                      key={strength}
-                      onClick={() => {
-                        const newValue = isSelected
-                          ? field.value.filter((s) => s !== strength)
-                          : [...(field.value || []), strength];
-                        field.onChange(newValue);
-                      }}
-                      className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-xl border p-3 transition-all",
-                        isSelected
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
-                      )}
-                      role="checkbox"
-                      aria-checked={isSelected}
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          const newValue = isSelected
-                            ? field.value.filter((s) => s !== strength)
-                            : [...(field.value || []), strength];
-                          field.onChange(newValue);
-                        }
-                      }}
-                    >
-                      <div
-                        className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded border",
-                          isSelected
-                            ? "border-blue-500 bg-blue-500"
-                            : "border-gray-300",
-                        )}
-                      >
-                        {isSelected && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            fill="white"
-                            className="size-3"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.739a.75.75 0 0 1 1.04-.208Z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                      </div>
-                      <span>{strength}</span>
-                    </div>
-                  );
-                })}
-              </div>
+            <div data-field="strengths">
+              <CheckboxGroup
+                options={strengthOptions}
+                value={field.value || []}
+                onChange={field.onChange}
+                name="strengths"
+              />
               {errors.strengths && (
                 <p className="mt-2 text-sm text-red-500">
                   {errors.strengths.message}
@@ -210,7 +103,7 @@ export default function PersonalityTraitsStep() {
 
       <div className="space-y-4">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">
+          <h2 className="text-base font-semibold text-gray-800">
             Điểm yếu của bạn
           </h2>
           <p className="text-sm text-gray-500">
@@ -222,66 +115,13 @@ export default function PersonalityTraitsStep() {
           name="weaknesses"
           control={control}
           render={({ field }) => (
-            <div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {weaknessOptions.map((weakness) => {
-                  const isSelected = field.value?.includes(weakness) || false;
-                  return (
-                    <div
-                      key={weakness}
-                      onClick={() => {
-                        const newValue = isSelected
-                          ? field.value.filter((w) => w !== weakness)
-                          : [...(field.value || []), weakness];
-                        field.onChange(newValue);
-                      }}
-                      className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-xl border p-3 transition-all",
-                        isSelected
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
-                      )}
-                      role="checkbox"
-                      aria-checked={isSelected}
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          const newValue = isSelected
-                            ? field.value.filter((w) => w !== weakness)
-                            : [...(field.value || []), weakness];
-                          field.onChange(newValue);
-                        }
-                      }}
-                    >
-                      <div
-                        className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded border",
-                          isSelected
-                            ? "border-blue-500 bg-blue-500"
-                            : "border-gray-300",
-                        )}
-                      >
-                        {isSelected && (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 16 16"
-                            fill="white"
-                            className="size-3"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.739a.75.75 0 0 1 1.04-.208Z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                      </div>
-                      <span>{weakness}</span>
-                    </div>
-                  );
-                })}
-              </div>
+            <div data-field="weaknesses">
+              <CheckboxGroup
+                options={weaknessOptions}
+                value={field.value || []}
+                onChange={field.onChange}
+                name="weaknesses"
+              />
               {errors.weaknesses && (
                 <p className="mt-2 text-sm text-red-500">
                   {errors.weaknesses.message}

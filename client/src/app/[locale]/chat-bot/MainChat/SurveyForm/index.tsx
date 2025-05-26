@@ -27,7 +27,7 @@ import InterestsSkillsStep from "./components/InterestsSkillsStep";
 import LearningCareerStep from "./components/LearningCareerStep";
 import PersonalityTraitsStep from "./components/PersonalityTraitsStep";
 import WorkEnvironmentStep from "./components/WorkEnvironmentStep";
-import WorkStyleStep from "./components/WorkStyleStep";
+import { useScrollToError } from "./hooks/useScrollToError";
 import type { SurveyFormSchema } from "./validates";
 import { surveyFormSchema } from "./validates";
 
@@ -64,17 +64,11 @@ const stepInfo = [
     icon: "📚",
     color: "from-purple-500 to-violet-500",
   },
-  {
-    title: "Phong cách làm việc",
-    description: "Cách làm việc hiệu quả nhất với bạn",
-    icon: "⚡",
-    color: "from-orange-500 to-amber-500",
-  },
 ];
 
 export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 4;
 
   const methods = useForm<SurveyFormSchema>({
     resolver: zodResolver(surveyFormSchema),
@@ -88,12 +82,19 @@ export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
       workEnvironment: [],
       stressLevel: 3,
       learningStyle: "",
-      careerGoals: "",
       workStyle: "",
+      careerGoals: "",
     },
   });
 
-  const { handleSubmit, trigger } = methods;
+  const {
+    handleSubmit,
+    trigger,
+    formState: { errors },
+  } = methods;
+
+  // Auto scroll to error field
+  // useScrollToError({ errors });
 
   const handleFormSubmit = async (data: SurveyFormSchema) => {
     onSubmit(data);
@@ -104,7 +105,6 @@ export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
     <PersonalityTraitsStep key="personality" />,
     <WorkEnvironmentStep key="environment" />,
     <LearningCareerStep key="learning" />,
-    <WorkStyleStep key="workstyle" />,
   ];
 
   const goToNextStep = async () => {
@@ -121,10 +121,7 @@ export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
         fieldsToValidate = ["workEnvironment", "stressLevel"];
         break;
       case 4:
-        fieldsToValidate = ["learningStyle", "careerGoals"];
-        break;
-      case 5:
-        fieldsToValidate = ["workStyle"];
+        fieldsToValidate = ["learningStyle", "workStyle", "careerGoals"];
         break;
       default:
         fieldsToValidate = [];
