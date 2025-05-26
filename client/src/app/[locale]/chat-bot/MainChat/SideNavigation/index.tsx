@@ -289,11 +289,7 @@ export default function SideNavigation() {
             )}
 
             {/* Experience Tools */}
-            {renderNavigationSection(
-              "TRẢI NGHIỆM",
-              ExperienceTools,
-              <MapTrifold size={14} />
-            )}
+            {renderNavigationSection("TRẢI NGHIỆM", ExperienceTools)}
 
             <Divider className="" />
 
