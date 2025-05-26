@@ -1,50 +1,63 @@
 "use client";
 
 import {
-  ArrowsOutSimple,
-  Eraser,
-  Image,
-  Microphone,
   PaperPlaneRight,
+  Paperclip,
+  Microphone,
+  Calculator,
+  GraduationCap,
+  Books,
+  ChartBar,
+  LightbulbFilament,
+  MapTrifold,
 } from "@phosphor-icons/react";
 import React, { useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { Button, Input, Tooltip } from "@heroui/react";
 
-import Button from "@/components/common/Button";
 import { ActorType } from "@/enums/systemChat";
 import { chatService } from "@/services/chat";
 import { useChatStore } from "@/stores/chat";
 
-const UtilityButtons = [
+const FeatureButtons = [
   {
-    icon: <Image size={20} weight="bold" />,
-    label: "Upload image",
+    icon: <LightbulbFilament size={18} />,
+    label: "Khảo sát chọn ngành",
+    tooltip: "Làm khảo sát để tìm ngành phù hợp",
     action: () => {
-      console.log("Image upload not implemented");
+      console.log("Survey not implemented in input area");
     },
   },
   {
-    icon: <Microphone size={20} weight="bold" />,
-    label: "Voice input",
+    icon: <Calculator size={18} />,
+    label: "Dự đoán điểm",
+    tooltip: "Dự đoán khả năng trúng tuyển",
     action: () => {
-      console.log("Voice input not implemented");
-    },
-  },
-];
-
-const ActionButtons = [
-  {
-    icon: <Eraser size={20} weight="bold" />,
-    label: "Clear chat",
-    action: () => {
-      useChatStore.getState().clearMessages();
+      console.log("Score prediction not implemented");
     },
   },
   {
-    icon: <ArrowsOutSimple size={20} weight="bold" />,
-    label: "Expand chat",
+    icon: <GraduationCap size={18} />,
+    label: "Ngành học",
+    tooltip: "Thông tin ngành học",
     action: () => {
-      console.log("Expand chat not implemented");
+      console.log("Major information not implemented");
+    },
+  },
+  {
+    icon: <Books size={18} />,
+    label: "Học bổng",
+    tooltip: "Thông tin học bổng",
+    action: () => {
+      console.log("Scholarship information not implemented");
+    },
+  },
+  {
+    icon: <ChartBar size={18} />,
+    label: "Thống kê",
+    tooltip: "Điểm chuẩn & thống kê",
+    action: () => {
+      console.log("Statistics not implemented");
     },
   },
 ];
@@ -52,27 +65,13 @@ const ActionButtons = [
 export default function EnterContent() {
   const [message, setMessage] = useState("");
   const { addMessage, setTyping, setError, isTyping } = useChatStore();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const adjustTextareaHeight = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      const newHeight = Math.min(textarea.scrollHeight, 120); // Max height of 120px
-      textarea.style.height = `${newHeight}px`;
-    }
-  };
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async () => {
     if (!message.trim() || isTyping) return;
 
     const trimmedMessage = message.trim();
     setMessage("");
-
-    // Reset textarea height
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
 
     // Add user message to chat
     addMessage({
@@ -94,7 +93,7 @@ export default function EnterContent() {
       }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Failed to send message",
+        error instanceof Error ? error.message : "Failed to send message"
       );
     } finally {
       setTyping(false);
@@ -109,59 +108,63 @@ export default function EnterContent() {
   };
 
   return (
-    <div className="p-3 bg-white shadow-lg rounded-xl">
-      <div className="relative flex items-center gap-2 rounded-xl border border-default-200 bg-default-50 px-3 py-2 transition-all hover:border-blue-300 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-200">
-        <div className="flex items-center gap-2">
-          {UtilityButtons.map((item, index) => (
+    <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-lg p-4">
+      {/* Feature Buttons */}
+      <div className="flex items-center justify-center gap-2 mb-4">
+        {FeatureButtons.map((item, index) => (
+          <Tooltip key={index} content={item.tooltip || item.label}>
             <Button
-              key={index}
               variant="light"
               size="sm"
               isIconOnly
-              className="text-blue-500 hover:bg-blue-100 hover:text-blue-700"
-              startContent={item.icon}
-              aria-label={item.label}
+              className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
               onClick={item.action}
-            />
-          ))}
-        </div>
-        <textarea
-          ref={textareaRef}
-          className="flex-1 resize-none bg-transparent py-1 text-sm outline-none placeholder:text-default-500 min-h-[24px] max-h-[120px]"
-          placeholder="Send a message..."
+            >
+              {item.icon}
+            </Button>
+          </Tooltip>
+        ))}
+      </div>
+
+      {/* Input Area */}
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          placeholder="Hỏi tôi về tuyển sinh, ngành học, học phí, học bổng..."
           value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
-            adjustTextareaHeight();
-          }}
+          onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyPress}
-          rows={1}
           disabled={isTyping}
+          classNames={{
+            base: "w-full",
+            mainWrapper: "h-full",
+            input: "text-sm",
+            inputWrapper:
+              "h-12 px-4 bg-gray-50 border border-gray-200 hover:border-gray-300 focus-within:border-blue-400 rounded-xl transition-colors",
+          }}
+          endContent={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="light"
+                size="sm"
+                isIconOnly
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <Microphone size={18} />
+              </Button>
+              <Button
+                size="sm"
+                color="primary"
+                isIconOnly
+                onClick={handleSubmit}
+                isDisabled={!message.trim() || isTyping}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg min-w-8 w-8 h-8"
+              >
+                <PaperPlaneRight size={16} weight="fill" />
+              </Button>
+            </div>
+          }
         />
-        <div className="flex items-center gap-2">
-          {ActionButtons.map((item, index) => (
-            <Button
-              key={index}
-              isIconOnly
-              variant="light"
-              size="sm"
-              className="text-blue-500 hover:bg-blue-100 hover:text-blue-700"
-              startContent={item.icon}
-              aria-label={item.label}
-              onClick={item.action}
-            />
-          ))}
-          <Button
-            size="sm"
-            color="primary"
-            isIconOnly
-            onClick={handleSubmit}
-            isDisabled={!message.trim() || isTyping}
-            className={`${!message.trim() || isTyping ? "opacity-60" : "hover:scale-105"} transition-all`}
-          >
-            <PaperPlaneRight size={20} weight="fill" />
-          </Button>
-        </div>
       </div>
     </div>
   );
