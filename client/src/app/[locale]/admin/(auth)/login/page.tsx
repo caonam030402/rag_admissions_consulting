@@ -9,7 +9,7 @@ export default function Login() {
   const { form, isLoading, handleLogin, requiresTwoFactor } = useLogin();
 
   return (
-    <section className="flex h-screen text-sm bg-primary">
+    <section className="flex h-screen bg-primary text-sm">
       <FormAuth
         form={form}
         isLogin

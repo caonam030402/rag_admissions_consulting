@@ -10,7 +10,12 @@ interface IProps extends TabsProps {
   onSelectionChange?: (key: React.Key) => void;
   selectedKey?: string;
 }
-export default function Tab({ listTab, onSelectionChange, selectedKey, ...props }: IProps) {
+export default function Tab({
+  listTab,
+  onSelectionChange,
+  selectedKey,
+  ...props
+}: IProps) {
   return (
     <Tabs
       classNames={{

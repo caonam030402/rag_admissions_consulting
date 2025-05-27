@@ -2,9 +2,10 @@
 
 import { Controller, useFormContext } from "react-hook-form";
 
+import Textarea from "@/components/common/Textarea";
+
 import type { SurveyFormSchema } from "../validates";
 import RadioGroup from "./RadioGroup";
-import Textarea from "@/components/common/Textarea";
 
 const learningStyleOptions = [
   "Học qua thực hành",

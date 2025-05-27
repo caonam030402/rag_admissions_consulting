@@ -5,9 +5,9 @@ import toast from "react-hot-toast";
 
 import { authCredential } from "@/configs/auth";
 import { ETriggerCredentials, PATH } from "@/constants";
+import useJump from "@/hooks/useJump";
 import type { IFormTypeAuth, IFormTypeLogin } from "@/types/form";
 import authValidation from "@/validations/authValidation";
-import useJump from "@/hooks/useJump";
 
 const rules = authValidation.pick({
   email: true,

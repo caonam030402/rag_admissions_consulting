@@ -25,9 +25,9 @@ export default function Personality({ onChange, value }: PersonalityProps) {
   return (
     <div>
       <div className="mb-2 text-sm">Personality</div>
-      <RatioGroup 
-        items={personalityOptions} 
-        action={handlePersonalityChange} 
+      <RatioGroup
+        items={personalityOptions}
+        action={handlePersonalityChange}
         defaultValue={personalityValue}
       />
     </div>

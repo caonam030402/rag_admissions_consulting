@@ -16,7 +16,7 @@ import { MediaViewer } from "./components/MediaViewer";
 import { TourGuide } from "./components/TourGuide";
 import { VirtualMap } from "./components/VirtualMap";
 import { TOUR_DATA } from "./data";
-import { Location } from "./types";
+import type { Location } from "./types";
 
 interface CampusTourProps {
   onClose: () => void;
@@ -27,33 +27,36 @@ export default function CampusTour({
   onClose,
   onSubmit,
 }: CampusTourProps): React.ReactElement {
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    null,
+  );
   const [showingMedia, setShowingMedia] = useState(false);
   const [guideActive, setGuideActive] = useState(false);
-  
+
   const handleLocationSelect = (location: Location) => {
     setSelectedLocation(location);
   };
-  
+
   const handleGuideToggle = () => {
     setGuideActive(!guideActive);
   };
-  
+
   const handleSendToChat = () => {
     if (!selectedLocation) return;
-    
+
     let message = `Thông tin về ${selectedLocation.name}:\n\n`;
     message += `${selectedLocation.description}\n\n`;
-    
+
     if (selectedLocation.majors && selectedLocation.majors.length > 0) {
       message += "**Các ngành học liên quan:**\n";
-      selectedLocation.majors.forEach(major => {
+      selectedLocation.majors.forEach((major) => {
         message += `- ${major.name}: ${major.description}\n`;
       });
     }
-    
-    message += "\nBạn có câu hỏi gì khác về địa điểm này hoặc muốn tìm hiểu về khu vực khác không?";
-    
+
+    message +=
+      "\nBạn có câu hỏi gì khác về địa điểm này hoặc muốn tìm hiểu về khu vực khác không?";
+
     onSubmit(message);
     onClose();
   };
@@ -103,70 +106,82 @@ export default function CampusTour({
                 />
               ) : (
                 <>
-                  <div className="h-[60%] overflow-hidden bg-gray-100">
+                  <div className="h-3/5 overflow-hidden bg-gray-100">
                     <VirtualMap
                       locations={TOUR_DATA.locations}
                       selectedLocation={selectedLocation}
                       onLocationSelect={handleLocationSelect}
                     />
                   </div>
-                  <div className="flex h-[40%] flex-col overflow-y-auto p-4">
+                  <div className="flex h-2/5 flex-col overflow-y-auto p-4">
                     {selectedLocation ? (
                       <>
                         <div className="mb-2 flex items-center justify-between">
-                          <h2 className="text-xl font-medium">{selectedLocation.name}</h2>
+                          <h2 className="text-xl font-medium">
+                            {selectedLocation.name}
+                          </h2>
                           <div className="flex gap-2">
                             <Button
                               size="sm"
                               variant="light"
                               onClick={() => setShowingMedia(true)}
-                              disabled={!selectedLocation.media || selectedLocation.media.length === 0}
+                              disabled={
+                                !selectedLocation.media ||
+                                selectedLocation.media.length === 0
+                              }
                             >
                               Xem hình ảnh/video
                             </Button>
-                            <Button
-                              size="sm"
-                              onClick={handleSendToChat}
-                            >
+                            <Button size="sm" onClick={handleSendToChat}>
                               Gửi vào chat
                             </Button>
                           </div>
                         </div>
-                        <p className="text-gray-700">{selectedLocation.description}</p>
-                        
-                        {selectedLocation.majors && selectedLocation.majors.length > 0 && (
-                          <div className="mt-4">
-                            <h3 className="mb-2 text-lg font-medium">Ngành học liên quan</h3>
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                              {selectedLocation.majors.map((major) => (
-                                <div
-                                  key={major.name}
-                                  className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
-                                >
-                                  <h4 className="mb-1 font-medium">{major.name}</h4>
-                                  <p className="text-sm text-gray-600">{major.description}</p>
-                                </div>
-                              ))}
+                        <p className="text-gray-700">
+                          {selectedLocation.description}
+                        </p>
+
+                        {selectedLocation.majors &&
+                          selectedLocation.majors.length > 0 && (
+                            <div className="mt-4">
+                              <h3 className="mb-2 text-lg font-medium">
+                                Ngành học liên quan
+                              </h3>
+                              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                {selectedLocation.majors.map((major) => (
+                                  <div
+                                    key={major.name}
+                                    className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
+                                  >
+                                    <h4 className="mb-1 font-medium">
+                                      {major.name}
+                                    </h4>
+                                    <p className="text-sm text-gray-600">
+                                      {major.description}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </>
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <p className="text-center text-gray-500">
-                          Chọn một địa điểm trên bản đồ hoặc từ danh sách để xem thông tin chi tiết
+                          Chọn một địa điểm trên bản đồ hoặc từ danh sách để xem
+                          thông tin chi tiết
                         </p>
                       </div>
                     )}
                   </div>
                 </>
               )}
-              
+
               {/* Tour guide floating button */}
               <div className="absolute bottom-4 right-4">
                 <Button
                   onClick={handleGuideToggle}
-                  className="h-12 w-auto px-3 rounded-full bg-blue-500 text-white shadow-lg hover:bg-blue-600 transition-colors"
+                  className="h-12 w-auto rounded-full bg-blue-500 px-3 text-white shadow-lg transition-colors hover:bg-blue-600"
                   size="sm"
                 >
                   {guideActive ? "Tắt" : "Hướng dẫn"}
@@ -175,9 +190,9 @@ export default function CampusTour({
             </div>
           </div>
         </ModalBody>
-        
+
         {guideActive && (
-          <TourGuide 
+          <TourGuide
             currentLocation={selectedLocation}
             onClose={() => setGuideActive(false)}
           />
@@ -185,10 +200,12 @@ export default function CampusTour({
 
         <ModalFooter className="border-t p-4">
           <p className="text-xs text-gray-500">
-            Trải nghiệm tham quan ảo khuôn viên trường giúp bạn khám phá không gian học tập và các ngành học trước khi đăng ký. Hình ảnh và thông tin chỉ mang tính chất minh họa.
+            Trải nghiệm tham quan ảo khuôn viên trường giúp bạn khám phá không
+            gian học tập và các ngành học trước khi đăng ký. Hình ảnh và thông
+            tin chỉ mang tính chất minh họa.
           </p>
         </ModalFooter>
       </ModalContent>
     </Modal>
   );
-} 
+}

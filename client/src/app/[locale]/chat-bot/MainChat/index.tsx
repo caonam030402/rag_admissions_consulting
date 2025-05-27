@@ -7,7 +7,7 @@ import SideNavigation from "./SideNavigation";
 
 export default function MainChat() {
   return (
-    <div className="flex h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="from-blue-50 via-indigo-50 to-purple-50 flex h-screen bg-gradient-to-br">
       {/* Sidebar Navigation */}
       <SideNavigation />
 
@@ -17,7 +17,7 @@ export default function MainChat() {
         <div className="relative flex-1 overflow-hidden">
           <div className="mx-auto h-full max-w-4xl px-6">
             <BodyMainChat />
-            <div className="absolute bottom-0 left-0 right-0 mx-auto max-w-4xl px-6 pb-6">
+            <div className="absolute inset-x-0 bottom-0 mx-auto max-w-4xl px-6 pb-6">
               <EnterContent />
             </div>
           </div>

@@ -1,5 +1,5 @@
-import React from "react";
 import { Chip } from "@heroui/react";
+import React from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { ActorType } from "@/enums/systemChat";
@@ -41,7 +41,7 @@ export default function Faq() {
       }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Failed to send message"
+        error instanceof Error ? error.message : "Failed to send message",
       );
     } finally {
       setTyping(false);
@@ -50,15 +50,15 @@ export default function Faq() {
 
   return (
     <div className="w-full max-w-2xl">
-      <div className="text-center mb-4">
+      <div className="mb-4 text-center">
         <p className="text-sm text-gray-500">Câu hỏi gợi ý:</p>
       </div>
-      <div className="flex flex-wrap gap-2 justify-center">
+      <div className="flex flex-wrap justify-center gap-2">
         {suggestionQuestions.map((question, index) => (
           <Chip
             key={index}
             variant="flat"
-            className="bg-white/60 backdrop-blur-sm border border-white/20 hover:bg-white/80 transition-all cursor-pointer text-gray-700 hover:text-gray-900"
+            className="cursor-pointer border border-white/20 bg-white/60 text-gray-700 backdrop-blur-sm transition-all hover:bg-white/80 hover:text-gray-900"
             onClick={() => sendMessage(question)}
           >
             {question}

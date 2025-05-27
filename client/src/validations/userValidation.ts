@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { messageValidation } from "@/constants/message";
 
 export const createUserSchema = z.object({

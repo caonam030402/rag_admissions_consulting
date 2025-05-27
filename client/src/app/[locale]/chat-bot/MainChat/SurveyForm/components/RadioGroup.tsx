@@ -29,7 +29,7 @@ export default function RadioGroup({
               "flex cursor-pointer items-center rounded-xl border p-3 transition-all",
               isSelected
                 ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
             )}
             role="radio"
             aria-checked={isSelected}
@@ -45,7 +45,7 @@ export default function RadioGroup({
               <div
                 className={cn(
                   "flex h-5 w-5 items-center justify-center rounded-full border",
-                  isSelected ? "border-blue-500 p-0.5" : "border-gray-300"
+                  isSelected ? "border-blue-500 p-0.5" : "border-gray-300",
                 )}
               >
                 {isSelected && (

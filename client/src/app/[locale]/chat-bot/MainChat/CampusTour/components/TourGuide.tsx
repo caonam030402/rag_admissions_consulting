@@ -1,4 +1,4 @@
-import { button, Button } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { Play, Stop, X } from "@phosphor-icons/react";
 import React, { useEffect, useState } from "react";
 
@@ -21,7 +21,7 @@ export const TourGuide: React.FC<TourGuideProps> = ({
   );
   const [isPlaying, setIsPlaying] = useState(false);
   const [transcript, setTranscript] = useState("");
-  
+
   // Generate audio transcript based on location
   useEffect(() => {
     if (currentLocation) {
@@ -50,26 +50,28 @@ export const TourGuide: React.FC<TourGuideProps> = ({
         }
           
         Hãy khám phá khu vực này và nếu bạn có bất kỳ câu hỏi nào, đừng ngại hỏi tôi!
-      `.trim().replace(/\s+/g, ' ');
-      
+      `
+        .trim()
+        .replace(/\s+/g, " ");
+
       setTranscript(locationTranscript);
     } else {
       setTranscript("Vui lòng chọn một địa điểm để tôi giới thiệu chi tiết.");
     }
   }, [currentLocation, selectedGuide]);
-  
+
   const handlePlayAudio = () => {
     // In a real implementation, this would trigger text-to-speech
     setIsPlaying(!isPlaying);
-    
+
     // Simulate audio playback timing
     if (!isPlaying) {
       // Start playing - in real app, would use Web Speech API or similar
       console.log(
         "Would start playing audio with voice ID:",
-        selectedGuide.voiceId
+        selectedGuide.voiceId,
       );
-      
+
       // For demo, we'll just toggle back after 5 seconds
       setTimeout(() => {
         setIsPlaying(false);
@@ -93,7 +95,7 @@ export const TourGuide: React.FC<TourGuideProps> = ({
           <X size={16} />
         </Button>
       </div>
-      
+
       <div className="p-3">
         <div className="flex items-center gap-3">
           {/* Guide selection */}
@@ -107,10 +109,12 @@ export const TourGuide: React.FC<TourGuideProps> = ({
               <select
                 value={selectedGuide.id}
                 onChange={(e) => {
-                  const newGuide = TOUR_DATA.guides.find((g) => g.id === e.target.value);
+                  const newGuide = TOUR_DATA.guides.find(
+                    (g) => g.id === e.target.value,
+                  );
                   if (newGuide) setSelectedGuide(newGuide);
                 }}
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                className="absolute inset-0 size-full cursor-pointer opacity-0"
                 aria-label="Chọn hướng dẫn viên"
               >
                 {TOUR_DATA.guides.map((guide) => (
@@ -121,24 +125,24 @@ export const TourGuide: React.FC<TourGuideProps> = ({
               </select>
             </div>
           </div>
-          
+
           <div>
             <p className="text-sm font-medium">{selectedGuide.name}</p>
             <p className="text-xs text-gray-600">{selectedGuide.role}</p>
           </div>
-          
+
           <div className="ml-auto">
             <Button
               onClick={handlePlayAudio}
               disabled={!currentLocation}
               size="sm"
-              className={`h-10 w-10 rounded-full ${isPlaying ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
+              className={`size-10 rounded-full ${isPlaying ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"}`}
             >
               {isPlaying ? <Stop size={18} /> : <Play size={18} />}
             </Button>
           </div>
         </div>
-        
+
         <div className="mt-3">
           <p
             className={`text-sm ${currentLocation ? "text-gray-800" : "italic text-gray-500"}`}
@@ -154,15 +158,21 @@ export const TourGuide: React.FC<TourGuideProps> = ({
           </p>
         </div>
       </div>
-      
+
       {currentLocation && (
         <div className="border-t p-3">
           <p className="mb-2 text-xs font-medium">Câu hỏi gợi ý:</p>
           <div className="space-y-1.5">
-            <button type="button" className="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-left text-xs hover:bg-gray-200">
+            <button
+              type="button"
+              className="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-left text-xs hover:bg-gray-200"
+            >
               Ngành học nào phổ biến ở {currentLocation.name}?
             </button>
-            <button type="button" className="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-left text-xs hover:bg-gray-200">
+            <button
+              type="button"
+              className="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-left text-xs hover:bg-gray-200"
+            >
               Cơ hội việc làm sau khi tốt nghiệp?
             </button>
             <button
@@ -176,4 +186,4 @@ export const TourGuide: React.FC<TourGuideProps> = ({
       )}
     </div>
   );
-}
+};

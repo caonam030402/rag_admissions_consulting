@@ -1,11 +1,11 @@
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { DotsThreeOutline, ArrowsOut } from "@phosphor-icons/react";
+import { ArrowsOut, DotsThreeOutline } from "@phosphor-icons/react";
 import React from "react";
 
 import BarChart from "@/components/common/Charts/BarChart";
 import DonutChart from "@/components/common/Charts/DonutChart";
 import LineChart from "@/components/common/Charts/LineChart";
-import type { UserMetrics, ConversationMetrics } from "@/types/dashboard";
+import type { ConversationMetrics, UserMetrics } from "@/types/dashboard";
 
 interface UserEngagementProps {
   userMetrics: UserMetrics;
@@ -17,9 +17,9 @@ export default function UserEngagement({
   conversationMetrics,
 }: UserEngagementProps) {
   return (
-    <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <Card className="lg:col-span-2 overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-        <CardHeader className="pb-0 pt-4 px-6 flex items-center justify-between bg-white">
+    <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <Card className="overflow-hidden border border-gray-100 shadow-sm transition-shadow hover:shadow-md lg:col-span-2">
+        <CardHeader className="flex items-center justify-between bg-white px-6 pb-0 pt-4">
           <div>
             <h3 className="text-lg font-semibold text-gray-800">
               User Retention
@@ -28,14 +28,14 @@ export default function UserEngagement({
           </div>
           <div className="flex space-x-2">
             <button
-              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               type="button"
               aria-label="Expand chart"
             >
               <ArrowsOut size={16} />
             </button>
             <button
-              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               type="button"
               aria-label="More options"
             >
@@ -55,8 +55,8 @@ export default function UserEngagement({
         </CardBody>
       </Card>
 
-      <Card className="overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-        <CardHeader className="pb-0 pt-4 px-6 flex items-center justify-between bg-white">
+      <Card className="overflow-hidden border border-gray-100 shadow-sm transition-shadow hover:shadow-md">
+        <CardHeader className="flex items-center justify-between bg-white px-6 pb-0 pt-4">
           <div>
             <h3 className="text-lg font-semibold text-gray-800">
               Users by Plan
@@ -65,7 +65,7 @@ export default function UserEngagement({
           </div>
           <div className="flex space-x-2">
             <button
-              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               type="button"
               aria-label="More options"
             >
@@ -84,8 +84,8 @@ export default function UserEngagement({
         </CardBody>
       </Card>
 
-      <Card className="lg:col-span-3 overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-        <CardHeader className="pb-0 pt-4 px-6 flex items-center justify-between bg-white">
+      <Card className="overflow-hidden border border-gray-100 shadow-sm transition-shadow hover:shadow-md lg:col-span-3">
+        <CardHeader className="flex items-center justify-between bg-white px-6 pb-0 pt-4">
           <div>
             <h3 className="text-lg font-semibold text-gray-800">
               Weekly Conversation Volume
@@ -96,14 +96,14 @@ export default function UserEngagement({
           </div>
           <div className="flex space-x-2">
             <button
-              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               type="button"
               aria-label="Expand chart"
             >
               <ArrowsOut size={16} />
             </button>
             <button
-              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
               type="button"
               aria-label="More options"
             >

@@ -9,7 +9,7 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChartLineUp, PaperPlaneTilt, X } from "@phosphor-icons/react";
+import { ChartLineUp } from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -153,7 +153,7 @@ export default function AdmissionPredictor({
         data.scores,
         data.selectedBlock,
         major,
-        data.priorityZone
+        data.priorityZone,
       );
       const recentThreshold =
         HISTORICAL_DATA[major as keyof typeof HISTORICAL_DATA]["2023"];
@@ -234,7 +234,7 @@ export default function AdmissionPredictor({
   return (
     <Modal isOpen onClose={onClose}>
       <form onSubmit={handleSubmit(onFormSubmit)}>
-        <ModalContent className="max-w-2xl h-[calc(100vh-10rem)]">
+        <ModalContent className="h-[calc(100vh-10rem)] max-w-2xl">
           <ModalHeader className="flex items-center justify-between border-b p-4">
             <h1 className="text-xl font-semibold">
               Dự đoán khả năng trúng tuyển
@@ -291,7 +291,7 @@ export default function AdmissionPredictor({
             )}
           </ModalBody>
 
-          <ModalFooter className="border-t p-4 flex items-center justify-between">
+          <ModalFooter className="flex items-center justify-between border-t p-4">
             {results ? (
               <Button
                 onPress={() => setResults(null)}
@@ -302,7 +302,7 @@ export default function AdmissionPredictor({
                 Quay lại
               </Button>
             ) : (
-              <div></div>
+              <div />
             )}
 
             {!results && (

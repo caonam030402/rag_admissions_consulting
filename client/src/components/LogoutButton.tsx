@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback } from "react";
-import { authService } from "@/services/auth";
+
 import { signOut } from "@/configs/auth/action";
+import { authService } from "@/services/auth";
 
 interface LogoutButtonProps {
   className?: string;

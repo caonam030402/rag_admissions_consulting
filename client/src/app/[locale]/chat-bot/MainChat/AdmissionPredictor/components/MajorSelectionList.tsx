@@ -1,8 +1,9 @@
 import { Checkbox } from "@heroui/react";
 import React from "react";
 
+import type { MajorSelectionProps } from "@/types/admissionPredictor";
+
 import { HISTORICAL_DATA } from "../data";
-import { MajorSelectionProps } from "@/types/admissionPredictor";
 
 export const MajorSelectionList: React.FC<MajorSelectionProps> = ({
   filteredMajors,

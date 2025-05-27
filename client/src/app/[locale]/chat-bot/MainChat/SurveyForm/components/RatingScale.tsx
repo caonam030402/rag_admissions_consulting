@@ -48,7 +48,7 @@ export default function RatingScale({
                 "group relative flex h-12 w-12 items-center justify-center rounded-full border-2 transition-all duration-200 hover:scale-105",
                 isSelected
                   ? "border-blue-500 bg-blue-500 text-white shadow-lg shadow-blue-200"
-                  : "border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:shadow-md"
+                  : "border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:shadow-md",
               )}
               onClick={() => onChange(level)}
               aria-label={`Đánh giá ${level} điểm`}
@@ -56,7 +56,7 @@ export default function RatingScale({
               <span className="text-base font-semibold">{level}</span>
 
               {/* Tooltip on hover */}
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 transform opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 <div className="rounded-md bg-gray-900 px-2 py-1 text-xs text-white shadow-lg">
                   {level} điểm
                 </div>

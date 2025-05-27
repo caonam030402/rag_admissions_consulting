@@ -1,5 +1,5 @@
-import { AdmissionFormData } from "./index";
 import { BLOCKS, HISTORICAL_DATA, PRIORITY_ZONES, SUBJECTS } from "./data";
+import type { AdmissionFormData } from "./index";
 
 export const calculateTotalScore = (
   scores: AdmissionFormData["scores"],
@@ -51,20 +51,23 @@ export const getSuggestion = (probability: number, major: string): string => {
 };
 
 export const getColorClass = (probability: number) => {
-  if (probability >= 75) return {
-    border: "border-green-200 bg-green-50",
-    bg: "bg-green-500",
-  };
-  if (probability >= 50) return {
-    border: "border-blue-200 bg-blue-50",
-    bg: "bg-blue-500",
-  };
-  if (probability >= 30) return {
-    border: "border-yellow-200 bg-yellow-50",
-    bg: "bg-yellow-500",
-  };
+  if (probability >= 75)
+    return {
+      border: "border-green-200 bg-green-50",
+      bg: "bg-green-500",
+    };
+  if (probability >= 50)
+    return {
+      border: "border-blue-200 bg-blue-50",
+      bg: "bg-blue-500",
+    };
+  if (probability >= 30)
+    return {
+      border: "border-yellow-200 bg-yellow-50",
+      bg: "bg-yellow-500",
+    };
   return {
     border: "border-red-200 bg-red-50",
     bg: "bg-red-500",
   };
-}; 
+};

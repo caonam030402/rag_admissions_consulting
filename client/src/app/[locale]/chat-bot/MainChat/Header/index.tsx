@@ -8,12 +8,11 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { Share, DotsThreeVertical } from "@phosphor-icons/react";
 import React from "react";
 
 export default function HeaderMainChat() {
   return (
-    <div className="flex items-center justify-between border-b border-white/20 bg-white/10 backdrop-blur-sm px-6 py-4">
+    <div className="flex items-center justify-between border-b border-white/20 bg-white/10 px-6 py-4 backdrop-blur-sm">
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="text-2xl">🎓</div>
@@ -26,7 +25,7 @@ export default function HeaderMainChat() {
             <Button variant="light" size="sm" className="text-gray-600">
               GPT-4
               <svg
-                className="w-4 h-4"
+                className="size-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

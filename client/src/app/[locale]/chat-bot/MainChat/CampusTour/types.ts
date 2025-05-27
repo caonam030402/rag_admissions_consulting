@@ -69,4 +69,4 @@ export interface VirtualMapProps {
   locations: Location[];
   selectedLocation: Location | null;
   onLocationSelect: (location: Location) => void;
-} 
+}

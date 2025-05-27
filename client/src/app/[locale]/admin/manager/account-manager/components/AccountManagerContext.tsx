@@ -1,8 +1,10 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useMemo } from "react";
+import type { ReactNode } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
+
 import { userService } from "@/services/user";
-import { CreateUserFormValues } from "@/validations/userValidation";
+import type { CreateUserFormValues } from "@/validations/userValidation";
 
 interface User {
   id: number;
@@ -26,7 +28,7 @@ interface AccountManagerContextType {
   resetPassword: (userId: number) => Promise<void>;
   toggleGoogle2FA: (userId: number, enabled: boolean) => Promise<void>;
   replaceSecretCode: (
-    userId: number
+    userId: number,
   ) => Promise<{ secretCode: string; qrCodeUrl: string }>;
   selectedUser: User | null;
   setSelectedUser: (user: User | null) => void;
@@ -36,7 +38,7 @@ interface AccountManagerContextType {
   setShowQRModal: (show: boolean) => void;
   qrCodeData: { secretCode: string; qrCodeUrl: string } | null;
   setQRCodeData: (
-    data: { secretCode: string; qrCodeUrl: string } | null
+    data: { secretCode: string; qrCodeUrl: string } | null,
   ) => void;
 }
 
@@ -110,7 +112,7 @@ export function AccountManagerProvider({ children }: { children: ReactNode }) {
       showCreateModal,
       showQRModal,
       qrCodeData,
-    ]
+    ],
   );
 
   return (
@@ -124,7 +126,7 @@ export function useAccountManager() {
   const context = useContext(AccountManagerContext);
   if (context === undefined) {
     throw new Error(
-      "useAccountManager must be used within an AccountManagerProvider"
+      "useAccountManager must be used within an AccountManagerProvider",
     );
   }
   return context;

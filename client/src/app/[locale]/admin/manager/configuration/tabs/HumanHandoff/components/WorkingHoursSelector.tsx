@@ -85,7 +85,7 @@ export default function WorkingHoursSelector({
               <div className="ml-4 text-sm text-gray-500">
                 {calculateHours(
                   workingHours[index].from,
-                  workingHours[index].to
+                  workingHours[index].to,
                 )}{" "}
                 hrs
               </div>

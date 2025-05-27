@@ -8,18 +8,9 @@ import {
   ModalFooter,
   ModalHeader,
   Progress,
-  Card,
-  CardBody,
-  Divider,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Sparkle,
-  X,
-  CheckCircle,
-} from "@phosphor-icons/react";
+import { CheckCircle } from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
@@ -27,7 +18,6 @@ import InterestsSkillsStep from "./components/InterestsSkillsStep";
 import LearningCareerStep from "./components/LearningCareerStep";
 import PersonalityTraitsStep from "./components/PersonalityTraitsStep";
 import WorkEnvironmentStep from "./components/WorkEnvironmentStep";
-import { useScrollToError } from "./hooks/useScrollToError";
 import type { SurveyFormSchema } from "./validates";
 import { surveyFormSchema } from "./validates";
 
@@ -183,15 +173,15 @@ export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
         {/* Header */}
         <ModalHeader>
           <div className="w-full">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
-              <div className="flex items-center gap-3 sm:gap-4 flex-1">
+            <div className="mb-4 flex flex-col items-start justify-between gap-4 sm:mb-6 sm:flex-row sm:items-center">
+              <div className="flex flex-1 items-center gap-3 sm:gap-4">
                 <div
-                  className={`w-12 h-12 rounded-2xl bg-gradient-to-r ${currentStepInfo.color} flex items-center justify-center text-xl sm:text-2xl shadow-lg flex-shrink-0`}
+                  className={`size-12 rounded-2xl bg-gradient-to-r ${currentStepInfo.color} flex shrink-0 items-center justify-center text-xl shadow-lg sm:text-2xl`}
                 >
                   {currentStepInfo.icon}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-xl font-bold text-gray-900 mb-1">
+                <div className="min-w-0 flex-1">
+                  <h1 className="mb-1 text-xl font-bold text-gray-900">
                     Khảo sát chọn ngành
                   </h1>
                   <p className="text-sm text-gray-600">
@@ -203,7 +193,7 @@ export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
 
             {/* Progress Section */}
             <div className="space-y-3 sm:space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <span className="text-xs font-semibold text-gray-700">
                     Bước {currentStep} / {totalSteps}
@@ -219,7 +209,7 @@ export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
                     ))}
                   </div>
                 </div>
-                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 sm:px-3 py-1 rounded-full">
+                <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 sm:px-3">
                   {Math.round(progressValue)}% hoàn thành
                 </span>
               </div>
@@ -240,17 +230,17 @@ export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
 
         <FormProvider {...methods}>
           <form>
-            <ModalBody className="p-4 sm:p-6 lg:p-8 flex-1 scroll h-[60vh]">
+            <ModalBody className="scroll h-[60vh] flex-1 p-4 sm:p-6 lg:p-8">
               <div
                 key={currentStep}
-                className="animate-in slide-in-from-right-5 duration-300"
+                className="duration-300 animate-in slide-in-from-right-5"
               >
                 {steps[currentStep - 1]}
               </div>
             </ModalBody>
 
             <ModalFooter>
-              <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-3">
+              <div className="flex w-full flex-col items-center justify-between gap-3 sm:flex-row">
                 <Button
                   onPress={goToPreviousStep}
                   variant="faded"

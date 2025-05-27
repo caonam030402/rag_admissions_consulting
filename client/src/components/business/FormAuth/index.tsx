@@ -1,4 +1,5 @@
 import { Button } from "@heroui/button";
+import { Card } from "@heroui/card";
 import {
   CheckCircle,
   CheckSquare,
@@ -13,8 +14,6 @@ import { type UseFormReturn } from "react-hook-form";
 import Input from "@/components/common/Input";
 import Logo from "@/components/common/Logo";
 import type { IFormTypeAuth } from "@/types/form";
-import { Card } from "@heroui/card";
-import useNavigate from "@/hooks/navigate";
 
 interface IProps {
   handleSubmitMail: (data: any) => void;

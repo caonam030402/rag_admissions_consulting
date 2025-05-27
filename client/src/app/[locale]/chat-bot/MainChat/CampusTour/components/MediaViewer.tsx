@@ -36,7 +36,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({ media, onClose }) => {
     switch (currentMedia.type) {
       case "image":
         return (
-          <div className="flex h-full w-full items-center justify-center">
+          <div className="flex size-full items-center justify-center">
             <img
               src={currentMedia.url}
               alt={currentMedia.title}
@@ -46,7 +46,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({ media, onClose }) => {
         );
       case "video":
         return (
-          <div className="flex h-full w-full items-center justify-center">
+          <div className="flex size-full items-center justify-center">
             <video
               src={currentMedia.url}
               controls
@@ -60,7 +60,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({ media, onClose }) => {
         );
       case "360":
         return (
-          <div className="flex h-full w-full items-center justify-center overflow-hidden">
+          <div className="flex size-full items-center justify-center overflow-hidden">
             <div className="max-w-md rounded-lg bg-gray-100 p-6 text-center">
               <p className="mb-4 text-lg font-medium">Trải nghiệm 360°</p>
               <p className="mb-4 text-gray-600">
@@ -86,7 +86,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({ media, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex h-full w-full flex-col overflow-hidden bg-black bg-opacity-90">
+    <div className="fixed inset-0 flex size-full flex-col overflow-hidden bg-black bg-opacity-90">
       <div className="flex items-center justify-between p-4">
         <h2 className="text-lg font-medium text-white">{currentMedia.title}</h2>
         <Button
@@ -119,7 +119,7 @@ export const MediaViewer: React.FC<MediaViewerProps> = ({ media, onClose }) => {
           </>
         )}
 
-        <div className="flex h-full w-full items-center justify-center overflow-hidden">
+        <div className="flex size-full items-center justify-center overflow-hidden">
           {renderMedia()}
         </div>
       </div>

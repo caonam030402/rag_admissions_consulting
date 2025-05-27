@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { FieldErrors } from "react-hook-form";
+import type { FieldErrors } from "react-hook-form";
 
 interface UseScrollToErrorProps {
   errors: FieldErrors;
@@ -46,8 +46,8 @@ export function useScrollToError({
     console.log(
       "📄 All available data-field elements:",
       Array.from(document.querySelectorAll("[data-field]")).map((el) =>
-        el.getAttribute("data-field")
-      )
+        el.getAttribute("data-field"),
+      ),
     );
 
     // Try multiple strategies to find the target element
@@ -57,7 +57,7 @@ export function useScrollToError({
     targetElement = document.querySelector(`[data-field="${firstErrorField}"]`);
     console.log(
       `🔍 Strategy 1 - Looking for [data-field="${firstErrorField}"]`,
-      targetElement
+      targetElement,
     );
 
     // Strategy 2: Find by name attribute
@@ -65,7 +65,7 @@ export function useScrollToError({
       targetElement = document.querySelector(`[name="${firstErrorField}"]`);
       console.log(
         `🔍 Strategy 2 - Looking for [name="${firstErrorField}"]`,
-        targetElement
+        targetElement,
       );
     }
 
@@ -75,16 +75,16 @@ export function useScrollToError({
       if (errorText) {
         const errorElements = Array.from(
           document.querySelectorAll(
-            ".text-red-500, .text-red-600, .text-danger"
-          )
+            ".text-red-500, .text-red-600, .text-danger",
+          ),
         );
         const errorElement = errorElements.find((el) =>
-          el.textContent?.includes(errorText as string)
+          el.textContent?.includes(errorText as string),
         );
         if (errorElement) {
           // Find the closest field container
           targetElement = errorElement.closest(
-            "[data-field], .space-y-4, .space-y-6, .Card, .card"
+            "[data-field], .space-y-4, .space-y-6, .Card, .card",
           ) as HTMLElement;
         }
       }
@@ -112,7 +112,7 @@ export function useScrollToError({
         for (const heading of headings) {
           if (heading.textContent?.toLowerCase().includes(label)) {
             targetElement = heading.closest(
-              "[data-field], .space-y-4, .space-y-6, .Card, .card"
+              "[data-field], .space-y-4, .space-y-6, .Card, .card",
             ) as HTMLElement;
             if (targetElement) break;
           }
@@ -124,7 +124,7 @@ export function useScrollToError({
     // Strategy 5: Find first focusable element in the field container
     if (targetElement) {
       const focusableElement = targetElement.querySelector(
-        'input, textarea, select, button, [tabindex]:not([tabindex="-1"]), .Chip'
+        'input, textarea, select, button, [tabindex]:not([tabindex="-1"]), .Chip',
       ) as HTMLElement;
 
       if (focusableElement) {
@@ -167,7 +167,7 @@ export function useScrollToError({
     } else {
       console.warn(
         "❌ Could not find target element for field:",
-        firstErrorField
+        firstErrorField,
       );
     }
   }, [errors, behavior, block, inline]);

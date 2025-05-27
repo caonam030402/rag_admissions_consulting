@@ -17,13 +17,13 @@ const Stat: React.FC<StatProps> = ({ title, value, change, icon }) => {
       <CardBody className="p-4">
         <div className="flex items-center gap-4">
           {icon && (
-            <div className="rounded-full p-3 bg-primary-50 text-primary-600 flex-shrink-0">
+            <div className="shrink-0 rounded-full bg-primary-50 p-3 text-primary-600">
               {icon}
             </div>
           )}
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-            <h3 className="text-2xl font-bold mb-1">{value}</h3>
+            <p className="mb-1 text-sm font-medium text-gray-500">{title}</p>
+            <h3 className="mb-1 text-2xl font-bold">{value}</h3>
             {change !== undefined && (
               <div
                 className={`inline-flex items-center text-xs font-medium ${

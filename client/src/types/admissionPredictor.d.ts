@@ -1,5 +1,10 @@
-import { UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
-import { AdmissionFormData } from "./index";
+import type {
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+} from "react-hook-form";
+
+import type { AdmissionFormData } from "./index";
 
 export interface PredictionResult {
   major: string;
@@ -41,4 +46,4 @@ export interface PriorityZoneProps {
   register: UseFormRegister<AdmissionFormData>;
   setValue: UseFormSetValue<AdmissionFormData>;
   watch: UseFormWatch<AdmissionFormData>;
-} 
+}

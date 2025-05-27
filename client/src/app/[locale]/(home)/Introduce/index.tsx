@@ -77,7 +77,9 @@ export default function Introduce() {
             Trợ lý tuyển sinh <span className="text-primary">DAD</span>
           </p>
           <p className="mx-auto w-3/5 py-3 text-white">
-            là nền tảng hỗ trợ tư vấn và giải đáp thông tin tuyển sinh nhanh chóng, chính xác cho thí sinh và phụ huynh, giúp kết nối hiệu quả giữa nhà trường và người học
+            là nền tảng hỗ trợ tư vấn và giải đáp thông tin tuyển sinh nhanh
+            chóng, chính xác cho thí sinh và phụ huynh, giúp kết nối hiệu quả
+            giữa nhà trường và người học
           </p>
           <Input
             ref={emailRef}

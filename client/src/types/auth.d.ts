@@ -31,7 +31,7 @@ interface IUserSession extends IUser {
 }
 
 declare module "next-auth" {
-  interface Session extends IAuthResponse { }
+  interface Session extends IAuthResponse {}
   interface User extends IUserSession {
     error?: string;
   }

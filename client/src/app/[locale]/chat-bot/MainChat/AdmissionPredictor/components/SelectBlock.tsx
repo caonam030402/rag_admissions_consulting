@@ -13,10 +13,7 @@ export const SelectBlock: React.FC<BlockSelectProps> = ({
 }) => {
   return (
     <div>
-      <label
-        className="mb-2 block text-sm font-medium"
-        id="block-label"
-      >
+      <label className="mb-2 block text-sm font-medium" id="block-label">
         Khối thi
       </label>
       <Select
@@ -36,9 +33,7 @@ export const SelectBlock: React.FC<BlockSelectProps> = ({
           trigger: "h-10 border border-gray-200 bg-white",
         }}
       >
-        {(block) => (
-          <SelectItem key={block.key}>{block.label}</SelectItem>
-        )}
+        {(block) => <SelectItem key={block.key}>{block.label}</SelectItem>}
       </Select>
       {errors?.selectedBlock && (
         <p className="mt-1 text-xs text-red-500">
@@ -46,9 +41,8 @@ export const SelectBlock: React.FC<BlockSelectProps> = ({
         </p>
       )}
       <p className="mt-1 text-xs text-blue-600">
-        {filteredMajors.length} ngành học phù hợp với khối{" "}
-        {currentBlock}
+        {filteredMajors.length} ngành học phù hợp với khối {currentBlock}
       </p>
     </div>
   );
-}; 
+};

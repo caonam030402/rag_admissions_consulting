@@ -11,7 +11,7 @@ export const humanHandoffSchema = z.object({
       z.object({
         from: z.string(),
         to: z.string(),
-      })
+      }),
     )
     .length(7),
   allowSystemMessages: z.boolean().default(true),

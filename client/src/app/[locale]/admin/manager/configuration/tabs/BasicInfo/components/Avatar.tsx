@@ -2,7 +2,7 @@
 
 import { Camera, X } from "@phosphor-icons/react";
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import Button from "@/components/common/Button";
 

@@ -1,23 +1,22 @@
 "use client";
 
+import { Button, Divider } from "@heroui/react";
+import {
+  Books,
+  Calculator,
+  ChartBar,
+  Clock,
+  Gear,
+  GraduationCap,
+  House,
+  LightbulbFilament,
+  MapTrifold,
+  Plus,
+  User,
+  X,
+} from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import {
-  House,
-  GraduationCap,
-  Calculator,
-  MapTrifold,
-  Books,
-  ChartBar,
-  LightbulbFilament,
-  Plus,
-  X,
-  Question,
-  Clock,
-  User,
-  Gear,
-} from "@phosphor-icons/react";
-import { Button, Divider, Card, CardBody } from "@heroui/react";
 
 import { ActorType } from "@/enums/systemChat";
 import { chatService } from "@/services/chat";
@@ -162,7 +161,7 @@ export default function SideNavigation() {
       }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Failed to send message"
+        error instanceof Error ? error.message : "Failed to send message",
       );
     } finally {
       setTyping(false);
@@ -205,7 +204,7 @@ export default function SideNavigation() {
 
   const renderNavigationSection = (title: string, items: NavigationItem[]) => (
     <div className="mb-6">
-      <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-3 px-2">
+      <div className="mb-3 flex items-center gap-2 px-2 text-xs font-semibold text-gray-500">
         <span>{title}</span>
       </div>
       <div className="space-y-1">
@@ -213,9 +212,9 @@ export default function SideNavigation() {
           <button
             key={index}
             type="button"
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all hover:bg-gray-100 group ${
+            className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all hover:bg-gray-100 ${
               item.isActive
-                ? "bg-blue-50 text-blue-600 border border-blue-200"
+                ? "border border-blue-200 bg-blue-50 text-blue-600"
                 : "text-gray-700 hover:text-gray-900"
             }`}
             onClick={() => handleAction(item.action)}
@@ -225,10 +224,10 @@ export default function SideNavigation() {
             >
               {item.icon}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm">{item.label}</div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium">{item.label}</div>
               {item.description && (
-                <div className="text-xs text-gray-500 truncate">
+                <div className="truncate text-xs text-gray-500">
                   {item.description}
                 </div>
               )}
@@ -256,12 +255,12 @@ export default function SideNavigation() {
       <div
         className={`${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        } fixed z-10 h-full w-80 bg-white/95 backdrop-blur-sm border-r border-gray-200 shadow-xl transition-transform duration-300 md:relative md:shadow-none`}
+        } fixed z-10 h-full w-80 border-r border-gray-200 bg-white/95 shadow-xl backdrop-blur-sm transition-transform duration-300 md:relative md:shadow-none`}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex items-center gap-3 p-6 border-b border-gray-200">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-xl">
+          <div className="flex items-center gap-3 border-b border-gray-200 p-6">
+            <div className="from-blue-500 to-purple-500 flex size-10 items-center justify-center rounded-xl bg-gradient-to-r text-xl">
               🎓
             </div>
             <div>
@@ -275,7 +274,7 @@ export default function SideNavigation() {
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 scroll p-4 space-y-2">
+          <div className="scroll flex-1 space-y-2 p-4">
             {/* Main Navigation */}
             {renderNavigationSection("ĐIỀU HƯỚNG", MainNavigation)}
 
@@ -285,7 +284,7 @@ export default function SideNavigation() {
             {/* Information & Resources */}
             {renderNavigationSection(
               "THÔNG TIN & TÀI NGUYÊN",
-              InformationResources
+              InformationResources,
             )}
 
             {/* Experience Tools */}
@@ -295,7 +294,7 @@ export default function SideNavigation() {
 
             {/* Recent Chats */}
             <div className="">
-              <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-2 mt-4 px-2">
+              <div className="mb-2 mt-4 flex items-center gap-2 px-2 text-xs font-semibold text-gray-500">
                 <Clock size={14} />
                 <span>CUỘC TRÒ CHUYỆN GẦN ĐÂY</span>
               </div>
@@ -304,7 +303,7 @@ export default function SideNavigation() {
                   <button
                     key={index}
                     type="button"
-                    className="w-full text-left text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 px-2 py-2 rounded transition-colors line-clamp-2"
+                    className="line-clamp-2 w-full rounded p-2 text-left text-xs text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
                     onClick={() => sendMessage(chat)}
                   >
                     {chat}
@@ -317,10 +316,10 @@ export default function SideNavigation() {
           {/* Footer - User Profile */}
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-white text-sm font-medium">
+              <div className="from-green-500 to-blue-500 flex size-10 items-center justify-center rounded-full bg-gradient-to-r text-sm font-medium text-white">
                 <User size={20} weight="fill" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium text-gray-800">
                   Thí sinh
                 </div>

@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
-import { AccountManagerProvider, UserTable } from "./components";
+
 import Card from "@/components/common/Card";
+
+import { AccountManagerProvider, UserTable } from "./components";
 
 export default function AccountManager() {
   return (

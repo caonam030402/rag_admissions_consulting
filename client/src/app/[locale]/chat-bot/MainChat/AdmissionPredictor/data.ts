@@ -120,4 +120,4 @@ export const HISTORICAL_DATA = {
     "2022": 23.0,
     "2021": 22.5,
   },
-}; 
+};

@@ -1,8 +1,8 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useMemo,
-  useCallback,
   useState,
 } from "react";
 
@@ -102,11 +102,8 @@ export const ConfigurationProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   }, []);
 
-
   const handleTabChange = useCallback(
     (newTabKey: number) => {
-
-
       if (isDirty && newTabKey !== currentTabKey) {
         setIsModalOpen(true);
         setPendingTabChange(newTabKey);

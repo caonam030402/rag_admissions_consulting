@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
 import { Button } from "@heroui/button";
 import {
   Modal,
-  ModalContent,
-  ModalHeader,
   ModalBody,
+  ModalContent,
   ModalFooter,
+  ModalHeader,
 } from "@heroui/modal";
+import React, { useState } from "react";
+
 import { useAccountManager } from "./AccountManagerContext";
 
 interface ActionButtonsProps {

@@ -1,11 +1,12 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+
 import { ENameLocalS } from "@/constants";
 import { useQueryCommon } from "@/hooks/useQuery";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { IOptionRQ } from "@/types";
 import { getLocalStorage, setLocalStorage } from "@/utils/clientStorage";
 import http from "@/utils/http";
-import toast from "react-hot-toast";
-import { CreateUserFormValues } from "@/validations/userValidation";
+import type { CreateUserFormValues } from "@/validations/userValidation";
 
 // Types
 interface User {
@@ -133,7 +134,7 @@ export const userService = {
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["users"] });
         toast.success(
-          `2FA ${variables.enabled ? "enabled" : "disabled"} successfully`
+          `2FA ${variables.enabled ? "enabled" : "disabled"} successfully`,
         );
       },
     });
@@ -147,7 +148,7 @@ export const userService = {
       mutationFn: async (userId: number) => {
         const response = await http.post<QRCodeResponse>(
           `users/${userId}/secret-code`,
-          { body: {} }
+          { body: {} },
         );
         return response.payload;
       },

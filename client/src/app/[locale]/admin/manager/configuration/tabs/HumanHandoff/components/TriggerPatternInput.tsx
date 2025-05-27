@@ -13,7 +13,6 @@ export default function TriggerPatternInput({
 }: TriggerPatternInputProps) {
   const { control } = useFormContext<HumanHandoffFormValues>();
 
-
   return (
     <div className="my-4">
       <Controller

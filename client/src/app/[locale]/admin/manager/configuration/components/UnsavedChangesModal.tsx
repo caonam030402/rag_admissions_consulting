@@ -1,22 +1,19 @@
-import React from 'react';
+import { Button } from "@heroui/button";
 import {
   Modal,
-  ModalContent,
-  ModalHeader,
   ModalBody,
+  ModalContent,
   ModalFooter,
+  ModalHeader,
 } from "@heroui/modal";
-import { Button } from "@heroui/button";
 import { Warning } from "@phosphor-icons/react";
-import { useConfiguration } from '../ConfigurationContext';
+import React from "react";
+
+import { useConfiguration } from "../ConfigurationContext";
 
 export default function UnsavedChangesModal() {
-  const { 
-    isModalOpen, 
-    confirmTabChange, 
-    cancelTabChange, 
-    saveChanges 
-  } = useConfiguration();
+  const { isModalOpen, confirmTabChange, cancelTabChange, saveChanges } =
+    useConfiguration();
 
   const handleSaveAndContinue = async () => {
     await saveChanges();
@@ -36,32 +33,22 @@ export default function UnsavedChangesModal() {
         </ModalHeader>
         <ModalBody>
           <p>
-            You have unsaved changes. Would you like to save your changes before proceeding?
+            You have unsaved changes. Would you like to save your changes before
+            proceeding?
           </p>
         </ModalBody>
         <ModalFooter className="flex justify-end gap-2">
-          <Button 
-            variant="flat" 
-            color="default" 
-            onClick={cancelTabChange}
-          >
+          <Button variant="flat" color="default" onClick={cancelTabChange}>
             Cancel
           </Button>
-          <Button 
-            variant="flat" 
-            color="danger" 
-            onClick={handleDiscardChanges}
-          >
+          <Button variant="flat" color="danger" onClick={handleDiscardChanges}>
             Discard Changes
           </Button>
-          <Button 
-            color="primary" 
-            onClick={handleSaveAndContinue}
-          >
+          <Button color="primary" onClick={handleSaveAndContinue}>
             Save & Continue
           </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
   );
-} 
+}

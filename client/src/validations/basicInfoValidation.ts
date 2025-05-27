@@ -21,4 +21,4 @@ export const defaultBasicInfoValues = {
 };
 
 // Type for form values
-export type BasicInfoFormValues = z.infer<typeof basicInfoSchema>; 
+export type BasicInfoFormValues = z.infer<typeof basicInfoSchema>;

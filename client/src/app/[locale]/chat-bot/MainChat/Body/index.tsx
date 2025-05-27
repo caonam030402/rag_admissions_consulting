@@ -17,11 +17,11 @@ export default function BodyMainChat() {
   }, [messages, isTyping]);
 
   return (
-    <div className="h-[80vh] scroll px-2 pb-20 pt-4">
+    <div className="scroll h-[80vh] px-2 pb-20 pt-4">
       {messages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-full">
+        <div className="flex h-full flex-col items-center justify-center">
           <IntroChat />
-          <div className="mt-4 text-center text-gray-500 text-sm">
+          <div className="mt-4 text-center text-sm text-gray-500">
             Sử dụng các tính năng ở thanh bên để được hỗ trợ tốt hơn
           </div>
         </div>
@@ -31,7 +31,7 @@ export default function BodyMainChat() {
             <ChatMessage key={message.id} message={message} />
           ))}
           {isTyping && (
-            <div className="flex gap-2 p-4 items-center">
+            <div className="flex items-center gap-2 p-4">
               <div className="size-2 animate-bounce rounded-full bg-blue-400" />
               <div className="size-2 animate-bounce rounded-full bg-blue-500 delay-100" />
               <div className="size-2 animate-bounce rounded-full bg-blue-600 delay-200" />

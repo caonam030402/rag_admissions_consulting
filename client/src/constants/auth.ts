@@ -6,7 +6,7 @@ export enum ETriggerCredentials {
 }
 
 export const listCredential = (
-  credentials: Partial<Record<string, unknown>>
+  credentials: Partial<Record<string, unknown>>,
 ) => {
   const list = {
     [ETriggerCredentials.OTP]: authService.confirmOtp({

@@ -26,16 +26,16 @@ export default function OverviewPage() {
   } = mockDashboardData;
 
   return (
-    <div className="space-y-4 h-[calc(100vh-80px)] scroll">
+    <div className="scroll h-[calc(100vh-80px)] space-y-4">
       <div className="rounded-lg bg-white p-6 shadow-sm">
         <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
-        <p className="text-gray-500 mt-2">
+        <p className="mt-2 text-gray-500">
           Comprehensive analytics for your chatbox system
         </p>
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Stat
           title="Total Users"
           value={userMetrics.totalUsers.toLocaleString()}
@@ -63,7 +63,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Main Dashboard Content */}
-      <div className="bg-white rounded-lg p-6 shadow-sm">
+      <div className="rounded-lg bg-white p-6 shadow-sm">
         <Tabs aria-label="Dashboard tabs" className="mt-2">
           <Tab
             key="engagement"

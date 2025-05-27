@@ -3,9 +3,9 @@ import { Select } from "@heroui/select";
 import React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
+import { listTimezone } from "@/constants/adminConfig";
 import { cn } from "@/libs/utils";
 import type { HumanHandoffFormValues } from "@/validations/humanHandoffValidation";
-import { listTimezone } from "@/constants/adminConfig";
 
 interface TimezoneSelectorProps {
   disabled?: boolean;

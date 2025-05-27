@@ -1,5 +1,5 @@
-import React from "react";
 import dynamic from "next/dynamic";
+import React from "react";
 
 // Dynamically import ApexCharts for client-side only rendering
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });

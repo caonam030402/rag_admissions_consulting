@@ -1,8 +1,8 @@
 import { signOut } from "@/configs/auth";
+import { authService } from "@/services";
 import { clearLocalStorage } from "@/utils/clientStorage";
 
 import { ENameLocalS } from "./common";
-import { authService } from "@/services";
 
 export const userMenuOptions: IMenuUserOption[] = [
   {

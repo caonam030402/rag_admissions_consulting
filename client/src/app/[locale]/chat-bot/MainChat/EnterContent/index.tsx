@@ -1,19 +1,17 @@
 "use client";
 
+import { Button, Input, Tooltip } from "@heroui/react";
 import {
-  PaperPlaneRight,
-  Paperclip,
-  Microphone,
-  Calculator,
-  GraduationCap,
   Books,
+  Calculator,
   ChartBar,
+  GraduationCap,
   LightbulbFilament,
-  MapTrifold,
+  Microphone,
+  PaperPlaneRight,
 } from "@phosphor-icons/react";
 import React, { useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Button, Input, Tooltip } from "@heroui/react";
 
 import { ActorType } from "@/enums/systemChat";
 import { chatService } from "@/services/chat";
@@ -93,7 +91,7 @@ export default function EnterContent() {
       }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Failed to send message"
+        error instanceof Error ? error.message : "Failed to send message",
       );
     } finally {
       setTyping(false);
@@ -108,16 +106,16 @@ export default function EnterContent() {
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-lg p-4">
+    <div className="rounded-2xl border border-white/20 bg-white/80 p-4 shadow-lg backdrop-blur-sm">
       {/* Feature Buttons */}
-      <div className="flex items-center justify-center gap-2 mb-4">
+      <div className="mb-4 flex items-center justify-center gap-2">
         {FeatureButtons.map((item, index) => (
           <Tooltip key={index} content={item.tooltip || item.label}>
             <Button
               variant="light"
               size="sm"
               isIconOnly
-              className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              className="text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
               onClick={item.action}
             >
               {item.icon}
@@ -158,7 +156,7 @@ export default function EnterContent() {
                 isIconOnly
                 onClick={handleSubmit}
                 isDisabled={!message.trim() || isTyping}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg min-w-8 w-8 h-8"
+                className="size-8 min-w-8 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
               >
                 <PaperPlaneRight size={16} weight="fill" />
               </Button>

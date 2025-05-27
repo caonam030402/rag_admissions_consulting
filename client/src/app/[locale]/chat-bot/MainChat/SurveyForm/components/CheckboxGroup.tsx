@@ -32,7 +32,7 @@ export default function CheckboxGroup({
       className={cn(
         "grid gap-3",
         gridCols === "2" ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1",
-        className
+        className,
       )}
     >
       {options.map((option) => {
@@ -45,7 +45,7 @@ export default function CheckboxGroup({
               "flex cursor-pointer items-center gap-2 rounded-xl border p-3 transition-all",
               isSelected
                 ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
             )}
             role="checkbox"
             aria-checked={isSelected}
@@ -60,7 +60,7 @@ export default function CheckboxGroup({
             <div
               className={cn(
                 "flex h-5 w-5 items-center justify-center rounded border",
-                isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300"
+                isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300",
               )}
             >
               {isSelected && (

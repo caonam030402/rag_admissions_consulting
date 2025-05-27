@@ -34,7 +34,7 @@ export default function useVerifyOTP() {
 
       router.push(PATH.OVERVIEW);
     },
-    [router]
+    [router],
   );
 
   const handleResendOtp = useCallback(
@@ -48,10 +48,10 @@ export default function useVerifyOTP() {
           onSuccess: () => {
             toast.success("Resend OTP successfully");
           },
-        }
+        },
       );
     },
-    [mutate]
+    [mutate],
   );
 
   return {

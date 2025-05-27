@@ -1,24 +1,25 @@
 "use client";
 
-import React from "react";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import {
   Modal,
-  ModalContent,
-  ModalHeader,
   ModalBody,
+  ModalContent,
   ModalFooter,
+  ModalHeader,
 } from "@heroui/modal";
 import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 import {
+  type CreateUserFormValues,
   createUserSchema,
   defaultValues,
-  type CreateUserFormValues,
 } from "@/validations/userValidation";
+
 import { useAccountManager } from "./AccountManagerContext";
 
 export default function CreateUserModal() {

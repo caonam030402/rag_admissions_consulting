@@ -1,27 +1,27 @@
 "use client";
 
-import { Controller, useFormContext } from "react-hook-form";
-import { Card, CardBody, Chip, Badge } from "@heroui/react";
+import { Badge, Card, CardBody, Chip } from "@heroui/react";
 import {
-  Code,
-  Briefcase,
-  Palette,
-  Flask,
-  Heart,
-  GraduationCap,
-  Megaphone,
   Airplane,
-  Trophy,
+  Briefcase,
   ChartBar,
-  PaintBrush,
-  Users,
-  Lightbulb,
-  ClipboardText,
-  Microphone,
-  Gear,
-  Star,
   CheckCircle,
+  ClipboardText,
+  Code,
+  Flask,
+  Gear,
+  GraduationCap,
+  Heart,
+  Lightbulb,
+  Megaphone,
+  Microphone,
+  PaintBrush,
+  Palette,
+  Star,
+  Trophy,
+  Users,
 } from "@phosphor-icons/react";
+import { Controller, useFormContext } from "react-hook-form";
 
 import type { SurveyFormSchema } from "../validates";
 
@@ -69,12 +69,12 @@ export default function InterestsSkillsStep() {
       <Card className="shadow-lg">
         <CardBody className="p-6">
           <div className="mb-4">
-            <div className="flex items-center gap-3 mb-1">
+            <div className="mb-1 flex items-center gap-3">
               <div>
                 <h3 className="text-base font-bold text-gray-900">
                   Sở thích của bạn
                 </h3>
-                <p className="text-gray-600 text-sm">
+                <p className="text-sm text-gray-600">
                   Chọn những lĩnh vực bạn quan tâm (tối thiểu 1)
                 </p>
               </div>
@@ -92,7 +92,7 @@ export default function InterestsSkillsStep() {
                       field.value?.includes(interest.value) || false;
                     return (
                       <Chip
-                        className="border-none cursor-pointer"
+                        className="cursor-pointer border-none"
                         key={interest.value}
                         variant={isSelected ? "solid" : "faded"}
                         color={isSelected ? (interest.color as any) : "default"}
@@ -110,7 +110,7 @@ export default function InterestsSkillsStep() {
                   })}
                 </div>
 
-                <div className="flex items-center justify-between bg-pink-50 rounded-lg p-3">
+                <div className="flex items-center justify-between rounded-lg bg-pink-50 p-3">
                   <div className="flex items-center gap-2">
                     <Badge content={field.value?.length || 0} color="primary">
                       <Star size={20} className="text-pink-500" weight="fill" />
@@ -128,8 +128,8 @@ export default function InterestsSkillsStep() {
                 </div>
 
                 {errors.interests && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-red-600 text-sm flex items-center gap-2">
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                    <p className="flex items-center gap-2 text-sm text-red-600">
                       <span>⚠️</span>
                       {errors.interests.message}
                     </p>
@@ -145,12 +145,12 @@ export default function InterestsSkillsStep() {
       <Card className="shadow-lg">
         <CardBody className="p-6">
           <div className="mb-4">
-            <div className="flex items-center gap-3 mb-1">
+            <div className="mb-1 flex items-center gap-3">
               <div>
                 <h3 className="text-base font-bold text-gray-900">
                   Kỹ năng của bạn
                 </h3>
-                <p className="text-gray-600 text-sm">
+                <p className="text-sm text-gray-600">
                   Chọn những kỹ năng bạn tự tin (tối thiểu 1)
                 </p>
               </div>
@@ -168,7 +168,7 @@ export default function InterestsSkillsStep() {
                       field.value?.includes(skill.value) || false;
                     return (
                       <Chip
-                        className="border-none cursor-pointer"
+                        className="cursor-pointer border-none"
                         key={skill.value}
                         variant={isSelected ? "solid" : "faded"}
                         color={isSelected ? (skill.color as any) : "default"}
@@ -186,7 +186,7 @@ export default function InterestsSkillsStep() {
                   })}
                 </div>
 
-                <div className="flex items-center justify-between bg-blue-50 rounded-lg p-3">
+                <div className="flex items-center justify-between rounded-lg bg-blue-50 p-3">
                   <div className="flex items-center gap-2">
                     <Badge content={field.value?.length || 0} color="primary">
                       <Gear size={20} className="text-blue-500" weight="fill" />
@@ -204,8 +204,8 @@ export default function InterestsSkillsStep() {
                 </div>
 
                 {errors.skills && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-red-600 text-sm flex items-center gap-2">
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                    <p className="flex items-center gap-2 text-sm text-red-600">
                       <span>⚠️</span>
                       {errors.skills.message}
                     </p>
@@ -218,11 +218,11 @@ export default function InterestsSkillsStep() {
       </Card>
 
       {/* Tips Card */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
+      <Card className="from-blue-50 to-purple-50 border border-blue-200 bg-gradient-to-r">
         <CardBody className="p-6">
           <div className="flex items-start gap-3">
             <div>
-              <h4 className="font-semibold text-blue-900 mb-1">💡 Mẹo nhỏ</h4>
+              <h4 className="mb-1 font-semibold text-blue-900">💡 Mẹo nhỏ</h4>
               <p className="text-sm text-blue-800">
                 Hãy chọn những sở thích và kỹ năng thực sự phù hợp với bạn. Điều
                 này sẽ giúp chúng tôi đưa ra lời khuyên chính xác hơn về ngành

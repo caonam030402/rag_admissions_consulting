@@ -1,9 +1,8 @@
-import { Button } from "@heroui/react";
-import { ArrowLeft, PaperPlaneTilt } from "@phosphor-icons/react";
 import React from "react";
 
-import { BLOCKS, HISTORICAL_DATA } from "../data";
 import type { PredictionResultsProps } from "@/types/admissionPredictor";
+
+import { BLOCKS, HISTORICAL_DATA } from "../data";
 import { getColorClass } from "../utils";
 
 export const PredictionResults: React.FC<PredictionResultsProps> = ({
