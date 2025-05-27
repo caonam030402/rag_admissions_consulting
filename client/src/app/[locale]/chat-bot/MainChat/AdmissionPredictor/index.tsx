@@ -9,7 +9,7 @@ import {
   ModalHeader,
 } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChartLineUp, X } from "@phosphor-icons/react";
+import { ChartLineUp, PaperPlaneTilt, X } from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -153,7 +153,7 @@ export default function AdmissionPredictor({
         data.scores,
         data.selectedBlock,
         major,
-        data.priorityZone,
+        data.priorityZone
       );
       const recentThreshold =
         HISTORICAL_DATA[major as keyof typeof HISTORICAL_DATA]["2023"];
@@ -233,77 +233,103 @@ export default function AdmissionPredictor({
 
   return (
     <Modal isOpen onClose={onClose}>
-      <ModalContent className="max-w-2xl h-[calc(100vh-10rem)]">
-        <ModalHeader className="flex items-center justify-between border-b p-4">
-          <h1 className="text-xl font-semibold">
-            Dự đoán khả năng trúng tuyển
-          </h1>
-        </ModalHeader>
+      <form onSubmit={handleSubmit(onFormSubmit)}>
+        <ModalContent className="max-w-2xl h-[calc(100vh-10rem)]">
+          <ModalHeader className="flex items-center justify-between border-b p-4">
+            <h1 className="text-xl font-semibold">
+              Dự đoán khả năng trúng tuyển
+            </h1>
+          </ModalHeader>
 
-        <ModalBody className="scroll h-[calc(100vh-20rem)] p-6">
-          {!results ? (
-            <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-              <SelectBlock
-                register={register}
-                setValue={setValue}
-                currentBlock={currentBlock}
-                errors={errors}
-                filteredMajors={filteredMajors}
-              />
-
-              <div>
-                <label
-                  className="mb-2 block text-sm font-medium"
-                  id="scores-label"
-                >
-                  Điểm số theo từng môn
-                </label>
-                <ScoreInputs
-                  activeSubjects={activeSubjects}
+          <ModalBody className="scroll h-[calc(100vh-20rem)] p-6">
+            {!results ? (
+              <div className="space-y-6">
+                <SelectBlock
                   register={register}
-                  errors={errors.scores}
+                  setValue={setValue}
+                  currentBlock={currentBlock}
+                  errors={errors}
+                  filteredMajors={filteredMajors}
+                />
+
+                <div>
+                  <label
+                    className="mb-2 block text-sm font-medium"
+                    id="scores-label"
+                  >
+                    Điểm số theo từng môn
+                  </label>
+                  <ScoreInputs
+                    activeSubjects={activeSubjects}
+                    register={register}
+                    errors={errors.scores}
+                  />
+                </div>
+
+                <SelectPriorityZone
+                  register={register}
+                  setValue={setValue}
+                  watch={watch}
+                />
+
+                <MajorSelectionList
+                  filteredMajors={filteredMajors}
+                  register={register}
+                  currentBlock={currentBlock}
+                  errors={errors}
+                  selectedPreferences={selectedPreferences}
+                  onCheckboxChange={handleCheckboxChange}
                 />
               </div>
-
-              <SelectPriorityZone
-                register={register}
-                setValue={setValue}
-                watch={watch}
-              />
-
-              <MajorSelectionList
-                filteredMajors={filteredMajors}
-                register={register}
+            ) : (
+              <PredictionResults
+                results={results}
                 currentBlock={currentBlock}
-                errors={errors}
-                selectedPreferences={selectedPreferences}
-                onCheckboxChange={handleCheckboxChange}
+                onBack={() => setResults(null)}
+                onSendToChat={handleSendToChat}
               />
+            )}
+          </ModalBody>
 
-              <div className="flex justify-end">
-                <Button type="submit" className="flex items-center gap-2">
-                  <ChartLineUp size={20} />
-                  Dự đoán
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <PredictionResults
-              results={results}
-              currentBlock={currentBlock}
-              onBack={() => setResults(null)}
-              onSendToChat={handleSendToChat}
-            />
-          )}
-        </ModalBody>
+          <ModalFooter className="border-t p-4 flex items-center justify-between">
+            {results ? (
+              <Button
+                onPress={() => setResults(null)}
+                variant="bordered"
+                size="md"
+                className="flex items-center gap-1"
+              >
+                Quay lại
+              </Button>
+            ) : (
+              <div></div>
+            )}
 
-        <ModalFooter className="border-t p-4">
-          <p className="text-xs text-gray-500">
-            Lưu ý: Kết quả dự đoán chỉ mang tính tham khảo dựa trên dữ liệu điểm
-            chuẩn các năm trước.
-          </p>
-        </ModalFooter>
-      </ModalContent>
+            {!results && (
+              <Button
+                color="primary"
+                type="submit"
+                className="flex items-center gap-2"
+              >
+                <ChartLineUp size={20} />
+                Dự đoán
+              </Button>
+            )}
+
+            {results && (
+              <Button
+                onPress={handleSendToChat}
+                variant="solid"
+                color="primary"
+                size="md"
+                className="flex items-center gap-1"
+              >
+                Gửi vào chat
+              </Button>
+            )}
+          </ModalFooter>
+        </ModalContent>
+      </form>
     </Modal>
   );
 }

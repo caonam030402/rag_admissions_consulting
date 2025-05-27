@@ -117,5 +117,15 @@ async def clear_user_session(user_email: str):
 
 if __name__ == "__main__":
     import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    
+    # Check if running in development mode
+    is_dev = os.getenv("ENVIRONMENT", "development") == "development"
+    
+    uvicorn.run(
+        "main:app",  # Use string format for reload to work properly
+        host="0.0.0.0", 
+        port=8000,
+        reload=is_dev,  # Enable auto-reload in development
+        reload_dirs=["./"] if is_dev else None,  # Watch current directory
+        log_level="info"
+    )

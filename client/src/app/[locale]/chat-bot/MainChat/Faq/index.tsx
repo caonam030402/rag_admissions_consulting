@@ -1,58 +1,70 @@
-import { ArrowRight } from "@phosphor-icons/react";
 import React from "react";
+import { Chip } from "@heroui/react";
+import { v4 as uuidv4 } from "uuid";
 
-import Card from "@/components/common/Card";
-import IconMapper from "@/components/common/IconMapper";
+import { ActorType } from "@/enums/systemChat";
+import { chatService } from "@/services/chat";
+import { useChatStore } from "@/stores/chat";
 
-const listFAQ = [
-  {
-    title: "Học phí tại trường là bao nhiêu?",
-    desc: "Học phí tùy ngành học, xem chi tiết trên website.",
-    iconName: "wallet",
-  },
-  {
-    title: "Trường có những ngành đào tạo nào?",
-    desc: "Trường đào tạo đa ngành, xem danh sách trên website.",
-    iconName: "graduationCap",
-  },
-  {
-    title: "Làm thế nào để đăng ký xét tuyển?",
-    desc: "Đăng ký online qua cổng tuyển sinh hoặc nộp trực tiếp.",
-    iconName: "userList",
-  },
-  {
-    title: "Trường có hỗ trợ học bổng không?",
-    desc: "Có nhiều học bổng cho sinh viên giỏi và khó khăn.",
-    iconName: "medal",
-  },
+const suggestionQuestions = [
+  "Học phí các ngành là bao nhiêu?",
+  "Điều kiện xét tuyển như thế nào?",
+  "Trường có những ngành đào tạo nào?",
+  "Thông tin về học bổng sinh viên giỏi?",
+  "Điểm chuẩn năm 2024 là bao nhiêu?",
+  "Thủ tục nhập học online như thế nào?",
+  "Ký túc xá có những tiện ích gì?",
+  "Cơ hội việc làm sau tốt nghiệp?",
 ];
 
 export default function Faq() {
+  const { addMessage, setTyping, setError } = useChatStore();
+
+  const sendMessage = async (messageText: string) => {
+    // Add user message to chat
+    addMessage({
+      id: uuidv4(),
+      content: messageText,
+      role: ActorType.Human,
+      timestamp: Date.now(),
+    });
+
+    setTyping(true);
+
+    try {
+      // Start a new empty assistant message
+      useChatStore.getState().startNewAssistantMessage();
+
+      // Stream the response
+      for await (const token of chatService.streamMessage(messageText)) {
+        useChatStore.getState().appendToLastMessage(token);
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to send message"
+      );
+    } finally {
+      setTyping(false);
+    }
+  };
+
   return (
-    <>
-      <div className="mb-3 mt-7 flex w-full items-center justify-between text-sm opacity-80">
-        <span>Câu hỏi thường gặp:</span>
-        <ArrowRight />
+    <div className="w-full max-w-2xl">
+      <div className="text-center mb-4">
+        <p className="text-sm text-gray-500">Câu hỏi gợi ý:</p>
       </div>
-      <div className="grid w-full grid-cols-2 gap-3">
-        {listFAQ.map((item, index) => (
-          <div key={index}>
-            <Card>
-              <div className="flex gap-2">
-                <div className="mt-1">
-                  <IconMapper name={item.iconName} size={20} />
-                </div>
-                <div>
-                  <div className="font-bold">{item.title}</div>
-                  <div className="color-contract-light mt-1 text-sm">
-                    {item.desc}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
+      <div className="flex flex-wrap gap-2 justify-center">
+        {suggestionQuestions.map((question, index) => (
+          <Chip
+            key={index}
+            variant="flat"
+            className="bg-white/60 backdrop-blur-sm border border-white/20 hover:bg-white/80 transition-all cursor-pointer text-gray-700 hover:text-gray-900"
+            onClick={() => sendMessage(question)}
+          >
+            {question}
+          </Chip>
         ))}
       </div>
-    </>
+    </div>
   );
 }

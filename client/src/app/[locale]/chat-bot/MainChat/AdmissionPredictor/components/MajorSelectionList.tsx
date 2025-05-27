@@ -25,7 +25,7 @@ export const MajorSelectionList: React.FC<MajorSelectionProps> = ({
         </span>
       </label>
       <div
-        className={`scroll max-h-48 rounded-md border ${errors?.preferences ? "border-red-400" : "border-gray-200"} p-2`}
+        className={`scroll max-h-[calc(100vh-43rem)] rounded-md border ${errors?.preferences ? "border-red-400" : "border-gray-200"} p-2`}
         aria-labelledby="majors-label"
       >
         {filteredMajors.length > 0 ? (

@@ -21,7 +21,7 @@ export const ScoreInputs: React.FC<ScoreInputsProps> = ({
         return (
           <div
             key={subject}
-            className="flex flex-col gap-1 rounded-lg border border-gray-200 p-3"
+            className="flex flex-col gap-1 rounded-lg border-gray-200"
           >
             <div className="flex items-center gap-3">
               <Input
@@ -46,10 +46,7 @@ export const ScoreInputs: React.FC<ScoreInputsProps> = ({
               </label>
             </div>
             {error && (
-              <p 
-                id={`${subject}-error`} 
-                className="text-xs text-red-500"
-              >
+              <p id={`${subject}-error`} className="text-xs text-red-500">
                 {error.message}
               </p>
             )}
@@ -58,4 +55,4 @@ export const ScoreInputs: React.FC<ScoreInputsProps> = ({
       })}
     </div>
   );
-}; 
+};
