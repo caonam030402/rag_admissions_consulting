@@ -72,31 +72,38 @@ def seed_data_from_csv(csv_path: str, data_source_id: str):
         if not extracted_data:
             raise Exception("No data found in CSV file")
 
-        # Since CSV already contains processed text chunks, we don't need to split
-        # Just convert to Document objects for compatibility
+        # Use existing helper for text chunking
         from langchain.schema import Document
 
-        text_chunks = []
-        max_content_size = 35000  # Leave 5KB for metadata overhead
-
+        # Convert text strings to Document objects first
+        documents = []
         for i, text in enumerate(extracted_data):
-            # Truncate text if too long to stay under Pinecone limits
-            if len(text.encode("utf-8")) > max_content_size:
-                # Truncate to safe size
-                text = text[: max_content_size // 2]  # Conservative truncation
-                logger.warning(f"Truncated chunk {i} to fit Pinecone size limits")
-
             doc = Document(
                 page_content=text,
                 metadata={
-                    "source": os.path.basename(csv_path),  # Use filename only
+                    "source": os.path.basename(csv_path),
                     "data_source_id": data_source_id,
-                    "chunk_index": i,
+                    "original_chunk_index": i,
                 },
             )
-            text_chunks.append(doc)
+            documents.append(doc)
 
-        logger.info(f"Created {len(text_chunks)} document chunks")
+        logger.info(f"Created {len(documents)} initial documents")
+
+        # Use helper to split text into optimal chunks
+        text_chunks = helper.text_split(documents)
+
+        # Update metadata for split chunks
+        for i, chunk in enumerate(text_chunks):
+            chunk.metadata.update(
+                {
+                    "chunk_index": i,
+                }
+            )
+
+        logger.info(
+            f"Created {len(text_chunks)} document chunks from {len(extracted_data)} original text(s)"
+        )
 
         # Get embeddings model
         embeddings_model = embeddings.get_embeddings(ModelType.HUGGINGFACE)

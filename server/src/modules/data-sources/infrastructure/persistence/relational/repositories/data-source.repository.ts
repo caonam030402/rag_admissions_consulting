@@ -31,21 +31,9 @@ export class DataSourceRelationalRepository implements DataSourceRepository {
     const entities = await this.dataSourceRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
-      async findAllWithPagination({
-        paginationOptions,
-      }: {
-        paginationOptions: IPaginationOptions;
-      }): Promise<DataSource[]> {
-        const entities = await this.dataSourceRepository.find({
-          skip: (paginationOptions.page - 1) * paginationOptions.limit,
-          take: paginationOptions.limit,
-          order: {
-            createdAt: 'DESC',
-          },
-        });
-
-        return entities.map((entity) => DataSourceMapper.toDomain(entity));
-      }
+      order: {
+        createdAt: 'DESC',
+      },
     });
 
     return entities.map((entity) => DataSourceMapper.toDomain(entity));

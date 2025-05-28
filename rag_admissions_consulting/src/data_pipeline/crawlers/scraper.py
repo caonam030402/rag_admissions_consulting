@@ -145,7 +145,7 @@ def main():
         scraper = WebScraper(url, data_source_id)
 
         # Scrape the website
-        results = scraper.scrape_site(max_pages=100)
+        results = scraper.scrape_site(max_pages=1)
 
         if not results:
             raise Exception("No content scraped from the website")
