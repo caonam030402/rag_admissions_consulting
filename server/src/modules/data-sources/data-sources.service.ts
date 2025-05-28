@@ -98,6 +98,9 @@ export class DataSourcesService {
         }
         dataSourceType = DataSourceType.MANUAL_INPUT;
         processingInput = JSON.stringify({ title, content });
+        console.log('Manual input - Original title:', title);
+        console.log('Manual input - Original content:', content);
+        console.log('Manual input - JSON string:', processingInput);
         processingType = 'manual';
         break;
 

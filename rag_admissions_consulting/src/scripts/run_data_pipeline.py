@@ -9,9 +9,12 @@ import subprocess
 import sys
 import time
 import os
+import base64
 from datetime import datetime
 from pathlib import Path
 from loguru import logger
+import json
+import tempfile
 
 # Global variable to store the last success output for final reporting
 last_success_output = ""
@@ -90,11 +93,56 @@ def run_individual_pipeline(data_source_id: str, data_type: str, input_path: str
                 csv_file = f"data_pipeline/processed_data/csv_{data_source_id}.csv"
 
         elif data_type == "manual":
-            # For manual input
-            command = f"python data_pipeline/processors/manual_processor.py '{input_path}' \"{data_source_id}\""
-            description = f"Manual Input Processing - DataSource {data_source_id}"
+            # For manual input - use base64 encoding to safely pass JSON
+            logger.info(f"📝 Original input_path: {input_path}")
+            logger.info(f"📝 Input type: {type(input_path)}")
 
-            if not run_command(command, description):
+            try:
+                # Encode JSON as base64 to avoid command line issues
+                if isinstance(input_path, str):
+                    # If it looks like JSON but missing quotes, try to fix it
+                    if input_path.startswith("{") and not input_path.startswith('{"'):
+                        # Fix common command line quote stripping
+                        # {title:value,content:value} -> {"title":"value","content":"value"}
+                        import re
+
+                        # This is a simple fix for the specific case
+                        fixed_json = re.sub(
+                            r"(\w+):", r'"\1":', input_path
+                        )  # Add quotes to keys
+                        fixed_json = re.sub(
+                            r":(\w+)", r':"\1"', fixed_json
+                        )  # Add quotes to values
+                        logger.info(f"📝 Fixed JSON: {fixed_json}")
+                        json_data = fixed_json
+                    else:
+                        json_data = input_path
+
+                    # Validate JSON
+                    parsed = json.loads(json_data)
+                    logger.info(f"📝 Parsed JSON successfully: {parsed}")
+
+                    # Encode as base64
+                    encoded_json = base64.b64encode(json_data.encode("utf-8")).decode(
+                        "ascii"
+                    )
+                    logger.info(f"📝 Base64 encoded length: {len(encoded_json)}")
+
+                else:
+                    # Create JSON object
+                    json_data = json.dumps({"content": str(input_path)})
+                    encoded_json = base64.b64encode(json_data.encode("utf-8")).decode(
+                        "ascii"
+                    )
+
+                command = f'python data_pipeline/processors/manual_processor.py "{encoded_json}" "{data_source_id}"'
+                description = f"Manual Input Processing - DataSource {data_source_id}"
+
+                if not run_command(command, description):
+                    return False
+
+            except Exception as e:
+                logger.error(f"📝 Error processing manual input: {e}")
                 return False
 
             # CSV file should be created by manual processor

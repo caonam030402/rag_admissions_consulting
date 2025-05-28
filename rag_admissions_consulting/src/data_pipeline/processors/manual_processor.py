@@ -9,6 +9,8 @@ import os
 import json
 import csv
 import re
+import base64
+import binascii
 from loguru import logger
 
 # Add parent directory to path for imports
@@ -68,21 +70,27 @@ def process_manual_input(input_data: dict, data_source_id: str) -> str:
 def main():
     """Main manual input processing function"""
     if len(sys.argv) != 3:
-        print("Usage: python manual_processor.py <input_json> <data_source_id>")
+        print(
+            "Usage: python manual_processor.py <base64_encoded_json> <data_source_id>"
+        )
         sys.exit(1)
 
-    input_json = sys.argv[1]
+    encoded_json = sys.argv[1]
     data_source_id = sys.argv[2]
 
     logger.info(f"📝 Starting manual input processing")
     logger.info(f"📊 DataSource ID: {data_source_id}")
+    logger.info(f"📄 Base64 encoded JSON length: {len(encoded_json)}")
 
     try:
-        # Parse input JSON
+        # Decode base64 and parse JSON
         try:
-            input_data = json.loads(input_json)
-        except json.JSONDecodeError as e:
-            raise Exception(f"Invalid JSON input: {e}")
+            decoded_json = base64.b64decode(encoded_json).decode("utf-8")
+            logger.info(f"📝 Decoded JSON: {decoded_json}")
+            input_data = json.loads(decoded_json)
+            logger.info(f"📝 Parsed JSON data: {input_data}")
+        except (base64.binascii.Error, json.JSONDecodeError, UnicodeDecodeError) as e:
+            raise Exception(f"Invalid base64 encoded JSON: {e}")
 
         # Update status to processing
         update_backend_status(data_source_id, "processing")

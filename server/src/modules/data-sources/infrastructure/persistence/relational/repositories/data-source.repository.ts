@@ -13,7 +13,7 @@ export class DataSourceRelationalRepository implements DataSourceRepository {
   constructor(
     @InjectRepository(DataSourceEntity)
     private readonly dataSourceRepository: Repository<DataSourceEntity>,
-  ) {}
+  ) { }
 
   async create(data: DataSource): Promise<DataSource> {
     const persistenceModel = DataSourceMapper.toPersistence(data);
@@ -31,6 +31,21 @@ export class DataSourceRelationalRepository implements DataSourceRepository {
     const entities = await this.dataSourceRepository.find({
       skip: (paginationOptions.page - 1) * paginationOptions.limit,
       take: paginationOptions.limit,
+      async findAllWithPagination({
+        paginationOptions,
+      }: {
+        paginationOptions: IPaginationOptions;
+      }): Promise<DataSource[]> {
+        const entities = await this.dataSourceRepository.find({
+          skip: (paginationOptions.page - 1) * paginationOptions.limit,
+          take: paginationOptions.limit,
+          order: {
+            createdAt: 'DESC',
+          },
+        });
+
+        return entities.map((entity) => DataSourceMapper.toDomain(entity));
+      }
     });
 
     return entities.map((entity) => DataSourceMapper.toDomain(entity));
