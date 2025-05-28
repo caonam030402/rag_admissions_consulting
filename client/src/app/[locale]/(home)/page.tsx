@@ -2,6 +2,7 @@
 
 import React from "react";
 
+import ChatbotWidget from "@/components/business/ChatbotWidget";
 import Header from "@/components/layouts/Header";
 
 import CommunicationTool from "./CommunicationTool";
@@ -17,6 +18,7 @@ export default function HomePage() {
       <div className="container mx-auto">
         <CommunicationTool />
       </div>
+      <ChatbotWidget />
     </div>
   );
 }
