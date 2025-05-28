@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import React from "react";
 
-import type { TabTypeChatbotWidget } from "../types";
+import type { TabTypeChatbotWidget } from "@/types/chat";
+
 import Body from "./Body";
 import ChatEnter from "./ChatEnter";
 import Header from "./Header";

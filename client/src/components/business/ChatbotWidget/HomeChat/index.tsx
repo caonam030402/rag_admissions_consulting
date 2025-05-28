@@ -1,7 +1,8 @@
 import React from "react";
 
+import type { TabTypeChatbotWidget } from "@/types/chat";
+
 import Header from "../MainChat/Header";
-import type { TabTypeChatbotWidget } from "../types";
 import BottomNavigation from "./BottomNavigation";
 import LiveChatFooter from "./LiveChatFooter";
 import MenuList from "./MenuList";

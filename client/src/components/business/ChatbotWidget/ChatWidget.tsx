@@ -2,10 +2,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { Dispatch, SetStateAction } from "react";
 import React from "react";
 
+import type { TabTypeChatbotWidget } from "@/types/chat";
+
 import EmailForm from "./EmailForm";
 import HomeChat from "./HomeChat";
 import MainChat from "./MainChat";
-import type { TabTypeChatbotWidget } from "./types";
 
 interface ChatWidgetProps {
   isOpen: boolean;

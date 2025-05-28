@@ -3,17 +3,17 @@
 import React, { useState } from "react";
 
 import { ENameLocalS } from "@/constants";
+import type { TabTypeChatbotWidget } from "@/types/chat";
 
 import { ChatWidget } from "./ChatWidget";
 import { FloatingButton } from "./FloatingButton";
-import type { TabTypeChatbotWidget } from "./types";
 
 export default function ChatbotWidget1() {
   const [isOpen, setIsOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<TabTypeChatbotWidget>("home");
   const [showEmailForm, setShowEmailForm] = useState(false);
 
-  const toggleWidget = () => {
+  const toggleWidget = (): void => {
     setIsOpen(!isOpen);
     if (!isOpen) {
       setActiveTab("home");
