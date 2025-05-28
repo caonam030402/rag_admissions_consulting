@@ -20,6 +20,5 @@ import { ChatBotEntity } from './entities/chatbot.entity';
     },
   ],
   exports: [chatbotRepository],
-  
 })
 export class RelationalchatbotPersistenceModule {}

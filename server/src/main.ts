@@ -12,12 +12,16 @@ import { AppModule } from './app.module';
 import validationOptions from './utils/validation-options';
 import { AllConfigType } from './config/config.type';
 import { ResolvePromisesInterceptor } from './utils/serializer.interceptor';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 // import { RedisIoAdapter } from './redis/redis';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService<AllConfigType>);
+
+  // Enable Socket.IO adapter for WebSocket support
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   // Remove Redis adapter
   // const redisIoAdapter = new RedisIoAdapter(app, configService);

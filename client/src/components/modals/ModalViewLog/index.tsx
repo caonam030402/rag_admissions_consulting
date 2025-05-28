@@ -1,6 +1,5 @@
 import {
   Button,
-  Chip,
   Modal,
   ModalBody,
   ModalContent,
@@ -10,7 +9,7 @@ import {
 import { FileText } from "@phosphor-icons/react";
 import React from "react";
 
-import { EStatusUpload } from "@/enums/adminChat";
+import type { EStatusUpload } from "@/enums/adminChat";
 
 /**
  * Log entry interface for system logs
@@ -85,17 +84,6 @@ export default function ModalViewLog({
               <div className="flex items-center gap-2">
                 <FileText size={24} />
                 <span>Logs for {fileName || "Unknown File"}</span>
-              </div>
-              <div className="text-sm text-default-500">
-                {status === EStatusUpload.UPLOADED ? (
-                  <Chip size="sm" variant="flat" color="success">
-                    Uploaded
-                  </Chip>
-                ) : (
-                  <Chip size="sm" variant="flat" color="danger">
-                    Failed
-                  </Chip>
-                )}
               </div>
             </ModalHeader>
 

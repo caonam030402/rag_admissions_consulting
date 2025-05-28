@@ -24,8 +24,6 @@ import { AllConfigType } from './config/config.type';
 import { SessionModule } from './modules/session/session.module';
 import { MailerModule } from './modules/mailer/mailer.module';
 import redisConfig from './redis/config/redis.config';
-import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './common/guard/jwt-auth.guard';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -37,6 +35,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
 import { OtpsModule } from './modules/otps/otps.module';
 import { MailModule } from './modules/mail/mail.module';
 import { ChatbotsModule } from './modules/chatbots/chatbots.module';
+import { DataSourcesModule } from './modules/data-sources/data-sources.module';
 @Module({
   imports: [
     OtpsModule,
@@ -89,6 +88,7 @@ import { ChatbotsModule } from './modules/chatbots/chatbots.module';
     SessionModule,
     MailModule,
     MailerModule,
+    DataSourcesModule,
   ],
 })
 export class AppModule { }

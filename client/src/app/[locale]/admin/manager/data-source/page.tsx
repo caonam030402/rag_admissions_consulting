@@ -1,227 +1,218 @@
 "use client";
 
-import {
-  Chip,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  useDisclosure,
-} from "@heroui/react";
-import { DotsThree, Eye, Trash, Upload } from "@phosphor-icons/react";
+import { useDisclosure } from "@heroui/react";
+import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
-import Button from "@/components/common/Button";
-import TableList from "@/components/common/Table";
-import ModalUploadFile from "@/components/modals/ModalUploadFile";
-import type { ILogEntry } from "@/components/modals/ModalViewLog";
+import ModalAddKnowledge from "@/components/modals/ModalAddKnowledge";
+import ModalRealTimeLogs from "@/components/modals/ModalRealTimeLogs";
 import ModalViewLog from "@/components/modals/ModalViewLog";
 import { EStatusUpload } from "@/enums/adminChat";
-import { uploadFiles } from "@/services/fileUpload";
+import { useDataSourceWebSocket } from "@/hooks/useDataSourceWebSocket";
+import {
+  type CreateDataSourceRequest,
+  type DataSource,
+  useDataSources,
+  useRefreshDataSources,
+  useUploadDataSource,
+} from "@/services/dataSource";
 
-/**
- * Dataset item interface
- */
-interface ITableDataset {
-  id: string;
-  name: string;
-  dimension: string;
-  lmmEmbedding: string;
-  createdBy: string;
-  createdAt: string;
-  status: EStatusUpload;
-  logs?: ILogEntry[];
-}
+import DataSourceDetail from "./components/DataSourceDetail";
+import DataSourceList, {
+  type ITableDataset,
+} from "./components/DataSourceList";
 
-// Sample data for development and testing
-const mockData: ITableDataset[] = [
-  {
-    id: "1",
-    name: "Document A",
-    dimension: "768",
-    lmmEmbedding: "[0.12, -0.34, 0.56, ...]",
-    createdBy: "Alice",
-    status: EStatusUpload.UPLOADED,
-    createdAt: "2025-04-17 10:30:00",
-    logs: [
-      {
-        timestamp: "2025-04-17 10:29:30",
-        message: "Starting document upload",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-17 10:29:45",
-        message: "Validating document format",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-17 10:30:00",
-        message: "Document uploaded successfully",
-        type: "success",
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Document B",
-    dimension: "512",
-    lmmEmbedding: "[0.23, 0.45, -0.67, ...]",
-    createdBy: "Bob",
-    status: EStatusUpload.FAILED,
-    createdAt: "2025-04-16 15:45:00",
-    logs: [
-      {
-        timestamp: "2025-04-16 15:44:30",
-        message: "Starting document upload",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-16 15:44:45",
-        message: "Validating document format",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-16 15:45:00",
-        message: "Error: Invalid document format",
-        type: "error",
-      },
-      {
-        timestamp: "2025-04-16 15:45:00",
-        message: "Upload failed: Please check file format and try again",
-        type: "error",
-      },
-    ],
-  },
-  {
-    id: "3",
-    name: "Image X",
-    dimension: "1024",
-    lmmEmbedding: "[0.89, -0.12, 0.33, ...]",
-    createdBy: "Charlie",
-    status: EStatusUpload.UPLOADED,
-    createdAt: "2025-04-15 08:20:00",
-    logs: [
-      {
-        timestamp: "2025-04-15 08:19:30",
-        message: "Starting image upload",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-15 08:19:45",
-        message: "Validating image format",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-15 08:20:00",
-        message: "Image uploaded successfully",
-        type: "success",
-      },
-    ],
-  },
-  {
-    id: "4",
-    name: "Video Clip Y",
-    dimension: "2048",
-    lmmEmbedding: "[0.01, 0.77, -0.44, ...]",
-    createdBy: "Diana",
-    status: EStatusUpload.FAILED,
-    createdAt: "2025-04-14 17:05:00",
-    logs: [
-      {
-        timestamp: "2025-04-14 17:04:30",
-        message: "Starting video upload",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-14 17:04:45",
-        message: "Validating video format",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-14 17:05:00",
-        message: "Error: File size exceeds limit",
-        type: "error",
-      },
-      {
-        timestamp: "2025-04-14 17:05:00",
-        message: "Upload failed: File too large",
-        type: "error",
-      },
-    ],
-  },
-  {
-    id: "5",
-    name: "Audio Sample Z",
-    dimension: "384",
-    lmmEmbedding: "[0.66, -0.33, 0.22, ...]",
-    createdBy: "Ethan",
-    status: EStatusUpload.UPLOADED,
-    createdAt: "2025-04-13 12:00:00",
-    logs: [
-      {
-        timestamp: "2025-04-13 11:59:30",
-        message: "Starting audio upload",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-13 11:59:45",
-        message: "Validating audio format",
-        type: "info",
-      },
-      {
-        timestamp: "2025-04-13 12:00:00",
-        message: "Audio uploaded successfully",
-        type: "success",
-      },
-    ],
-  },
-];
+// Helper function for log type
+const getLogType = (status: string): "success" | "error" | "info" => {
+  if (status === "completed") return "success";
+  if (status === "failed") return "error";
+  return "info";
+};
 
-// Accepted file types for upload
-const ACCEPTED_FILE_TYPES = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "text/csv",
-  "text/plain",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/markdown",
-  "text/html",
-  "application/json",
-];
+// Convert DataSource to ITableDataset format
+const convertToTableDataset = (dataSource: DataSource): ITableDataset => {
+  const getSourceType = (type: string) => {
+    switch (type) {
+      case "web_crawl":
+        return "Website";
+      case "file_upload":
+        return "File";
+      case "manual_input":
+        return "Manual";
+      default:
+        return "Unknown";
+    }
+  };
+
+  // Updated status mapping to handle all states
+  const getStatus = (status: string): EStatusUpload => {
+    switch (status) {
+      case "completed":
+        return EStatusUpload.UPLOADED;
+      case "failed":
+        return EStatusUpload.FAILED;
+      case "processing":
+      case "pending":
+        return EStatusUpload.UPLOADING; // Show as uploading for processing states
+      default:
+        return EStatusUpload.UPLOADED;
+    }
+  };
+
+  // Enhanced status message for logs
+  const getStatusMessage = (ds: DataSource) => {
+    if (ds.status === "processing") {
+      return "🔄 Processing in progress...";
+    }
+    if (ds.status === "pending") {
+      return "⏳ Waiting to process...";
+    }
+    if (ds.status === "completed") {
+      return `✅ Completed: ${ds.documentsCount || 0} docs, ${ds.vectorsCount || 0} vectors`;
+    }
+    if (ds.status === "failed") {
+      return `❌ Failed: ${ds.errorMessage || "Unknown error"}`;
+    }
+    return "📄 Created";
+  };
+
+  return {
+    id: dataSource.id,
+    name: dataSource.name,
+    url: dataSource.sourceUrl || "",
+    source: getSourceType(dataSource.type),
+    usedBy: "RAG System",
+    status: getStatus(dataSource.status),
+    lastUpdated: new Date(dataSource.updatedAt).toLocaleString(),
+    logs: [
+      {
+        timestamp: new Date(dataSource.createdAt).toLocaleString(),
+        message: "📄 Data source created",
+        type: "info" as const,
+      },
+      ...(dataSource.processingStartedAt
+        ? [
+            {
+              timestamp: new Date(
+                dataSource.processingStartedAt,
+              ).toLocaleString(),
+              message: "🚀 Processing started",
+              type: "info" as const,
+            },
+          ]
+        : []),
+      // Only show completion/status log for current status
+      ...(dataSource.status === "processing" ||
+      dataSource.status === "pending" ||
+      (dataSource.status === "completed" && dataSource.processingCompletedAt) ||
+      (dataSource.status === "failed" && dataSource.processingCompletedAt)
+        ? [
+            {
+              timestamp: dataSource.processingCompletedAt
+                ? new Date(dataSource.processingCompletedAt).toLocaleString()
+                : new Date().toLocaleString(),
+              message: getStatusMessage(dataSource),
+              type: getLogType(dataSource.status),
+            },
+          ]
+        : []),
+    ],
+  };
+};
 
 /**
  * Data Source Management Page Component
  */
 export default function DataSourcePage() {
+  const { data: session } = useSession();
+
   // Modal state management
-  const uploadModal = useDisclosure();
+  const addKnowledgeModal = useDisclosure();
   const logModal = useDisclosure();
+  const realTimeLogsModal = useDisclosure();
+
+  // WebSocket for real-time logs
+  const { isConnected, getLogsForDataSource, clearAllLogs } =
+    useDataSourceWebSocket();
 
   // State management
-  const [refreshKey, setRefreshKey] = useState(0);
   const [selectedItem, setSelectedItem] = useState<ITableDataset | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "detail">("list");
+  const [selectedDataSource, setSelectedDataSource] =
+    useState<ITableDataset | null>(null);
+
+  // Query and mutations
+  const {
+    data: dataSourcesResponse,
+    isLoading,
+    error,
+    refetch,
+  } = useDataSources({}, true); // Enable auto-polling
+
+  const refreshDataSources = useRefreshDataSources();
+  const uploadMutation = useUploadDataSource();
+
+  // Check if any data sources are processing
+  const hasProcessingItems =
+    dataSourcesResponse?.data?.some(
+      (item) => item.status === "processing" || item.status === "pending",
+    ) || false;
+
+  // Convert API response to table format
+  const tableData: ITableDataset[] = dataSourcesResponse?.data
+    ? dataSourcesResponse.data.map(convertToTableDataset)
+    : [];
 
   /**
-   * Handles file uploads to the server
-   * @param files Files to upload
+   * Handles adding new knowledge
+   * @param data Knowledge data to add
    */
-  const handleUpload = async (files: File[]): Promise<any> => {
+  const handleAddKnowledge = async (data: any): Promise<void> => {
     try {
-      const response = await uploadFiles(files, "/api/data-source/upload");
+      // Prepare upload data
+      const uploadData: CreateDataSourceRequest = {
+        type: data.type,
+        name: data.name || `${data.type} - ${new Date().toLocaleString()}`,
+        description: data.description,
+        url: data.url,
+        title: data.title,
+        content: data.content,
+        file: data.file,
+        uploaderEmail: session?.user?.email || "",
+        uploadedBy: session?.user?.id || "",
+        metadata: {
+          uploadedAt: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+        },
+      };
 
-      // Refresh the data table after successful upload
-      setRefreshKey((prev) => prev + 1);
+      // Call upload mutation
+      await uploadMutation.mutateAsync(uploadData);
 
-      return response;
-    } catch (error) {
-      console.error("Upload failed:", error);
-      throw error;
+      toast.success("Knowledge source uploaded successfully!");
+    } catch (uploadError: any) {
+      console.error("Failed to add knowledge:", uploadError);
+      toast.error(uploadError.message || "Failed to upload knowledge source");
+      throw uploadError;
     }
+  };
+
+  /**
+   * Handles clicking on data source name to view details
+   * @param item Dataset item to view details for
+   */
+  const handleViewDetail = (item: ITableDataset) => {
+    setSelectedDataSource(item);
+    setViewMode("detail");
+  };
+
+  /**
+   * Handles going back to list view
+   */
+  const handleBackToList = () => {
+    setViewMode("list");
+    setSelectedDataSource(null);
   };
 
   /**
@@ -234,102 +225,90 @@ export default function DataSourcePage() {
   };
 
   /**
-   * Handles deletion of a dataset item
-   * @param item Dataset item to delete
+   * Opens real-time logs modal for the selected item
+   * @param item Dataset item to view real-time logs for
    */
-  const handleDelete = (item: ITableDataset) => {
-    console.log("Deleting item:", item.id);
-    toast.success(`${item.name} deleted successfully`);
-    // TODO: Implement actual delete functionality
+  const handleViewRealTimeLogs = (item: ITableDataset) => {
+    setSelectedItem(item);
+    realTimeLogsModal.onOpen();
   };
 
   /**
-   * Renders the status chip for an item
-   * @param item Dataset item
+   * Opens add knowledge modal
    */
-  const renderStatusChip = (item: ITableDataset) => {
-    const statusColor =
-      item.status === EStatusUpload.UPLOADED ? "success" : "danger";
-    const statusText =
-      item.status === EStatusUpload.UPLOADED ? "Uploaded" : "Failed";
+  const handleOpenAddKnowledge = () => {
+    addKnowledgeModal.onOpen();
+  };
+
+  /**
+   * Manual refresh function
+   */
+  const handleRefresh = () => {
+    refreshDataSources();
+    toast.success("Data refreshed!");
+  };
+
+  // Handle loading state
+  if (isLoading) {
     return (
-      <Chip size="sm" variant="flat" color={statusColor}>
-        {statusText}
-      </Chip>
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-lg">Loading data sources...</div>
+      </div>
     );
-  };
+  }
 
-  /**
-   * Renders action dropdown menu for an item
-   * @param item Dataset item
-   */
-  const renderActionMenu = (item: ITableDataset) => (
-    <Dropdown>
-      <DropdownTrigger>
-        <Button variant="light" size="xxs">
-          <DotsThree size={25} />
-        </Button>
-      </DropdownTrigger>
-      <DropdownMenu aria-label="Actions">
-        <DropdownItem
-          key="view"
-          startContent={<Eye size={20} className="text-primary-500" />}
-          onPress={() => handleViewLog(item)}
+  // Handle error state
+  if (error) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center">
+        <div className="mb-4 text-lg text-red-600">
+          Failed to load data sources
+        </div>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="rounded bg-primary-500 px-4 py-2 text-white hover:bg-primary-600"
         >
-          View Log
-        </DropdownItem>
-        <DropdownItem
-          key="delete"
-          startContent={<Trash size={20} className="text-danger-500" />}
-          className="text-danger-500"
-          onPress={() => handleDelete(item)}
-        >
-          Delete
-        </DropdownItem>
-      </DropdownMenu>
-    </Dropdown>
-  );
+          Retry
+        </button>
+      </div>
+    );
+  }
 
-  // Table column definitions
-  const tableColumns = [
-    { key: "name", label: "NAME" },
-    { key: "dimension", label: "DIMENSION" },
-    { key: "lmmEmbedding", label: "LMM EMBEDDING" },
-    { key: "status", label: "STATUS", render: renderStatusChip },
-    { key: "createdBy", label: "CREATED BY" },
-    { key: "createdAt", label: "CREATED AT" },
-    { key: "action", label: "ACTION", render: renderActionMenu },
-  ];
+  // Show detail view if in detail mode
+  if (viewMode === "detail" && selectedDataSource) {
+    return (
+      <DataSourceDetail
+        dataSource={{
+          ...selectedDataSource,
+          totalQuestions: 133, // TODO: Get from API
+          questions: [], // TODO: Load from API
+        }}
+        onBack={handleBackToList}
+        onAddKnowledge={handleAddKnowledge}
+      />
+    );
+  }
 
+  // Show list view
   return (
     <div>
-      {/* Header with title and upload button */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-xl">Dataset</div>
-        </div>
-        <Button
-          size="sm"
-          startContent={<Upload size={20} />}
-          color="primary"
-          onPress={uploadModal.onOpen}
-        >
-          Upload file
-        </Button>
-      </div>
-
-      {/* Data table */}
-      <div className="mt-5">
-        <TableList data={mockData} columns={tableColumns} key={refreshKey} />
-      </div>
+      <DataSourceList
+        data={tableData}
+        onViewDetail={handleViewDetail}
+        onViewLog={handleViewLog}
+        onViewRealTimeLogs={handleViewRealTimeLogs}
+        onAddKnowledge={handleOpenAddKnowledge}
+        onRefresh={handleRefresh}
+        hasProcessingItems={hasProcessingItems}
+        refreshKey={0} // Not needed with React Query
+      />
 
       {/* Modals */}
-      <ModalUploadFile
-        isOpen={uploadModal.isOpen}
-        onOpenChange={uploadModal.onOpenChange}
-        onUpload={handleUpload}
-        maxFileSize={5}
-        acceptedFileTypes={ACCEPTED_FILE_TYPES}
+      <ModalAddKnowledge
+        isOpen={addKnowledgeModal.isOpen}
+        onOpenChange={addKnowledgeModal.onOpenChange}
+        onAdd={handleAddKnowledge}
       />
 
       <ModalViewLog
@@ -338,6 +317,16 @@ export default function DataSourcePage() {
         fileName={selectedItem?.name}
         status={selectedItem?.status}
         logs={selectedItem?.logs}
+      />
+
+      <ModalRealTimeLogs
+        isOpen={realTimeLogsModal.isOpen}
+        onOpenChange={realTimeLogsModal.onOpenChange}
+        dataSourceId={selectedItem?.id || ""}
+        dataSourceName={selectedItem?.name || ""}
+        logs={selectedItem ? getLogsForDataSource(selectedItem.id) : []}
+        isConnected={isConnected}
+        onClearAllLogs={clearAllLogs}
       />
     </div>
   );

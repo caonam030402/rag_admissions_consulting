@@ -22,4 +22,4 @@ export class ChatbotHistory {
 
   @ApiProperty()
   updatedAt: Date;
-} 
+}

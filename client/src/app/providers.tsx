@@ -4,6 +4,7 @@ import { HeroUIProvider } from "@heroui/react";
 import { LiveblocksProvider } from "@liveblocks/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { SessionProvider } from "next-auth/react";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useRef } from "react";
@@ -19,26 +20,30 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }
   const queryClient = new QueryClient();
   return (
-    <QueryClientProvider client={queryClient}>
-      <Provider store={storeRef.current}>
-        <HeroUIProvider>
-          <NextThemesProvider attribute="class" defaultTheme="light">
-            <ProgressBar
-              height="4px"
-              color="#ff4d4f"
-              options={{ showSpinner: false }}
-              shallowRouting
-            />
-            <LiveblocksProvider
-              publicApiKey={process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY ?? ""}
-            >
-              {children}
-            </LiveblocksProvider>
-            <Toaster />
-          </NextThemesProvider>
-          <ReactQueryDevtools initialIsOpen={false} />
-        </HeroUIProvider>
-      </Provider>
-    </QueryClientProvider>
+    <SessionProvider>
+      <QueryClientProvider client={queryClient}>
+        <Provider store={storeRef.current}>
+          <HeroUIProvider>
+            <NextThemesProvider attribute="class" defaultTheme="light">
+              <ProgressBar
+                height="4px"
+                color="#ff4d4f"
+                options={{ showSpinner: false }}
+                shallowRouting
+              />
+              <LiveblocksProvider
+                publicApiKey={
+                  process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY ?? ""
+                }
+              >
+                {children}
+              </LiveblocksProvider>
+              <Toaster />
+            </NextThemesProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </HeroUIProvider>
+        </Provider>
+      </QueryClientProvider>
+    </SessionProvider>
   );
 }

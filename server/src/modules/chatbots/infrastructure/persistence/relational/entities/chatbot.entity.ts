@@ -4,7 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({
@@ -33,4 +33,4 @@ export class ChatBotEntity {
   @ApiProperty()
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
-} 
+}

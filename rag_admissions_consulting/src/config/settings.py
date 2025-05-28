@@ -45,7 +45,7 @@ class VectorStoreConfig:
 
     pinecone_api_key: str = os.getenv("PINECONE_API_KEY", "")
     pinecone_environment: str = os.getenv("PINECONE_ENVIRONMENT", "")
-    index_name: str = os.getenv("PINECONE_INDEX_NAME", "test11")
+    index_name: str = os.getenv("PINECONE_INDEX_NAME", "test13")
     top_k: int = int(os.getenv("VECTOR_STORE_TOP_K", "5"))
 
 

@@ -12,7 +12,7 @@ import { ChatbotRole } from 'src/common/enums/chatbot.enum';
 export class CreateChatbotHistoryDto {
   @ApiProperty({
     description: 'Email của người dùng',
-    example: 'user@example.com'
+    example: 'user@example.com',
   })
   @IsString()
   @IsNotEmpty()
@@ -21,7 +21,7 @@ export class CreateChatbotHistoryDto {
   @ApiProperty({
     description: 'Role của người gửi tin nhắn',
     enum: ChatbotRole,
-    example: ChatbotRole.USER
+    example: ChatbotRole.USER,
   })
   @IsEnum(ChatbotRole)
   @IsNotEmpty()
@@ -29,7 +29,7 @@ export class CreateChatbotHistoryDto {
 
   @ApiProperty({
     description: 'Nội dung tin nhắn',
-    example: 'Tôi muốn hỏi về chương trình học'
+    example: 'Tôi muốn hỏi về chương trình học',
   })
   @IsString()
   @IsNotEmpty()
@@ -37,9 +37,9 @@ export class CreateChatbotHistoryDto {
 
   @ApiProperty({
     description: 'ID của cuộc trò chuyện',
-    example: '123e4567-e89b-12d3-a456-426614174000'
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @IsUUID()
   @IsOptional()
   conversationId?: string;
-} 
+}

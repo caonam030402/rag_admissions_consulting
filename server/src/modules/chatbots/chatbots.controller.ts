@@ -32,7 +32,7 @@ import { Public } from 'src/decorators/public.decorator';
   version: '1',
 })
 export class chatbotsController {
-  constructor(private readonly chatbotsService: chatbotsService) { }
+  constructor(private readonly chatbotsService: chatbotsService) {}
 
   @Get('history')
   @ApiOkResponse({ type: InfinityPaginationResponse(ChatbotHistory) })

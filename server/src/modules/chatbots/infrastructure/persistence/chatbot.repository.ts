@@ -12,7 +12,7 @@ export abstract class chatbotRepository {
   }): Promise<ChatbotHistory[]>;
 
   abstract removeHistory(id: ChatbotHistory['id']): Promise<void>;
-  
+
   abstract createHistory(params: {
     email: string;
     role: string;

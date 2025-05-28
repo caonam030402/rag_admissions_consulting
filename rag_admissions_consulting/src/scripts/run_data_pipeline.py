@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Data Pipeline Runner
-Chạy toàn bộ pipeline từ crawling đến processing
+Data Pipeline Runner for RAG Admissions Consulting
+Runs the complete pipeline: processing -> vector store upload
+Integrated with backend system
 """
 
 import subprocess
@@ -9,27 +10,40 @@ import sys
 import time
 import os
 from datetime import datetime
+from pathlib import Path
 from loguru import logger
+
+# Global variable to store the last success output for final reporting
+last_success_output = ""
 
 
 def run_command(command, description):
-    """Chạy một command và log kết quả"""
+    """Run a command and log results"""
     logger.info(f"🚀 {description}")
     logger.info(f"📝 Command: {command}")
 
     try:
+        # Fix: Use parent directory (src) as working directory instead of scripts
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(script_dir)  # Go up one level to src/
+
         result = subprocess.run(
             command,
             shell=True,
             capture_output=True,
             text=True,
-            cwd=os.path.dirname(os.path.abspath(__file__)),
+            cwd=parent_dir,
         )
 
         if result.returncode == 0:
             logger.success(f"✅ {description} - COMPLETED")
             if result.stdout:
-                logger.info(f"Output: {result.stdout[:200]}...")
+                logger.info(f"Output: {result.stdout.strip()}")
+
+            # Store the last successful output for final reporting
+            if result.stdout and "SUCCESS:" in result.stdout:
+                global last_success_output
+                last_success_output = result.stdout.strip()
         else:
             logger.error(f"❌ {description} - FAILED")
             logger.error(f"Error: {result.stderr}")
@@ -42,27 +56,88 @@ def run_command(command, description):
     return True
 
 
-def main():
-    """Chạy toàn bộ data pipeline"""
+def run_individual_pipeline(data_source_id: str, data_type: str, input_path: str):
+    """Run pipeline for a specific data source"""
+    logger.info(f"🎯 Running pipeline for DataSource: {data_source_id}")
+    logger.info(f"📊 Data type: {data_type}")
+    logger.info(f"📄 Input: {input_path}")
+
+    try:
+        # Step 1: Process data based on type
+        if data_type == "website":
+            # For website crawling
+            command = f'python data_pipeline/crawlers/scraper.py "{input_path}" "{data_source_id}"'
+            description = f"Web Crawling - {input_path}"
+
+            if not run_command(command, description):
+                return False
+
+            # CSV file should be created by scraper
+            csv_file = f"data_pipeline/processed_data/scraped_{data_source_id}.csv"
+
+        elif data_type in ["pdf", "csv"]:
+            # For file uploads
+            command = f'python data_pipeline/processors/data_processing.py "{input_path}" "{data_source_id}"'
+            description = f"File Processing - {os.path.basename(input_path)}"
+
+            if not run_command(command, description):
+                return False
+
+            # CSV file should be created by processor
+            if data_type == "pdf":
+                csv_file = f"data_pipeline/processed_data/pdf_{data_source_id}.csv"
+            else:
+                csv_file = f"data_pipeline/processed_data/csv_{data_source_id}.csv"
+
+        elif data_type == "manual":
+            # For manual input
+            command = f"python data_pipeline/processors/manual_processor.py '{input_path}' \"{data_source_id}\""
+            description = f"Manual Input Processing - DataSource {data_source_id}"
+
+            if not run_command(command, description):
+                return False
+
+            # CSV file should be created by manual processor
+            csv_file = f"data_pipeline/processed_data/manual_{data_source_id}.csv"
+
+        else:
+            logger.error(f"Unsupported data type: {data_type}")
+            return False
+
+        # Step 2: Upload to vector store
+        command = f'python scripts/seed.py "{csv_file}" "{data_source_id}"'
+        description = f"Vector Store Upload - {os.path.basename(csv_file)}"
+
+        if not run_command(command, description):
+            return False
+
+        logger.success(
+            f"🎊 Pipeline completed successfully for DataSource: {data_source_id}"
+        )
+        return True
+
+    except Exception as e:
+        logger.error(f"Pipeline failed for DataSource {data_source_id}: {e}")
+        return False
+
+
+def run_full_pipeline():
+    """Run complete pipeline for all data sources (legacy mode)"""
     start_time = datetime.now()
 
-    logger.info("🎯 RAG Admissions Consulting - Data Pipeline")
+    logger.info("🎯 RAG Admissions Consulting - Full Data Pipeline")
     logger.info(f"⏰ Started at: {start_time}")
     logger.info("=" * 60)
 
-    # Pipeline steps
+    # Pipeline steps for full pipeline
     steps = [
         {
-            "command": "python data_pipeline/crawlers/scraper.py",
-            "description": "Web Crawling - Thu thập dữ liệu từ website",
-        },
-        {
-            "command": "python data_pipeline/processors/data_processing.py",
-            "description": "Data Processing - Xử lý và làm sạch dữ liệu",
+            "command": "python data_pipeline/crawlers/scraper.py https://donga.edu.vn/tuyensinh example_id",
+            "description": "Web Crawling - Sample university website",
         },
         {
             "command": "python scripts/seed.py",
-            "description": "Vector Store Seeding - Cập nhật vector database",
+            "description": "Vector Store Seeding - Legacy mode",
         },
     ]
 
@@ -77,11 +152,11 @@ def main():
         else:
             logger.warning(f"⚠️ Step {i} failed, continuing with next step...")
 
-        # Đợi giữa các bước
+        # Wait between steps
         if i < total_steps:
             time.sleep(2)
 
-    # Tổng kết
+    # Summary
     end_time = datetime.now()
     duration = end_time - start_time
 
@@ -104,6 +179,56 @@ def main():
     return success_count == total_steps
 
 
+def main():
+    """Main pipeline runner"""
+    global last_success_output
+    last_success_output = ""
+
+    if len(sys.argv) == 1:
+        # Full pipeline mode (legacy)
+        logger.info("Running full pipeline (legacy mode)")
+        success = run_full_pipeline()
+        sys.exit(0 if success else 1)
+
+    if len(sys.argv) != 4:
+        print("Usage:")
+        print("  python run_data_pipeline.py <data_source_id> <data_type> <input_path>")
+        print("  python run_data_pipeline.py (for full pipeline)")
+        print("")
+        print("Data types: website, pdf, csv, manual")
+        print("Examples:")
+        print('  python run_data_pipeline.py ds123 website "https://example.com"')
+        print('  python run_data_pipeline.py ds456 pdf "/path/to/file.pdf"')
+        print(
+            '  python run_data_pipeline.py ds789 manual \'{"title":"Q","content":"A"}\''
+        )
+        sys.exit(1)
+
+    data_source_id = sys.argv[1]
+    data_type = sys.argv[2]
+    input_path = sys.argv[3]
+
+    # Validate data type
+    valid_types = ["website", "pdf", "csv", "manual"]
+    if data_type not in valid_types:
+        logger.error(f"Invalid data type: {data_type}. Must be one of: {valid_types}")
+        sys.exit(1)
+
+    # Run individual pipeline
+    success = run_individual_pipeline(data_source_id, data_type, input_path)
+
+    if success:
+        # Output the last success message from seed.py if available
+        if last_success_output and "SUCCESS:" in last_success_output:
+            print(last_success_output)
+        else:
+            print(f"SUCCESS: Pipeline completed for DataSource {data_source_id}")
+    else:
+        print(f"ERROR: Pipeline failed for DataSource {data_source_id}")
+
+    sys.exit(0 if success else 1)
+
+
 if __name__ == "__main__":
     # Configure logging
     logger.remove()
@@ -112,6 +237,11 @@ if __name__ == "__main__":
         level="INFO",
         format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
     )
+
+    # Ensure logs directory exists
+    logs_dir = Path("logs")
+    logs_dir.mkdir(exist_ok=True)
+
     logger.add(
         "logs/data_pipeline_{time:YYYY-MM-DD}.log",
         level="DEBUG",
@@ -119,5 +249,4 @@ if __name__ == "__main__":
         rotation="1 day",
     )
 
-    success = main()
-    sys.exit(0 if success else 1)
+    main()

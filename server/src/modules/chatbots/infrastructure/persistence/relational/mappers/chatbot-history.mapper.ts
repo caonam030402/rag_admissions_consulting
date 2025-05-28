@@ -15,7 +15,9 @@ export class ChatbotHistoryMapper {
     return domainEntity;
   }
 
-  static toPersistence(domainEntity: ChatbotHistoryDomain): ChatbotHistoryEntity {
+  static toPersistence(
+    domainEntity: ChatbotHistoryDomain,
+  ): ChatbotHistoryEntity {
     const persistenceEntity = new ChatbotHistoryEntity();
     if (domainEntity.id) {
       persistenceEntity.id = domainEntity.id;
