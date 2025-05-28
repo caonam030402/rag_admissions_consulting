@@ -16,16 +16,14 @@ import {
   X,
 } from "@phosphor-icons/react";
 import React, { useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 
-import { ActorType } from "@/enums/systemChat";
-import { chatService } from "@/services/chat";
-import { useChatStore } from "@/stores/chat";
+import useChatBot from "@/hooks/features/chatbot/useChatBot";
 import { formatSurveyData } from "@/utils/common";
 
 import AdmissionPredictor from "../AdmissionPredictor";
 import CampusTour from "../CampusTour";
 import SurveyForm from "../SurveyForm";
+import type { SurveyFormSchema } from "../SurveyForm/validates";
 
 interface NavigationItem {
   icon: React.ReactNode;
@@ -93,26 +91,6 @@ const ExperienceTools: NavigationItem[] = [
   },
 ];
 
-// Quick Questions - Organized by category
-const QuickQuestions = {
-  "Thông tin cơ bản": [
-    "Học phí các ngành là bao nhiêu?",
-    "Điều kiện xét tuyển như thế nào?",
-    "Trường có những ngành đào tạo nào?",
-  ],
-  "Sinh hoạt sinh viên": [
-    "Thông tin về ký túc xá?",
-    "Cuộc trò chuyện gần đây",
-    "Hỏi về học bổng sinh viên giỏi",
-  ],
-  "Tuyển sinh": [
-    "Điểm chuẩn năm 2024",
-    "Thủ tục nhập học online",
-    "Chương trình đào tạo Công nghệ thông tin",
-  ],
-};
-
-// Recent Chats
 const RecentChats = [
   "Hỏi về học bổng sinh viên giỏi",
   "Điểm chuẩn năm 2024",
@@ -122,7 +100,6 @@ const RecentChats = [
   "Học phí ngành Kinh tế",
 ];
 
-// Map of action types to chat queries
 const ACTION_QUERIES: Record<string, string> = {
   majors:
     "Trường có những ngành đào tạo nào? Cho tôi biết chi tiết về các chương trình học.",
@@ -135,43 +112,12 @@ export default function SideNavigation() {
   const [showSurvey, setShowSurvey] = useState(false);
   const [showPredictor, setShowPredictor] = useState(false);
   const [showCampusTour, setShowCampusTour] = useState(false);
-  const { addMessage, setTyping, setError } = useChatStore();
+  const { sendMessage } = useChatBot();
 
-  // Handle sending a message via chat system
-  const sendMessage = async (messageText: string) => {
-    // Add user message to chat
-    addMessage({
-      id: uuidv4(),
-      content: messageText,
-      role: ActorType.Human,
-      timestamp: Date.now(),
-    });
-
-    // Close sidebar on mobile
-    setIsOpen(false);
-    setTyping(true);
-
-    try {
-      // Start a new empty assistant message
-      useChatStore.getState().startNewAssistantMessage();
-
-      // Stream the response
-      for await (const token of chatService.streamMessage(messageText)) {
-        useChatStore.getState().appendToLastMessage(token);
-      }
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to send message",
-      );
-    } finally {
-      setTyping(false);
-    }
-  };
-
-  const handleSurveySubmit = async (data: any) => {
+  const handleSurveySubmit = async (data: SurveyFormSchema) => {
     const content = formatSurveyData(data);
     setShowSurvey(false);
-    await sendMessage(content);
+    await sendMessage({ newMessage: content });
   };
 
   const handleAction = (action?: string) => {
@@ -197,7 +143,7 @@ export default function SideNavigation() {
     if (action in ACTION_QUERIES) {
       const query = ACTION_QUERIES[action];
       if (query) {
-        sendMessage(query);
+        sendMessage({ newMessage: query });
       }
     }
   };
@@ -304,7 +250,7 @@ export default function SideNavigation() {
                     key={index}
                     type="button"
                     className="line-clamp-2 w-full rounded p-2 text-left text-xs text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
-                    onClick={() => sendMessage(chat)}
+                    onClick={() => sendMessage({ newMessage: chat })}
                   >
                     {chat}
                   </button>
@@ -349,16 +295,13 @@ export default function SideNavigation() {
       )}
 
       {showPredictor && (
-        <AdmissionPredictor
-          onClose={() => setShowPredictor(false)}
-          onSubmit={sendMessage}
-        />
+        <AdmissionPredictor onClose={() => setShowPredictor(false)} />
       )}
 
       {showCampusTour && (
         <CampusTour
           onClose={() => setShowCampusTour(false)}
-          onSubmit={sendMessage}
+          onSubmit={() => sendMessage({})}
         />
       )}
     </>

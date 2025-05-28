@@ -12,7 +12,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChartLineUp } from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+
+import useChatBot from "@/hooks/features/chatbot/useChatBot";
+import type { PredictionResult } from "@/types/admissionPredictor";
+import type { AdmissionFormData } from "@/validations/admissionPredictorValidation";
+import { admissionFormSchema } from "@/validations/admissionPredictorValidation";
 
 // Import components
 import { MajorSelectionList } from "./components/MajorSelectionList";
@@ -22,80 +26,24 @@ import { SelectBlock } from "./components/SelectBlock";
 import { SelectPriorityZone } from "./components/SelectPriorityZone";
 // Import data, types and utils
 import { BLOCKS, HISTORICAL_DATA, PRIORITY_ZONES, SUBJECTS } from "./data";
-import type { PredictionResult } from "./types";
 import {
   calculateProbability,
   calculateTotalScore,
   getSuggestion,
 } from "./utils";
 
-// Form schema
-const admissionFormSchema = z.object({
-  selectedBlock: z.string().min(1, "Vui lòng chọn khối thi"),
-  scores: z.object({
-    math: z
-      .number()
-      .min(0, "Điểm không được âm")
-      .max(10, "Điểm tối đa là 10")
-      .optional(),
-    literature: z
-      .number()
-      .min(0, "Điểm không được âm")
-      .max(10, "Điểm tối đa là 10")
-      .optional(),
-    english: z
-      .number()
-      .min(0, "Điểm không được âm")
-      .max(10, "Điểm tối đa là 10")
-      .optional(),
-    physics: z
-      .number()
-      .min(0, "Điểm không được âm")
-      .max(10, "Điểm tối đa là 10")
-      .optional(),
-    chemistry: z
-      .number()
-      .min(0, "Điểm không được âm")
-      .max(10, "Điểm tối đa là 10")
-      .optional(),
-    biology: z
-      .number()
-      .min(0, "Điểm không được âm")
-      .max(10, "Điểm tối đa là 10")
-      .optional(),
-    history: z
-      .number()
-      .min(0, "Điểm không được âm")
-      .max(10, "Điểm tối đa là 10")
-      .optional(),
-    geography: z
-      .number()
-      .min(0, "Điểm không được âm")
-      .max(10, "Điểm tối đa là 10")
-      .optional(),
-  }),
-  priorityZone: z.enum(["KV1", "KV2-NT", "KV2", "KV3"]),
-  preferences: z
-    .array(z.string())
-    .min(1, "Vui lòng chọn ít nhất một ngành")
-    .max(10, "Tối đa 10 ngành"),
-});
-
-export type AdmissionFormData = z.infer<typeof admissionFormSchema>;
-
 interface AdmissionPredictorProps {
   onClose: () => void;
-  onSubmit: (message: string) => void;
 }
 
 // Main component
 export default function AdmissionPredictor({
   onClose,
-  onSubmit,
 }: AdmissionPredictorProps): React.ReactElement {
   const [results, setResults] = useState<PredictionResult[] | null>(null);
   const [selectedBlock, setSelectedBlock] = useState("A00");
   const activeSubjects = BLOCKS[selectedBlock as keyof typeof BLOCKS];
+  const { sendMessage } = useChatBot();
 
   const {
     register,
@@ -206,7 +154,7 @@ export default function AdmissionPredictor({
     message +=
       "Bạn có muốn tìm hiểu thêm thông tin về các ngành học này không?";
 
-    onSubmit(message);
+    sendMessage({ newMessage: message });
     onClose();
   };
 
@@ -254,8 +202,8 @@ export default function AdmissionPredictor({
 
                 <div>
                   <label
+                    htmlFor="scores-input"
                     className="mb-2 block text-sm font-medium"
-                    id="scores-label"
                   >
                     Điểm số theo từng môn
                   </label>

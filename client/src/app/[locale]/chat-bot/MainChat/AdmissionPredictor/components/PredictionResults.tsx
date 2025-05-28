@@ -8,8 +8,6 @@ import { getColorClass } from "../utils";
 export const PredictionResults: React.FC<PredictionResultsProps> = ({
   results,
   currentBlock,
-  onBack,
-  onSendToChat,
 }) => {
   return (
     <div className="space-y-6">

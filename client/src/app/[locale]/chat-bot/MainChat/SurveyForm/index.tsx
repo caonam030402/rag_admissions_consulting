@@ -77,11 +77,7 @@ export default function SurveyForm({ onSubmit, onClose }: SurveyFormProps) {
     },
   });
 
-  const {
-    handleSubmit,
-    trigger,
-    formState: { errors },
-  } = methods;
+  const { handleSubmit, trigger } = methods;
 
   // Auto scroll to error field
   // useScrollToError({ errors });

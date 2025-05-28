@@ -10,12 +10,9 @@ import {
   Microphone,
   PaperPlaneRight,
 } from "@phosphor-icons/react";
-import React, { useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
+import React from "react";
 
-import { ActorType } from "@/enums/systemChat";
-import { chatService } from "@/services/chat";
-import { useChatStore } from "@/stores/chat";
+import useChatBot from "@/hooks/features/chatbot/useChatBot";
 
 const FeatureButtons = [
   {
@@ -61,47 +58,12 @@ const FeatureButtons = [
 ];
 
 export default function EnterContent() {
-  const [message, setMessage] = useState("");
-  const { addMessage, setTyping, setError, isTyping } = useChatStore();
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleSubmit = async () => {
-    if (!message.trim() || isTyping) return;
-
-    const trimmedMessage = message.trim();
-    setMessage("");
-
-    // Add user message to chat
-    addMessage({
-      id: uuidv4(),
-      content: trimmedMessage,
-      role: ActorType.Human,
-      timestamp: Date.now(),
-    });
-
-    setTyping(true);
-
-    try {
-      // Start a new empty assistant message
-      useChatStore.getState().startNewAssistantMessage();
-
-      // Stream the response
-      for await (const token of chatService.streamMessage(trimmedMessage)) {
-        useChatStore.getState().appendToLastMessage(token);
-      }
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Failed to send message",
-      );
-    } finally {
-      setTyping(false);
-    }
-  };
+  const { sendMessage, inputRef, message, setMessage, isTyping } = useChatBot();
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      sendMessage({});
     }
   };
 
@@ -116,7 +78,7 @@ export default function EnterContent() {
               size="sm"
               isIconOnly
               className="text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
-              onClick={item.action}
+              onPress={item.action}
             >
               {item.icon}
             </Button>
@@ -154,7 +116,7 @@ export default function EnterContent() {
                 size="sm"
                 color="primary"
                 isIconOnly
-                onClick={handleSubmit}
+                onPress={() => sendMessage({})}
                 isDisabled={!message.trim() || isTyping}
                 className="size-8 min-w-8 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
               >

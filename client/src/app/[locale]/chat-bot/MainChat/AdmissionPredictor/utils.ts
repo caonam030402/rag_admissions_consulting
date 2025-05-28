@@ -1,5 +1,6 @@
+import type { AdmissionFormData } from "@/validations/admissionPredictorValidation";
+
 import { BLOCKS, HISTORICAL_DATA, PRIORITY_ZONES, SUBJECTS } from "./data";
-import type { AdmissionFormData } from "./index";
 
 export const calculateTotalScore = (
   scores: AdmissionFormData["scores"],
