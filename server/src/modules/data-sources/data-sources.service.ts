@@ -514,14 +514,18 @@ export class DataSourcesService {
 
   findAllWithPagination({
     paginationOptions,
+    searchOptions,
   }: {
     paginationOptions: IPaginationOptions;
+    searchOptions?: {
+      search?: string;
+      source?: string;
+      status?: string;
+    };
   }) {
     return this.dataSourceRepository.findAllWithPagination({
-      paginationOptions: {
-        page: paginationOptions.page,
-        limit: paginationOptions.limit,
-      },
+      paginationOptions,
+      searchOptions,
     });
   }
 

@@ -5,16 +5,19 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Input,
+  Select,
+  SelectItem,
 } from "@heroui/react";
 import {
   ArrowClockwise,
   DotsThree,
   Eye,
+  FunnelSimple,
   Lightning,
   Plus,
   Trash,
 } from "@phosphor-icons/react";
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
 import Button from "@/components/common/Button";
@@ -45,6 +48,19 @@ interface DataSourceListProps {
   onRefresh?: () => void;
   refreshKey: number;
   hasProcessingItems?: boolean;
+  // Pagination props
+  currentPage?: number;
+  totalPages?: number;
+  totalItems?: number;
+  isLoading?: boolean;
+  onPageChange?: (page: number) => void;
+  onSearchChange?: (search: string) => void;
+  onSourceFilterChange?: (source: string) => void;
+  onStatusFilterChange?: (status: string) => void;
+  // Current filter values
+  currentSearchTerm?: string;
+  currentSourceFilter?: string;
+  currentStatusFilter?: string;
 }
 
 export default function DataSourceList({
@@ -56,7 +72,105 @@ export default function DataSourceList({
   onRefresh,
   refreshKey,
   hasProcessingItems,
+  currentPage = 1,
+  totalPages = 1,
+  totalItems = 0,
+  isLoading = false,
+  onPageChange,
+  onSearchChange,
+  onSourceFilterChange,
+  onStatusFilterChange,
+  currentSearchTerm = "",
+  currentSourceFilter = "all",
+  currentStatusFilter = "all",
 }: DataSourceListProps) {
+  // Local search state for immediate UI update
+  const [localSearchTerm, setLocalSearchTerm] = useState(currentSearchTerm);
+  const [searchDebounceTimer, setSearchDebounceTimer] =
+    useState<NodeJS.Timeout | null>(null);
+
+  // Sync local state with prop when it changes
+  useEffect(() => {
+    setLocalSearchTerm(currentSearchTerm);
+  }, [currentSearchTerm]);
+
+  // Handle search change - immediate UI update with debounced API call
+  const handleSearchChange = (value: string) => {
+    // Update local state immediately for UI responsiveness
+    setLocalSearchTerm(value);
+
+    // Clear existing timer
+    if (searchDebounceTimer) {
+      clearTimeout(searchDebounceTimer);
+    }
+
+    // Set new timer for API call
+    const timer = setTimeout(() => {
+      onSearchChange?.(value);
+    }, 500); // 500ms debounce for API call
+
+    setSearchDebounceTimer(timer);
+  };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
+    };
+  }, [searchDebounceTimer]);
+
+  // Handle source filter change
+  const handleSourceFilterChange = (source: string) => {
+    onSourceFilterChange?.(source);
+  };
+
+  // Handle status filter change
+  const handleStatusFilterChange = (status: string) => {
+    onStatusFilterChange?.(status);
+  };
+
+  // Client-side filtering for immediate UI feedback (will be replaced by server data)
+  const displayData = useMemo(() => {
+    if (onSearchChange) {
+      // If server-side filtering is enabled, just return the data as-is
+      return data;
+    }
+
+    // Fallback to client-side filtering
+    return data.filter((item) => {
+      const matchesSearch =
+        item.name.toLowerCase().includes(localSearchTerm.toLowerCase()) ||
+        item.url.toLowerCase().includes(localSearchTerm.toLowerCase());
+
+      const matchesSource =
+        currentSourceFilter === "all" || item.source === currentSourceFilter;
+
+      const matchesStatus =
+        currentStatusFilter === "all" ||
+        (() => {
+          if (currentStatusFilter === "completed")
+            return item.logs?.some((log) => log.message.includes("✅"));
+          if (currentStatusFilter === "failed")
+            return item.logs?.some((log) => log.message.includes("❌"));
+          if (currentStatusFilter === "processing")
+            return item.logs?.some((log) => log.message.includes("🔄"));
+          if (currentStatusFilter === "pending")
+            return item.logs?.some((log) => log.message.includes("⏳"));
+          return true;
+        })();
+
+      return matchesSearch && matchesSource && matchesStatus;
+    });
+  }, [
+    data,
+    localSearchTerm,
+    currentSourceFilter,
+    currentStatusFilter,
+    onSearchChange,
+  ]);
+
   /**
    * Handles re-sync of a dataset item
    * @param item Dataset item to re-sync
@@ -105,7 +219,7 @@ export default function DataSourceList({
   };
 
   /**
-   * Renders clickable name with arrow
+   * Renders clickable name with arrow - truncated for mobile
    * @param item Dataset item
    */
   const renderNameWithLink = (item: ITableDataset) => (
@@ -115,8 +229,10 @@ export default function DataSourceList({
       onClick={() => onViewDetail(item)}
     >
       <div className="flex items-center gap-2">
-        <span>{item.name}</span>
-        <span className="text-gray-400">›</span>
+        <span className="max-w-[200px] truncate sm:max-w-none">
+          {item.name}
+        </span>
+        <span className="shrink-0 text-gray-400">›</span>
       </div>
     </button>
   );
@@ -218,51 +334,132 @@ export default function DataSourceList({
     </Dropdown>
   );
 
-  // Table column definitions with status column
+  // Table column definitions with responsive design
   const tableColumns = [
-    { key: "name", label: "NAME", render: renderNameWithLink },
-    { key: "source", label: "SOURCE", render: renderSourceChip },
-    { key: "status", label: "STATUS", render: renderStatusChip },
-    { key: "usedBy", label: "USED BY", render: renderUsedBy },
-    { key: "lastUpdated", label: "LAST UPDATED" },
-    { key: "action", label: "", render: renderActionMenu },
+    {
+      key: "name",
+      label: "NAME",
+      render: renderNameWithLink,
+    },
+    {
+      key: "source",
+      label: "SOURCE",
+      render: renderSourceChip,
+    },
+    {
+      key: "status",
+      label: "STATUS",
+      render: renderStatusChip,
+    },
+    {
+      key: "usedBy",
+      label: "USED BY",
+      render: renderUsedBy,
+    },
+    {
+      key: "lastUpdated",
+      label: "LAST UPDATED",
+    },
+    {
+      key: "action",
+      label: "",
+      render: renderActionMenu,
+    },
   ];
 
   return (
-    <div>
-      {/* Header section matching the UI */}
+    <div className="flex h-full flex-col">
+      {/* Header section */}
       <div className="mb-6">
         <h1 className="mb-2 text-2xl font-semibold">Data sources</h1>
         <p className="mb-4 text-gray-600">
           Lyro will use the knowledge you add here to answer customer questions.
         </p>
 
-        {/* Search and filter section */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Input placeholder="Search by keyword or URL" className="w-64" />
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Show: All</span>
-              <span className="text-sm">Sources: All</span>
-              <span className="text-sm">Used by: All</span>
+        {/* Search and filter section - Mobile responsive */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          {/* Left side - Search and filters */}
+          <div className="flex flex-1 flex-col gap-3 sm:flex-row">
+            <Input
+              placeholder="Search by keyword or URL"
+              className="w-full sm:w-64"
+              value={localSearchTerm}
+              isDisabled={isLoading}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              startContent={
+                <FunnelSimple size={16} className="text-gray-400" />
+              }
+            />
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Select
+                size="sm"
+                placeholder="All Sources"
+                className="w-32"
+                selectedKeys={currentSourceFilter ? [currentSourceFilter] : []}
+                isDisabled={isLoading}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as string;
+                  handleSourceFilterChange(selected || "all");
+                }}
+                items={[
+                  { key: "all", label: "All Sources" },
+                  { key: "Website", label: "Website" },
+                  { key: "File", label: "File" },
+                  { key: "Manual", label: "Manual" },
+                ]}
+              >
+                {(item: any) => (
+                  <SelectItem key={item.key}>{item.label}</SelectItem>
+                )}
+              </Select>
+
+              <Select
+                size="sm"
+                placeholder="All Status"
+                className="w-32"
+                selectedKeys={currentStatusFilter ? [currentStatusFilter] : []}
+                isDisabled={isLoading}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as string;
+                  handleStatusFilterChange(selected || "all");
+                }}
+                items={[
+                  { key: "all", label: "All Status" },
+                  { key: "completed", label: "Completed" },
+                  { key: "processing", label: "Processing" },
+                  { key: "pending", label: "Pending" },
+                  { key: "failed", label: "Failed" },
+                ]}
+              >
+                {(item: any) => (
+                  <SelectItem key={item.key}>{item.label}</SelectItem>
+                )}
+              </Select>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button variant="light" size="sm">
-              Test Lyro
-            </Button>
-            <Button color="primary" size="sm" onPress={onAddKnowledge}>
-              Activate
-            </Button>
-          </div>
         </div>
       </div>
 
       {/* Results section */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="text-sm text-gray-600">Results: {data.length}</div>
+          <div className="text-sm text-gray-600">
+            {onSearchChange ? (
+              // Server-side pagination
+              <>
+                Results: {displayData.length} of {totalItems}
+                {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
+              </>
+            ) : (
+              // Client-side filtering
+              <>
+                Results: {displayData.length}
+                {displayData.length !== data.length && ` (of ${data.length})`}
+              </>
+            )}
+          </div>
           {hasProcessingItems && (
             <div className="flex items-center gap-2">
               <div className="size-2 animate-pulse rounded-full bg-blue-500" />
@@ -281,6 +478,7 @@ export default function DataSourceList({
             </div>
           )}
         </div>
+
         <div className="flex items-center gap-2">
           {onRefresh && (
             <Button
@@ -288,6 +486,7 @@ export default function DataSourceList({
               variant="light"
               startContent={<ArrowClockwise size={16} />}
               onPress={onRefresh}
+              isLoading={isLoading}
             >
               Refresh
             </Button>
@@ -304,9 +503,17 @@ export default function DataSourceList({
         </div>
       </div>
 
-      {/* Data table */}
-      <div>
-        <TableList data={data} columns={tableColumns} key={refreshKey} />
+      {/* Data table - Flex-1 to take remaining space */}
+      <div className="min-h-0 flex-1">
+        <TableList
+          data={displayData}
+          columns={tableColumns}
+          key={refreshKey}
+          isLoading={isLoading}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
       </div>
     </div>
   );

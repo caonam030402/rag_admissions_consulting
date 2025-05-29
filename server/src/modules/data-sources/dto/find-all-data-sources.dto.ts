@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsIn } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class FindAllDataSourcesDto {
@@ -14,4 +14,21 @@ export class FindAllDataSourcesDto {
   @IsNumber()
   @IsOptional()
   limit?: number;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  @IsIn(['Website', 'File', 'Manual', 'all'])
+  source?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  @IsIn(['pending', 'processing', 'completed', 'failed', 'all'])
+  status?: string;
 }

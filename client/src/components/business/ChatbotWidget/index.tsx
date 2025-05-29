@@ -9,7 +9,7 @@ import { ChatWidget } from "./ChatWidget";
 import { FloatingButton } from "./FloatingButton";
 
 export default function ChatbotWidget1() {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabTypeChatbotWidget>("home");
   const [showEmailForm, setShowEmailForm] = useState(false);
 

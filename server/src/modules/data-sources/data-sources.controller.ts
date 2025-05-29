@@ -61,7 +61,8 @@ export class DataSourcesController {
         file: {
           type: 'string',
           format: 'binary',
-          description: 'File để upload (PDF/CSV) - Optional nếu là website crawl',
+          description:
+            'File để upload (PDF/CSV) - Optional nếu là website crawl',
         },
         type: {
           type: 'string',
@@ -140,21 +141,47 @@ export class DataSourcesController {
   async findAll(
     @Query() query: FindAllDataSourcesDto,
   ): Promise<InfinityPaginationResponseDto<DataSource>> {
+    console.log('🎯 Controller received query:', query);
+
     const page = query?.page ?? 1;
     let limit = query?.limit ?? 10;
     if (limit > 50) {
       limit = 50;
     }
 
-    return infinityPagination(
-      await this.dataSourcesService.findAllWithPagination({
-        paginationOptions: {
-          page,
-          limit,
-        },
-      }),
-      { page, limit },
-    );
+    console.log('🎯 Controller processed params:', {
+      page,
+      limit,
+      search: query?.search,
+      source: query?.source,
+      status: query?.status,
+    });
+
+    const result = await this.dataSourcesService.findAllWithPagination({
+      paginationOptions: {
+        page,
+        limit,
+      },
+      searchOptions: {
+        search: query?.search,
+        source: query?.source,
+        status: query?.status,
+      },
+    });
+
+    console.log('🎯 Service result:', {
+      dataLength: result.data.length,
+      totalCount: result.totalCount,
+    });
+
+    const response = infinityPagination(result.data, { page, limit });
+
+    console.log('🎯 Final response:', {
+      dataLength: response.data.length,
+      hasNextPage: response.hasNextPage,
+    });
+
+    return response;
   }
 
   @Get(':id')

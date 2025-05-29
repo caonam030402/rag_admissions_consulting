@@ -1,7 +1,6 @@
-import { DeepPartial } from '../../../../utils/types/deep-partial.type';
+import { DataSource } from '../../domain/data-source';
 import { NullableType } from '../../../../utils/types/nullable.type';
 import { IPaginationOptions } from '../../../../utils/types/pagination-options';
-import { DataSource } from '../../domain/data-source';
 
 export abstract class DataSourceRepository {
   abstract create(
@@ -10,16 +9,22 @@ export abstract class DataSourceRepository {
 
   abstract findAllWithPagination({
     paginationOptions,
+    searchOptions,
   }: {
     paginationOptions: IPaginationOptions;
-  }): Promise<DataSource[]>;
+    searchOptions?: {
+      search?: string;
+      source?: string;
+      status?: string;
+    };
+  }): Promise<{ data: DataSource[]; totalCount: number }>;
 
   abstract findById(id: DataSource['id']): Promise<NullableType<DataSource>>;
 
   abstract update(
     id: DataSource['id'],
-    payload: DeepPartial<DataSource>,
-  ): Promise<DataSource | null>;
+    payload: Partial<DataSource>,
+  ): Promise<DataSource>;
 
   abstract remove(id: DataSource['id']): Promise<void>;
 }

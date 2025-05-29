@@ -4,7 +4,6 @@ import React from "react";
 
 import { ENameCookie } from "@/constants/common";
 import type { IQueryGetApi } from "@/types";
-import { buildQueryParamsGet } from "@/utils/buildQueryParams";
 import http from "@/utils/http";
 
 // Types
@@ -44,6 +43,9 @@ export interface CreateDataSourceRequest {
 export interface DataSourceListResponse {
     data: DataSource[];
     hasNextPage: boolean;
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
 }
 
 // Query Keys
@@ -66,10 +68,50 @@ const ENDPOINTS = {
 export const dataSourceService = {
     // Get all data sources with pagination
     async getDataSources(query: IQueryGetApi) {
-        const params = buildQueryParamsGet(query);
+        const params = new URLSearchParams();
+
+        // Add pagination
+        if (query.pagination?.page) {
+            params.append('page', query.pagination.page.toString());
+        }
+        if (query.pagination?.limit) {
+            params.append('limit', query.pagination.limit.toString());
+        }
+
+        // Add filters directly as expected by DataSource API
+        if (query.filters?.search) {
+            params.append('search', query.filters.search);
+        }
+        if (query.filters?.source) {
+            params.append('source', query.filters.source);
+        }
+        if (query.filters?.status) {
+            params.append('status', query.filters.status);
+        }
+
+        console.log('🔍 API Query:', query);
+        console.log('🔧 Filters Detail:', {
+            hasFilters: !!query.filters,
+            search: query.filters?.search,
+            source: query.filters?.source,
+            status: query.filters?.status,
+            searchLength: query.filters?.search?.length,
+        });
+        console.log('🌐 API URL:', `${ENDPOINTS.DATA_SOURCES}?${params.toString()}`);
+
         const response = await http.get<DataSourceListResponse>(
-            `${ENDPOINTS.DATA_SOURCES}?${params}`,
+            `${ENDPOINTS.DATA_SOURCES}?${params.toString()}`,
         );
+
+        console.log('📊 API Response:', response.payload);
+        console.log('📊 Response Detail:', {
+            hasData: !!response.payload?.data,
+            dataLength: response.payload?.data?.length,
+            totalItems: response.payload?.totalItems,
+            totalPages: response.payload?.totalPages,
+            currentPage: response.payload?.currentPage,
+        });
+
         return response.payload;
     },
 
@@ -163,7 +205,7 @@ export const dataSourceService = {
 
 // React Query Hooks
 export function useDataSources(
-    query: IQueryGetApi = { pagination: { page: 1, limit: 20 } },
+    query: IQueryGetApi = { pagination: { page: 1, limit: 10 } },
     enablePolling = true, // Auto-poll for status updates
 ) {
     const result = useQuery({

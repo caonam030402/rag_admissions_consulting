@@ -1,6 +1,7 @@
 "use client";
 
 import { useDisclosure } from "@heroui/react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
@@ -93,13 +94,13 @@ const convertToTableDataset = (dataSource: DataSource): ITableDataset => {
       },
       ...(dataSource.processingStartedAt
         ? [
-            {
+      {
               timestamp: new Date(
                 dataSource.processingStartedAt,
               ).toLocaleString(),
               message: "🚀 Processing started",
               type: "info" as const,
-            },
+      },
           ]
         : []),
       // Only show completion/status log for current status
@@ -108,13 +109,13 @@ const convertToTableDataset = (dataSource: DataSource): ITableDataset => {
       (dataSource.status === "completed" && dataSource.processingCompletedAt) ||
       (dataSource.status === "failed" && dataSource.processingCompletedAt)
         ? [
-            {
+      {
               timestamp: dataSource.processingCompletedAt
                 ? new Date(dataSource.processingCompletedAt).toLocaleString()
                 : new Date().toLocaleString(),
               message: getStatusMessage(dataSource),
               type: getLogType(dataSource.status),
-            },
+      },
           ]
         : []),
     ],
@@ -126,6 +127,9 @@ const convertToTableDataset = (dataSource: DataSource): ITableDataset => {
  */
 export default function DataSourcePage() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Modal state management
   const addKnowledgeModal = useDisclosure();
@@ -142,13 +146,32 @@ export default function DataSourcePage() {
   const [selectedDataSource, setSelectedDataSource] =
     useState<ITableDataset | null>(null);
 
+  // Get parameters from URL
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const searchTerm = searchParams.get("search") || "";
+  const sourceFilter = searchParams.get("source") || "all";
+  const statusFilter = searchParams.get("status") || "all";
+
   // Query and mutations
   const {
     data: dataSourcesResponse,
     isLoading,
     error,
     refetch,
-  } = useDataSources({}, true); // Enable auto-polling
+  } = useDataSources(
+    {
+      pagination: {
+        page: currentPage,
+        limit: 10, // Match backend default
+      },
+      filters: {
+        ...(searchTerm && { search: searchTerm }),
+        ...(sourceFilter && sourceFilter !== "all" && { source: sourceFilter }),
+        ...(statusFilter && statusFilter !== "all" && { status: statusFilter }),
+      },
+    },
+    true,
+  ); // Enable auto-polling
 
   const refreshDataSources = useRefreshDataSources();
   const uploadMutation = useUploadDataSource();
@@ -163,6 +186,22 @@ export default function DataSourcePage() {
   const tableData: ITableDataset[] = dataSourcesResponse?.data
     ? dataSourcesResponse.data.map(convertToTableDataset)
     : [];
+
+  // Use pagination info from API response
+  const totalPages = dataSourcesResponse?.totalPages || 1;
+  const totalItems = dataSourcesResponse?.totalItems || 0;
+
+  // Debug logging
+  console.log("🔍 Debug Info:", {
+    searchTerm,
+    sourceFilter,
+    statusFilter,
+    currentPage,
+    apiResponse: dataSourcesResponse,
+    totalItems,
+    totalPages,
+    dataLength: tableData.length,
+  });
 
   /**
    * Handles adding new knowledge
@@ -196,6 +235,46 @@ export default function DataSourcePage() {
       toast.error(uploadError.message || "Failed to upload knowledge source");
       throw uploadError;
     }
+  };
+
+  /**
+   * Handles page change
+   * @param page New page number
+   */
+  const handlePageChange = (page: number) => {
+    router.push(
+      `${pathname}?page=${page}&search=${searchTerm}&source=${sourceFilter}&status=${statusFilter}`,
+    );
+  };
+
+  /**
+   * Handles search term change with debounce
+   * @param search New search term
+   */
+  const handleSearchChange = (search: string) => {
+    router.push(
+      `${pathname}?page=1&search=${encodeURIComponent(search)}&source=${sourceFilter}&status=${statusFilter}`,
+    );
+  };
+
+  /**
+   * Handles source filter change
+   * @param source New source filter
+   */
+  const handleSourceFilterChange = (source: string) => {
+    router.push(
+      `${pathname}?page=1&search=${encodeURIComponent(searchTerm)}&source=${source}&status=${statusFilter}`,
+    );
+  };
+
+  /**
+   * Handles status filter change
+   * @param status New status filter
+   */
+  const handleStatusFilterChange = (status: string) => {
+    router.push(
+      `${pathname}?page=1&search=${encodeURIComponent(searchTerm)}&source=${sourceFilter}&status=${status}`,
+    );
   };
 
   /**
@@ -248,15 +327,6 @@ export default function DataSourcePage() {
     toast.success("Data refreshed!");
   };
 
-  // Handle loading state
-  if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="text-lg">Loading data sources...</div>
-      </div>
-    );
-  }
-
   // Handle error state
   if (error) {
     return (
@@ -302,6 +372,19 @@ export default function DataSourcePage() {
         onRefresh={handleRefresh}
         hasProcessingItems={hasProcessingItems}
         refreshKey={0} // Not needed with React Query
+        // Pagination props
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        isLoading={isLoading}
+        onPageChange={handlePageChange}
+        onSearchChange={handleSearchChange}
+        onSourceFilterChange={handleSourceFilterChange}
+        onStatusFilterChange={handleStatusFilterChange}
+        // Current filter values from URL
+        currentSearchTerm={searchTerm}
+        currentSourceFilter={sourceFilter}
+        currentStatusFilter={statusFilter}
       />
 
       {/* Modals */}

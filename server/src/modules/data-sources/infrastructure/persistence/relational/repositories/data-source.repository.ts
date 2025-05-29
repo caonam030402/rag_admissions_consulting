@@ -25,18 +25,64 @@ export class DataSourceRelationalRepository implements DataSourceRepository {
 
   async findAllWithPagination({
     paginationOptions,
+    searchOptions,
   }: {
     paginationOptions: IPaginationOptions;
-  }): Promise<DataSource[]> {
-    const entities = await this.dataSourceRepository.find({
-      skip: (paginationOptions.page - 1) * paginationOptions.limit,
-      take: paginationOptions.limit,
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    searchOptions?: {
+      search?: string;
+      source?: string;
+      status?: string;
+    };
+  }): Promise<{ data: DataSource[]; totalCount: number }> {
+    const queryBuilder = this.dataSourceRepository.createQueryBuilder('dataSource');
 
-    return entities.map((entity) => DataSourceMapper.toDomain(entity));
+    // Apply search filters if provided
+    if (searchOptions?.search) {
+      queryBuilder.andWhere(
+        '(dataSource.name ILIKE :search OR dataSource.description ILIKE :search)',
+        { search: `%${searchOptions.search}%` },
+      );
+    }
+
+    if (searchOptions?.source && searchOptions.source !== 'all') {
+      // Map human-readable source values to enum values
+      let typeValue: string;
+      switch (searchOptions.source) {
+        case 'Website':
+          typeValue = 'web_crawl';
+          break;
+        case 'File':
+          typeValue = 'file_upload';
+          break;
+        case 'Manual':
+          typeValue = 'manual_input';
+          break;
+        case 'API':
+          typeValue = 'api_import';
+          break;
+        default:
+          typeValue = searchOptions.source;
+      }
+      queryBuilder.andWhere('dataSource.type = :type', { type: typeValue });
+    }
+
+    if (searchOptions?.status && searchOptions.status !== 'all') {
+      queryBuilder.andWhere('dataSource.status = :status', {
+        status: searchOptions.status,
+      });
+    }
+
+    // Apply pagination and ordering
+    const [entities, totalCount] = await queryBuilder
+      .orderBy('dataSource.createdAt', 'DESC')
+      .skip((paginationOptions.page - 1) * paginationOptions.limit)
+      .take(paginationOptions.limit)
+      .getManyAndCount();
+
+    return {
+      data: entities.map((entity) => DataSourceMapper.toDomain(entity)),
+      totalCount,
+    };
   }
 
   async findById(id: DataSource['id']): Promise<NullableType<DataSource>> {
