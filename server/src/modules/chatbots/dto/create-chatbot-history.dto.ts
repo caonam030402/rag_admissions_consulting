@@ -1,22 +1,35 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail,
   IsEnum,
   IsNotEmpty,
   IsString,
   IsUUID,
   IsOptional,
+  IsNumber,
+  ValidateIf,
 } from 'class-validator';
 import { ChatbotRole } from 'src/common/enums/chatbot.enum';
 
 export class CreateChatbotHistoryDto {
   @ApiProperty({
-    description: 'Email của người dùng',
-    example: 'user@example.com',
+    description: 'ID của người dùng đã đăng nhập',
+    example: 1,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  @ValidateIf((o) => !o.guestId)
+  userId?: number;
+
+  @ApiProperty({
+    description: 'ID của người dùng khách (chưa đăng nhập)',
+    example: 'guest-123456',
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
-  email: string;
+  @IsOptional()
+  @ValidateIf((o) => !o.userId)
+  guestId?: string;
 
   @ApiProperty({
     description: 'Role của người gửi tin nhắn',
@@ -42,4 +55,13 @@ export class CreateChatbotHistoryDto {
   @IsUUID()
   @IsOptional()
   conversationId?: string;
+
+  @ApiProperty({
+    description: 'Tiêu đề của cuộc trò chuyện',
+    example: 'Hỏi về chương trình học',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  title?: string;
 }

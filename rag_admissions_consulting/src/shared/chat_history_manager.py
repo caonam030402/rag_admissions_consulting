@@ -25,8 +25,8 @@ class ChatHistoryManager:
         """Lưu tin nhắn qua API và cache trong phiên hiện tại"""
         # Tạo dữ liệu tin nhắn
         message_data = {
-            "email": self.email,
-            "role": role,
+            "userId": self.user_id,
+            "role": role.value if hasattr(role, 'value') else role,
             "content": content,
             "conversationId": self.conversation_id,
         }

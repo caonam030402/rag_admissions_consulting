@@ -1,15 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsUUID } from 'class-validator';
+import {
+  IsOptional,
+  IsUUID,
+  IsNumber,
+  IsString,
+  ValidateIf,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class GetChatbotHistoryDto {
   @ApiProperty({
-    description: 'Email của người dùng',
-    example: 'user@example.com',
+    description: 'ID của người dùng đã đăng nhập',
+    example: 1,
     required: false,
   })
-  @IsEmail()
+  @Type(() => Number)
+  @IsNumber()
   @IsOptional()
-  email?: string;
+  @ValidateIf((o) => !o.guestId)
+  userId?: number;
+
+  @ApiProperty({
+    description: 'ID của người dùng khách (chưa đăng nhập)',
+    example: 'guest-123456',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @ValidateIf((o) => !o.userId)
+  guestId?: string;
 
   @ApiProperty({
     description: 'ID của cuộc trò chuyện',
@@ -21,11 +40,22 @@ export class GetChatbotHistoryDto {
   conversationId?: string;
 
   @ApiProperty({
+    description: 'Số trang',
+    example: 1,
+    default: 1,
+    required: false,
+  })
+  @Type(() => Number)
+  @IsOptional()
+  page?: number;
+
+  @ApiProperty({
     description: 'Số lượng tin nhắn tối đa muốn lấy',
     example: 50,
     default: 50,
     required: false,
   })
+  @Type(() => Number)
   @IsOptional()
   limit?: number;
 }

@@ -6,16 +6,16 @@ import {
   ManyToOne,
   JoinColumn,
   PrimaryGeneratedColumn,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { ChatbotRole } from 'src/common/enums/chatbot.enum';
 import { UserEntity } from '../../../../../users/infrastructure/persistence/relational/entities/user.entity';
-import { ConversationEntity } from './conversation.entity';
+import { ChatbotHistoryEntity } from './chatbot-history.entity';
 
 @Entity({
-  name: 'chatbot_history',
+  name: 'conversations',
 })
-export class ChatbotHistoryEntity {
+export class ConversationEntity {
   @ApiProperty()
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -34,29 +34,20 @@ export class ChatbotHistoryEntity {
   guestId?: string | null;
 
   @ApiProperty()
-  @Column({ type: 'uuid' })
-  conversationId: string;
-
-  @ApiProperty()
-  @ManyToOne(
-    () => ConversationEntity,
-    (conversation) => conversation.messages,
-    { nullable: true },
-  )
-  @JoinColumn({ name: 'conversation_id' })
-  conversation?: ConversationEntity | null;
-
-  @ApiProperty()
-  @Column({ type: 'enum', enum: ChatbotRole })
-  role: ChatbotRole;
-
-  @ApiProperty()
-  @Column({ type: 'text' })
-  content: string;
-
-  @ApiProperty()
   @Column({ type: 'varchar', nullable: true })
   title?: string | null;
+
+  @ApiProperty()
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
+  @ApiProperty()
+  @Column({ type: 'timestamptz', nullable: true })
+  lastMessageAt?: Date | null;
+
+  @ApiProperty()
+  @OneToMany(() => ChatbotHistoryEntity, (message) => message.conversation)
+  messages: ChatbotHistoryEntity[];
 
   @ApiProperty()
   @CreateDateColumn({ type: 'timestamptz' })

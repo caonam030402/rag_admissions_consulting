@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ChatbotRole } from 'src/common/enums/chatbot.enum';
 
-export class ChatbotHistory {
+export class Conversation {
   @ApiProperty()
   id: string;
 
@@ -12,16 +11,13 @@ export class ChatbotHistory {
   guestId?: string | null;
 
   @ApiProperty()
-  conversationId: string;
-
-  @ApiProperty()
-  role: ChatbotRole;
-
-  @ApiProperty()
-  content: string;
-
-  @ApiProperty()
   title?: string | null;
+
+  @ApiProperty()
+  isActive: boolean;
+
+  @ApiProperty()
+  lastMessageAt?: Date | null;
 
   @ApiProperty()
   createdAt: Date;

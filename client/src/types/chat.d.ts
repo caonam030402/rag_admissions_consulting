@@ -7,18 +7,57 @@ export interface ChatMessage {
   content: string;
   role: ActorType;
   timestamp: number;
+  conversationId?: string;
+}
+
+export interface Conversation {
+  conversationId: string;
+  title: string | null;
+  lastMessage: string;
+  lastMessageTime: Date;
+  messageCount: number;
+}
+
+// Pagination response types
+export interface PaginatedConversations {
+  data: Conversation[];
+  hasNextPage: boolean;
+}
+
+export interface PaginatedChatMessages {
+  data: ChatMessage[];
+  hasNextPage: boolean;
 }
 
 export interface ChatState {
   messages: ChatMessage[];
+  conversations: Conversation[];
+  currentConversationId: string | null;
   isTyping: boolean;
   error: string | null;
+  guestId: string | null;
+  userId: number | null;
+
+  // Message actions
   addMessage: (message: ChatMessage) => void;
   setTyping: (isTyping: boolean) => void;
   setError: (error: string | null) => void;
   clearMessages: () => void;
   startNewAssistantMessage: () => void;
   appendToLastMessage: (content: string) => void;
+
+  // Conversation actions
+  loadConversations: () => Promise<void>;
+  startNewConversation: () => void;
+  loadConversation: (conversationId: string) => Promise<void>;
+  updateConversationTitle: (
+    conversationId: string,
+    title: string
+  ) => Promise<void>;
+
+  // User actions
+  setGuestId: (guestId: string) => void;
+  setUserId: (userId: number) => void;
 }
 
 export interface IEmailFormData {

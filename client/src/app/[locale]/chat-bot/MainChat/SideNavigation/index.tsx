@@ -14,16 +14,32 @@ import {
   Plus,
   User,
   X,
+  ChatCircle,
+  PencilSimple,
+  Trash,
 } from "@phosphor-icons/react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/vi";
 
 import useChatBot from "@/hooks/features/chatbot/useChatBot";
 import { formatSurveyData } from "@/utils/common";
+import { useChatStore } from "@/stores/chat";
+import {
+  useConversations,
+  useConversationHistory,
+  useUpdateConversationTitle,
+} from "@/hooks/features/chatbot/useChatHistory";
 
 import AdmissionPredictor from "../AdmissionPredictor";
 import CampusTour from "../CampusTour";
 import SurveyForm from "../SurveyForm";
 import type { SurveyFormSchema } from "../SurveyForm/validates";
+
+dayjs.extend(relativeTime);
+dayjs.locale("vi");
 
 interface NavigationItem {
   icon: React.ReactNode;
@@ -114,6 +130,36 @@ export default function SideNavigation() {
   const [showCampusTour, setShowCampusTour] = useState(false);
   const { sendMessage } = useChatBot();
 
+  // React Query hooks for chat history
+  const {
+    data: conversations = [],
+    isLoading: isLoadingConversations,
+    error: conversationsError,
+  } = useConversations();
+
+  const updateConversationTitleMutation = useUpdateConversationTitle();
+
+  // Zustand store for current conversation tracking
+  const {
+    currentConversationId,
+    startNewConversation,
+    loadConversation,
+    clearMessages,
+    addMessage,
+  } = useChatStore();
+
+  // Load conversation history when currentConversationId changes
+  const { data: conversationMessages = [], isLoading: isLoadingHistory } =
+    useConversationHistory(currentConversationId);
+
+  // Update messages in store when conversation history loads
+  useEffect(() => {
+    if (conversationMessages.length > 0) {
+      clearMessages();
+      conversationMessages.forEach((message) => addMessage(message));
+    }
+  }, [conversationMessages, clearMessages, addMessage]);
+
   const handleSurveySubmit = async (data: SurveyFormSchema) => {
     const content = formatSurveyData(data);
     setShowSurvey(false);
@@ -146,6 +192,37 @@ export default function SideNavigation() {
         sendMessage({ newMessage: query });
       }
     }
+  };
+
+  const handleConversationClick = (conversationId: string) => {
+    if (conversationId !== currentConversationId) {
+      loadConversation(conversationId);
+    }
+  };
+
+  const handleUpdateTitle = (conversationId: string, currentTitle: string) => {
+    const newTitle = prompt("Nhập tiêu đề mới:", currentTitle);
+    if (newTitle && newTitle !== currentTitle) {
+      updateConversationTitleMutation.mutate({
+        conversationId,
+        title: newTitle,
+      });
+    }
+  };
+
+  const handleNewChat = () => {
+    // Start new conversation
+    startNewConversation();
+    // Clear current messages
+    clearMessages();
+  };
+
+  const getConversationTitle = (conv: any) => {
+    return (
+      conv.title ||
+      conv.lastMessage.slice(0, 30) +
+        (conv.lastMessage.length > 30 ? "..." : "")
+    );
   };
 
   const renderNavigationSection = (title: string, items: NavigationItem[]) => (
@@ -220,7 +297,18 @@ export default function SideNavigation() {
           </div>
 
           {/* Scrollable Content */}
-          <div className="scroll flex-1 space-y-2 p-4">
+          <div className="scroll flex-1 space-y-2 p-4 overflow-y-auto">
+            {/* New Chat Button */}
+            <div className="mb-4">
+              <Button
+                className="w-full justify-start bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+                startContent={<Plus size={16} />}
+                onClick={handleNewChat}
+              >
+                Cuộc trò chuyện mới
+              </Button>
+            </div>
+
             {/* Main Navigation */}
             {renderNavigationSection("ĐIỀU HƯỚNG", MainNavigation)}
 
@@ -230,7 +318,7 @@ export default function SideNavigation() {
             {/* Information & Resources */}
             {renderNavigationSection(
               "THÔNG TIN & TÀI NGUYÊN",
-              InformationResources,
+              InformationResources
             )}
 
             {/* Experience Tools */}
@@ -257,6 +345,102 @@ export default function SideNavigation() {
                 ))}
               </div>
             </div>
+
+            {/* Chat History with React Query */}
+            <div className="">
+              <div className="mb-2 mt-4 flex items-center gap-2 px-2 text-xs font-semibold text-gray-500">
+                <ChatCircle size={14} />
+                <span>LỊCH SỬ HỘI THOẠI</span>
+                {/* Debug badge */}
+                {conversations.length > 0 && (
+                  <span className="bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded text-xs">
+                    {conversations.length}
+                  </span>
+                )}
+              </div>
+
+              {conversationsError && (
+                <div className="p-3 text-center text-xs text-red-500">
+                  Lỗi:{" "}
+                  {conversationsError instanceof Error
+                    ? conversationsError.message
+                    : "Không thể tải lịch sử"}
+                </div>
+              )}
+
+              {isLoadingConversations ? (
+                <div className="p-3 text-center text-xs text-gray-500">
+                  Đang tải lịch sử...
+                </div>
+              ) : conversations.length > 0 ? (
+                <div className="space-y-1 max-h-64 overflow-y-auto">
+                  {conversations.slice(0, 10).map((conversation) => (
+                    <motion.div
+                      key={conversation.conversationId}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={`group relative rounded p-2 text-xs cursor-pointer transition-colors hover:bg-gray-50 ${
+                        currentConversationId === conversation.conversationId
+                          ? "bg-blue-50 border-l-2 border-blue-500"
+                          : ""
+                      }`}
+                      onClick={() =>
+                        handleConversationClick(conversation.conversationId)
+                      }
+                    >
+                      <div className="flex items-start gap-2">
+                        <ChatCircle
+                          size={12}
+                          className="mt-0.5 flex-shrink-0 text-gray-400"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-gray-800 font-medium truncate">
+                            {getConversationTitle(conversation)}
+                          </div>
+                          <div className="text-gray-500 text-xs mt-1">
+                            {dayjs(conversation.lastMessageTime).fromNow()} •{" "}
+                            {conversation.messageCount} tin nhắn
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Hover Actions */}
+                      <div className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex gap-1">
+                          <button
+                            className="p-1 rounded hover:bg-gray-200"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateTitle(
+                                conversation.conversationId,
+                                getConversationTitle(conversation)
+                              );
+                            }}
+                            disabled={updateConversationTitleMutation.isPending}
+                          >
+                            <PencilSimple size={10} />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-3 text-center text-xs text-gray-500">
+                  Chưa có lịch sử hội thoại nào
+                  <br />
+                  <span className="text-gray-400">
+                    Hãy bắt đầu trò chuyện đầu tiên!
+                  </span>
+                </div>
+              )}
+
+              {/* Debug info - remove in production */}
+              <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-500">
+                Debug: {conversations.length} cuộc hội thoại | Loading:{" "}
+                {isLoadingConversations ? "Yes" : "No"}
+              </div>
+            </div>
           </div>
 
           {/* Footer - User Profile */}
@@ -267,10 +451,36 @@ export default function SideNavigation() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium text-gray-800">
-                  Thí sinh
+                  {(() => {
+                    // Import chatService to check current user
+                    const user =
+                      typeof window !== "undefined"
+                        ? JSON.parse(localStorage.getItem("profile") || "null")
+                        : null;
+
+                    if (user && user.id) {
+                      return `Người dùng #${user.id}`;
+                    }
+
+                    // Check guest ID
+                    const guestId =
+                      typeof window !== "undefined"
+                        ? localStorage.getItem("guestId")
+                        : null;
+
+                    return guestId ? `Khách: ${guestId.slice(-8)}` : "Thí sinh";
+                  })()}
                 </div>
                 <div className="text-xs text-gray-500">
-                  Đang tư vấn tuyển sinh
+                  {(() => {
+                    const user =
+                      typeof window !== "undefined"
+                        ? JSON.parse(localStorage.getItem("profile") || "null")
+                        : null;
+                    return user && user.id
+                      ? "Đã đăng nhập"
+                      : "Đang tư vấn tuyển sinh";
+                  })()}
                 </div>
               </div>
               <Button

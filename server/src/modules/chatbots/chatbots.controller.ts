@@ -6,10 +6,10 @@ import {
   Get,
   Post,
   Body,
+  Put,
 } from '@nestjs/common';
 import { chatbotsService } from './chatbots.service';
 import {
-  ApiBearerAuth,
   ApiOkResponse,
   ApiParam,
   ApiTags,
@@ -24,6 +24,8 @@ import { infinityPagination } from '../../utils/infinity-pagination';
 import { FindChatbotHistoryDto } from './dto/find-chatbot-history.dto';
 import { ChatbotHistory } from './domain/chatbot-history';
 import { CreateChatbotHistoryDto } from './dto/create-chatbot-history.dto';
+import { GetChatbotHistoryDto } from './dto/get-chatbot-history.dto';
+import { ConversationDto } from './dto/conversation.dto';
 import { Public } from 'src/decorators/public.decorator';
 
 @ApiTags('Chatbots')
@@ -76,6 +78,71 @@ export class chatbotsController {
     );
   }
 
+  @Get('conversations')
+  @ApiOperation({ summary: 'Get conversations by user or guest' })
+  @ApiOkResponse({ type: InfinityPaginationResponse(ConversationDto) })
+  @Public()
+  async findConversationsByUser(
+    @Query() query: GetChatbotHistoryDto,
+  ): Promise<InfinityPaginationResponseDto<ConversationDto>> {
+    const page = query?.page ?? 1;
+    let limit = query?.limit ?? 50;
+    if (limit > 50) {
+      limit = 50;
+    }
+
+    const conversations = await this.chatbotsService.findConversationsByUser({
+      ...query,
+      page,
+      limit,
+    });
+
+    return infinityPagination(conversations, { page, limit });
+  }
+
+  @Get('conversations/:conversationId/history')
+  @ApiOperation({ summary: 'Get chat history by conversation ID' })
+  @ApiOkResponse({ type: InfinityPaginationResponse(ChatbotHistory) })
+  @ApiParam({
+    name: 'conversationId',
+    type: String,
+    required: true,
+  })
+  @Public()
+  async findHistoryByConversation(
+    @Param('conversationId') conversationId: string,
+    @Query() query: GetChatbotHistoryDto,
+  ): Promise<InfinityPaginationResponseDto<ChatbotHistory>> {
+    const page = query?.page ?? 1;
+    let limit = query?.limit ?? 50;
+    if (limit > 50) {
+      limit = 50;
+    }
+
+    const history = await this.chatbotsService.findHistoryByConversation(
+      conversationId,
+      page,
+      limit,
+    );
+
+    return infinityPagination(history, { page, limit });
+  }
+
+  @Put('conversations/:conversationId/title')
+  @ApiOperation({ summary: 'Update conversation title' })
+  @ApiParam({
+    name: 'conversationId',
+    type: String,
+    required: true,
+  })
+  @Public()
+  async updateConversationTitle(
+    @Param('conversationId') conversationId: string,
+    @Body('title') title: string,
+  ): Promise<void> {
+    return this.chatbotsService.updateConversationTitle(conversationId, title);
+  }
+
   @Post('history')
   @ApiOperation({ summary: 'Create a new chat message' })
   @ApiCreatedResponse({
@@ -93,6 +160,7 @@ export class chatbotsController {
   @ApiParam({
     name: 'id',
     type: String,
+
     required: true,
   })
   remove(@Param('id') id: string) {
