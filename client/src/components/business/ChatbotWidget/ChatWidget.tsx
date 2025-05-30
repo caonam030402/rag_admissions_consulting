@@ -7,6 +7,7 @@ import type { TabTypeChatbotWidget } from "@/types/chat";
 import EmailForm from "./EmailForm";
 import HomeChat from "./HomeChat";
 import MainChat from "./MainChat";
+import { cn } from "@/libs/utils";
 
 interface ChatWidgetProps {
   isOpen: boolean;
@@ -15,6 +16,19 @@ interface ChatWidgetProps {
   setShowEmailForm: Dispatch<SetStateAction<boolean>>;
   handleTabSwitch: (tab: TabTypeChatbotWidget) => void;
   checkEmailHasSaved: () => boolean;
+  isOnScreen?: boolean;
+  styles?: {
+    shadow?:
+      | "shadow-none"
+      | "shadow-sm"
+      | "shadow-md"
+      | "shadow-lg"
+      | "shadow-xl"
+      | "shadow-2xl"
+      | "shadow-3xl";
+    height?: "h-full" | "h-[75vh]";
+  };
+  isTransition?: boolean;
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({
@@ -24,27 +38,45 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
   setShowEmailForm,
   handleTabSwitch,
   checkEmailHasSaved,
+  isOnScreen = true,
+  styles = {
+    shadow: "shadow-xl",
+    height: "h-[75vh]",
+  },
+  isTransition = true,
 }) => {
+  const propsTransition = isTransition
+    ? {
+        initial: { opacity: 0, scale: 0.8, y: 20 },
+        animate: { opacity: 1, scale: 1, y: 0 },
+        exit: { opacity: 0, scale: 0.8, y: 20 },
+        transition: { duration: 0.3, ease: "easeOut" },
+      }
+    : {};
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed bottom-24 right-6 z-40 w-[350px] overflow-hidden rounded-3xl bg-white shadow-2xl"
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          className={cn(
+            "w-[350px] overflow-hidden rounded-3xl bg-white shadow-xl",
+            styles?.shadow,
+            {
+              "fixed bottom-24 right-6 z-40": isOnScreen,
+            }
+          )}
+          {...propsTransition}
         >
-          <div className="relative">
+          <div className="relative h-full">
             {activeTab === "home" ? (
-              <div className="h-[75vh] bg-gray-50">
+              <div className={cn("h-full bg-gray-50", styles?.height)}>
                 <HomeChat onTabChange={handleTabSwitch} />
               </div>
             ) : (
-              <div className="h-[75vh] bg-gray-50">
+              <div className={cn("h-full bg-gray-50", styles?.height)}>
                 <MainChat
                   checkEmailHasSaved={checkEmailHasSaved}
                   handleTabSwitch={handleTabSwitch}
+                  isTransition={isTransition}
                 />
               </div>
             )}

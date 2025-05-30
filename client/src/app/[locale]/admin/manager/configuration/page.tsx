@@ -15,6 +15,33 @@ import Appearance from "./tabs/Appearance";
 import BasicInfo from "./tabs/BasicInfo";
 import HumanHandoff from "./tabs/HumanHandoff";
 import WelcomeSetting from "./tabs/WelcomeSetting";
+import { ChatWidget } from "@/components/business/ChatbotWidget/ChatWidget";
+
+const LayoutWithChatWidget = ({
+  children,
+}: {
+  children: React.ReactElement;
+}) => {
+  return (
+    <div className="flex gap-5">
+      <div className="flex-1">{children}</div>
+      <ChatWidget
+        isOpen={true}
+        activeTab="chat"
+        showEmailForm={false}
+        setShowEmailForm={() => {}}
+        handleTabSwitch={() => {}}
+        isOnScreen={false}
+        checkEmailHasSaved={() => false}
+        styles={{
+          shadow: "shadow-none",
+          height: "h-full",
+        }}
+        isTransition={false}
+      />
+    </div>
+  );
+};
 
 function ConfigurationContent() {
   const { handleTabChange, saveChanges, isDirty, currentTabKey } =
@@ -24,22 +51,38 @@ function ConfigurationContent() {
     {
       title: "Basic Info",
       key: 1,
-      content: <BasicInfo />,
+      content: (
+        <LayoutWithChatWidget>
+          <BasicInfo />
+        </LayoutWithChatWidget>
+      ),
     },
     {
       title: "Appearance",
       key: 2,
-      content: <Appearance />,
+      content: (
+        <LayoutWithChatWidget>
+          <Appearance />
+        </LayoutWithChatWidget>
+      ),
     },
     {
       title: "Welcome Settings",
       key: 3,
-      content: <WelcomeSetting />,
+      content: (
+        <LayoutWithChatWidget>
+          <WelcomeSetting />
+        </LayoutWithChatWidget>
+      ),
     },
     {
       title: "Human Handoff",
       key: 4,
-      content: <HumanHandoff />,
+      content: (
+        <LayoutWithChatWidget>
+          <HumanHandoff />
+        </LayoutWithChatWidget>
+      ),
     },
   ];
 
