@@ -50,7 +50,6 @@ export class AuthService {
 
   async validateLogin(loginDto: AuthEmailLoginDto): Promise<LoginResponseDto> {
     const user = await this.usersService.findByEmail(loginDto.email);
-
     if (!user) {
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -92,10 +91,8 @@ export class AuthService {
       });
     }
 
-    console.log(user.isTwoFactorEnabled, 'user.isTwoFactorEnabled');
-
     if (user.isTwoFactorEnabled) {
-      if (!loginDto.otpCode) {
+      if (!loginDto.otpCode && user.role?.id === RoleEnum.admin) {
         return {
           requiresTwoFactor: true,
           token: '',
@@ -120,11 +117,11 @@ export class AuthService {
       }
 
       const isCodeValid = this.twoFactorAuthService.verifyTwoFactorAuthCode(
-        loginDto.otpCode,
+        loginDto.otpCode || '',
         user.twoFactorSecret,
       );
 
-      if (!isCodeValid) {
+      if (!isCodeValid && user.role?.id === RoleEnum.admin) {
         throw new UnprocessableEntityException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
           errors: {

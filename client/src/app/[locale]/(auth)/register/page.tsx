@@ -7,9 +7,9 @@ import VerifyCodeMail from "@/components/business/VerifyCodeMail";
 import { PATH } from "@/constants/common";
 import useRegister from "@/hooks/features/auth/useRegister";
 
-import FormAuth from "../../../../../components/business/FormAuth";
 import { STEP_FORM_AUTH } from "./constant";
 import IntroSection from "./IntroSection";
+import FormAuthUser from "@/components/business/FormAuthUser";
 
 export default function SignIn() {
   const {
@@ -28,7 +28,7 @@ export default function SignIn() {
     switch (step) {
       case STEP_FORM_AUTH.FORM_AUTH:
         return (
-          <FormAuth
+          <FormAuthUser
             labelAction="Sign Up for Free"
             title="Create account"
             form={form}
@@ -37,7 +37,7 @@ export default function SignIn() {
             description={
               <div className="text-sm text-default-500">
                 <span>If you already have an account, </span>
-                <Link size="sm" href={PATH.LOGIN}>
+                <Link size="sm" href={PATH.LOGIN_USER}>
                   Login
                 </Link>
               </div>

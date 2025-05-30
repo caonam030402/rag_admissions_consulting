@@ -18,35 +18,71 @@ const { auth } = NextAuth(authConfig);
 const authHandler = auth((req) => {
   const publicPathnameRegex = RegExp(
     `^(/(${AppConfig.locales.join("|")}))?(${PUBLIC_PAGES.flatMap((p) =>
-      p === "/" ? ["", "/"] : `${p}(/.*)?`,
+      p === "/" ? ["", "/"] : `${p}(/.*)?`
     ).join("|")})/?$`,
-    "i",
+    "i"
   );
 
   const isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
-  const isProtected = !isPublicPage && !req.auth;
-  const isRejected = req.auth && req.nextUrl.pathname === PATH.LOGIN;
-
+  const isAuthenticated = !!req.auth;
   const isVerified = req.auth?.user?.isVerified === EVerified.VERIFIED;
+  const userRole = req.auth?.user?.role;
 
-  if (isProtected) {
-    const newUrl = new URL(PATH.LOGIN, req.nextUrl.origin);
-    return Response.redirect(newUrl);
+  // Check if current path is admin or user area
+  const isAdminPath = req.nextUrl.pathname.startsWith("/admin");
+  const isUserPath = !isAdminPath && !isPublicPage;
+
+  // Check if user is on login pages
+  const isOnAdminLogin = req.nextUrl.pathname === PATH.LOGIN_ADMIN;
+  const isOnUserLogin = req.nextUrl.pathname === PATH.LOGIN_USER;
+  const isOnAnyLogin = isOnAdminLogin || isOnUserLogin;
+
+  // If not authenticated and trying to access protected areas
+  if (!isAuthenticated && !isPublicPage) {
+    // Redirect to appropriate login based on the path being accessed
+    if (isAdminPath) {
+      return Response.redirect(new URL(PATH.LOGIN_ADMIN, req.nextUrl.origin));
+    } else {
+      return Response.redirect(new URL(PATH.LOGIN_USER, req.nextUrl.origin));
+    }
   }
 
+  // If authenticated but on wrong login page, redirect based on role
+  if (isAuthenticated && isOnAnyLogin) {
+    // Check user role and redirect appropriately
+    if (userRole?.name === "Admin" || userRole?.id === 1) {
+      return Response.redirect(new URL(PATH.OVERVIEW, req.nextUrl.origin));
+    } else {
+      // Redirect regular users to their default page (you can change this)
+      return Response.redirect(new URL(PATH.CHATBOT, req.nextUrl.origin));
+    }
+  }
+
+  // If authenticated but not verified, redirect to verify page (except for public pages and auth pages)
   if (
+    isAuthenticated &&
     !isVerified &&
     !isPublicPage &&
     req.nextUrl.pathname !== PATH.VERIFY &&
-    req.nextUrl.pathname !== PATH.LOGIN
+    !isOnAnyLogin &&
+    req.nextUrl.pathname !== PATH.REGISTER_USER
   ) {
     return Response.redirect(new URL(PATH.VERIFY, req.nextUrl.origin));
   }
 
-  if (isRejected) {
-    const newUrl = new URL(PATH.OVERVIEW, req.nextUrl.origin);
+  // Role-based access control
+  if (isAuthenticated && isVerified) {
+    const isAdmin = userRole?.name === "Admin" || userRole?.id === 1;
 
-    return Response.redirect(newUrl);
+    // If admin tries to access user-only areas, redirect to admin area
+    if (isAdmin && isUserPath && req.nextUrl.pathname === PATH.CHATBOT) {
+      return Response.redirect(new URL(PATH.OVERVIEW, req.nextUrl.origin));
+    }
+
+    // If regular user tries to access admin areas, redirect to user area
+    if (!isAdmin && isAdminPath) {
+      return Response.redirect(new URL(PATH.CHATBOT, req.nextUrl.origin));
+    }
   }
 
   return intlMiddleware(req);

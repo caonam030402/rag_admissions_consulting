@@ -21,7 +21,7 @@ const mapUserToToken = ({ data, token }: { data: User; token: JWT }) => ({
 
 const refetchToken = async (token: JWT) => {
   const { payload, ok } = await authService.refreshToken(
-    token.user.refreshToken,
+    token.user.refreshToken
   );
   if (ok) {
     return mapUserToToken({
@@ -44,7 +44,7 @@ export default {
     Credentials({
       async authorize(credentials) {
         const { payload, ok } = (await listCredential(
-          credentials,
+          credentials
         )) as IHttpResponse<IAuthResponse>;
         if (!ok) {
           const resErr = payload as unknown as IErrorResponse | null;
@@ -61,8 +61,11 @@ export default {
           expires: payload.tokenExpires || 0,
         });
 
+        console.log("payload", payload);
+
         const user: User = {
           isVerified: payload.user?.isVerified,
+          role: payload.user?.role,
           id: payload.user?.id?.toString(),
           token: payload.token,
           refreshToken: payload.refreshToken,

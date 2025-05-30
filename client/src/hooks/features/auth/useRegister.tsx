@@ -3,13 +3,13 @@ import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
-import { STEP_FORM_AUTH } from "@/app/[locale]/admin/(auth)/register/constant";
 import { authService } from "@/services";
 import type { IAuthErrorResponse } from "@/types/auth";
 import type { IFormTypeAuth, IFormTypeRegister } from "@/types/form";
 import authValidation from "@/validations/authValidation";
 
 import useVerifyOTP from "./useVerifyOTP";
+import { STEP_FORM_AUTH } from "@/app/[locale]/(auth)/register/constant";
 
 const rules = authValidation
   .pick({

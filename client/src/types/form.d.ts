@@ -5,9 +5,11 @@ type IFormTypeRegister = Pick<
   "email" | "password" | "firstName" | "lastName" | "confirmPassword"
 >;
 
-type IFormTypeLogin = Pick<
+type IFormTypeLoginAdmin = Pick<
   AuthValidation,
   "email" | "password" | "googleCode" | "key"
 >;
+
+type IFormTypeLoginUser = Pick<AuthValidation, "email" | "password">;
 
 type IFormTypeAuth = IFormTypeRegister & IFormTypeLogin;

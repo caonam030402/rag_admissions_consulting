@@ -1,6 +1,8 @@
 export const PATH = {
   HOME: "/",
-  LOGIN: "/admin/login",
+  LOGIN_ADMIN: "/admin/login",
+  LOGIN_USER: "/login",
+  REGISTER_USER: "/register",
   MANAGER: "/admin/manager",
   CHATBOT: "/chat-bot",
   DATASET: "/admin/manager/data-source",
@@ -11,7 +13,10 @@ export const PATH = {
 };
 
 export const PUBLIC_PAGES = [
-  PATH.LOGIN,
+  PATH.HOME,
+  PATH.LOGIN_ADMIN,
+  PATH.LOGIN_USER,
+  PATH.REGISTER_USER,
   PATH.MANAGER,
   PATH.CHATBOT,
   PATH.HOME,

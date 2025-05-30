@@ -33,16 +33,20 @@ import {
 } from '../../utils/dto/infinity-pagination-response.dto';
 import { infinityPagination } from '../../utils/infinity-pagination';
 import { FindAllDataSourcesDto } from './dto/find-all-data-sources.dto';
+import { RolesGuard } from '../roles/roles.guard';
+import { RoleEnum } from '../roles/roles.enum';
+import { Roles } from '../roles/roles.decorator';
 
 @ApiTags('Datasources')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+@Roles(RoleEnum.admin)
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller({
   path: 'data-sources',
   version: '1',
 })
 export class DataSourcesController {
-  constructor(private readonly dataSourcesService: DataSourcesService) { }
+  constructor(private readonly dataSourcesService: DataSourcesService) {}
 
   @Post()
   @ApiCreatedResponse({

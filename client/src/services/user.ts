@@ -39,6 +39,7 @@ export const userService = {
       queryKey: ["profile"],
       enabled: !userLs,
     });
+
     setLocalStorage({ key: ENameLocalS.PROFILE, value: query.data });
     return {
       ...query,
@@ -134,7 +135,7 @@ export const userService = {
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["users"] });
         toast.success(
-          `2FA ${variables.enabled ? "enabled" : "disabled"} successfully`,
+          `2FA ${variables.enabled ? "enabled" : "disabled"} successfully`
         );
       },
     });
@@ -148,7 +149,7 @@ export const userService = {
       mutationFn: async (userId: number) => {
         const response = await http.post<QRCodeResponse>(
           `users/${userId}/secret-code`,
-          { body: {} },
+          { body: {} }
         );
         return response.payload;
       },

@@ -2,15 +2,15 @@
 
 import React from "react";
 
-import FormAuth from "@/components/business/FormAuth";
-import useLogin from "@/hooks/features/auth/useLogin";
+import FormAuthAdmin from "@/components/business/FormAuthAdmin";
+import useLoginAdmin from "@/hooks/features/auth/useLoginAdmin";
 
 export default function Login() {
-  const { form, isLoading, handleLogin, requiresTwoFactor } = useLogin();
+  const { form, isLoading, handleLogin, requiresTwoFactor } = useLoginAdmin();
 
   return (
     <section className="flex h-screen bg-primary text-sm">
-      <FormAuth
+      <FormAuthAdmin
         form={form}
         isLogin
         isLoading={isLoading}

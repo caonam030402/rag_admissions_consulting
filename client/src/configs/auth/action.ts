@@ -1,11 +1,12 @@
 "use server";
 
-import { ENameCookie, PATH } from "@/constants/common";
+import { ENameCookie, ENameLocalS, PATH } from "@/constants/common";
 import { authService } from "@/services/auth";
 import type { IAuthCredentials } from "@/types/auth";
 import { clearCookies } from "@/utils/serverStorage";
 
-import { signIn, signOut as _signOut } from "./auth";
+import { signIn, signOut as _signOut, auth } from "./auth";
+import { ERole } from "@/enums/auth";
 
 export async function signInWithOAuth({
   provider,
@@ -27,6 +28,9 @@ export async function authCredential<T>(body: IAuthCredentials & T) {
 
 export async function signOut() {
   await authService.logout();
+  const session = await auth();
+  const path =
+    session?.user?.role.id === ERole.ADMIN ? PATH.LOGIN_ADMIN : PATH.LOGIN_USER;
   clearCookies({ key: ENameCookie.ACCESS_TOKEN });
-  await _signOut({ redirectTo: PATH.LOGIN });
+  await _signOut({ redirectTo: path });
 }
