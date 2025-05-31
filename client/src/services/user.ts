@@ -7,6 +7,7 @@ import type { IOptionRQ } from "@/types";
 import { getLocalStorage, setLocalStorage } from "@/utils/clientStorage";
 import http from "@/utils/http";
 import type { CreateUserFormValues } from "@/validations/userValidation";
+import { chatService } from "./chat";
 
 // Types
 interface User {
@@ -33,11 +34,13 @@ interface QRCodeResponse {
 export const userService = {
   // Get user profile
   useProfile: () => {
+    const currentUser = chatService.getCurrentUser();
+    const isAuthenticated = !!currentUser.userId;
     const userLs = getLocalStorage({ key: ENameLocalS.PROFILE });
     const query = useQueryCommon<IUser>({
       url: "auth/me",
       queryKey: ["profile"],
-      enabled: !userLs,
+      enabled: !userLs && isAuthenticated,
     });
 
     setLocalStorage({ key: ENameLocalS.PROFILE, value: query.data });

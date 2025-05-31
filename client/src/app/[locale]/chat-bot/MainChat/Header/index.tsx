@@ -1,15 +1,16 @@
 "use client";
 
-import UserSetting from "@/components/business/UserSetting";
-import { userService } from "@/services/user";
-import { useChatStore } from "@/stores/chat";
 import { Avatar, Button } from "@heroui/react";
 import { Plus } from "@phosphor-icons/react";
 import React from "react";
 
+import UserSetting from "@/components/business/UserSetting";
+import { userService } from "@/services/user";
+import { useChatStore } from "@/stores/chat";
+
 export default function HeaderMainChat() {
   const { user } = userService.useProfile();
-  const { startNewConversation, conversations } = useChatStore();
+  const { startNewConversation } = useChatStore();
 
   const handleNewChat = () => {
     startNewConversation();
