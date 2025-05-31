@@ -1,10 +1,9 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { ActorType } from "@/enums/systemChat";
 import { chatService } from "@/services/chat";
 import { useChatStore } from "@/stores/chat";
-import { useSaveMessage } from "./useChatHistory";
 
 export default function useChatBot() {
   const [message, setMessage] = useState("");
@@ -18,9 +17,6 @@ export default function useChatBot() {
     setUserId,
   } = useChatStore();
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // React Query mutation for saving messages
-  const saveMessageMutation = useSaveMessage();
 
   // Initialize user info on mount
   useEffect(() => {
@@ -58,25 +54,27 @@ export default function useChatBot() {
       content: trimmedMessage,
       role: role || ActorType.Human,
       timestamp: Date.now(),
-      conversationId: conversationId,
+      conversationId,
     };
 
     addMessage(userMessage);
 
-    // Save user message using React Query
-    saveMessageMutation.mutate(userMessage);
-
     setTyping(true);
 
     try {
+      console.log("🔧 DEBUG: Starting assistant message...");
       useChatStore.getState().startNewAssistantMessage();
 
+      console.log("🔧 DEBUG: Starting streaming...");
       for await (const token of chatService.streamMessage(
         trimmedMessage,
-        conversationId
+        conversationId,
       )) {
+        console.log("🔧 DEBUG: Received token:", token.slice(0, 20));
         useChatStore.getState().appendToLastMessage(token);
       }
+
+      console.log("🔧 DEBUG: Streaming completed");
 
       // Save assistant message when streaming is complete using React Query
       const assistantMessage =
@@ -86,13 +84,13 @@ export default function useChatBot() {
       if (assistantMessage && assistantMessage.role === ActorType.Bot) {
         // Ensure assistant message has conversation ID
         assistantMessage.conversationId = conversationId;
-        saveMessageMutation.mutate(assistantMessage);
       }
 
       inputRef.current?.focus();
     } catch (error) {
+      console.error("🔧 DEBUG: Streaming error:", error);
       setError(
-        error instanceof Error ? error.message : "Failed to send message"
+        error instanceof Error ? error.message : "Failed to send message",
       );
     } finally {
       setTyping(false);
@@ -119,7 +117,6 @@ export default function useChatBot() {
     setMessage,
     isTyping,
     inputRef,
-    saveMessageMutation,
     startNewConversation,
     switchToConversation,
     currentConversationId:

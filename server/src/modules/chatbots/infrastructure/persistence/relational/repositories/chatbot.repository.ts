@@ -20,7 +20,7 @@ export class chatbotRelationalRepository implements chatbotRepository {
     private readonly conversationRepository: Repository<ConversationEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-  ) {}
+  ) { }
 
   async findAllHistoryWithPagination({
     paginationOptions,
@@ -84,24 +84,38 @@ export class chatbotRelationalRepository implements chatbotRepository {
     conversationId?: string;
     title?: string;
   }): Promise<ChatbotHistory> {
+    console.log(
+      '🔧 DEBUG createHistory params:',
+      JSON.stringify(params, null, 2),
+    );
+
     let user: UserEntity | null = null;
 
     // Nếu có userId, tìm user
     if (params.userId) {
+      console.log(`🔧 DEBUG: Looking for user with ID: ${params.userId}`);
       user = await this.userRepository.findOne({
         where: { id: params.userId },
       });
+      console.log(`🔧 DEBUG: Found user:`, user ? user.id : 'not found');
     }
 
     // Tạo conversation ID nếu chưa có
     const conversationId = params.conversationId || uuidv4();
+    console.log(`🔧 DEBUG: Using conversation ID: ${conversationId}`);
 
     // Tìm hoặc tạo conversation
     let conversation = await this.conversationRepository.findOne({
       where: { id: conversationId },
     });
 
+    console.log(
+      '🔧 DEBUG: Existing conversation found:',
+      conversation ? conversation.id : 'not found',
+    );
+
     if (!conversation) {
+      console.log('🔧 DEBUG: Creating new conversation...');
       // Tạo conversation mới
       conversation = new ConversationEntity();
       conversation.id = conversationId;
@@ -112,8 +126,22 @@ export class chatbotRelationalRepository implements chatbotRepository {
       conversation.isActive = true;
       conversation.lastMessageAt = new Date();
 
-      await this.conversationRepository.save(conversation);
+      console.log('🔧 DEBUG: New conversation entity:', {
+        id: conversation.id,
+        userId: conversation.userId,
+        guestId: conversation.guestId,
+        title: conversation.title,
+        isActive: conversation.isActive
+      });
+
+      const savedConversation = await this.conversationRepository.save(conversation);
+      console.log(
+        '🔧 DEBUG: Conversation saved successfully:',
+        savedConversation.id,
+      );
+      conversation = savedConversation;
     } else {
+      console.log('🔧 DEBUG: Updating existing conversation lastMessageAt');
       // Cập nhật lastMessageAt cho conversation hiện có
       conversation.lastMessageAt = new Date();
       if (params.title && !conversation.title) {
@@ -122,6 +150,7 @@ export class chatbotRelationalRepository implements chatbotRepository {
       await this.conversationRepository.save(conversation);
     }
 
+    console.log('🔧 DEBUG: Creating chatbot history entry...');
     // Tạo bản ghi chatbot history
     const chatbotHistory = new ChatbotHistoryEntity();
     chatbotHistory.user = user;
@@ -133,7 +162,19 @@ export class chatbotRelationalRepository implements chatbotRepository {
     chatbotHistory.conversation = conversation;
     chatbotHistory.title = params.title || null;
 
+    console.log('🔧 DEBUG: ChatbotHistory entity before save:', {
+      userId: chatbotHistory.userId,
+      guestId: chatbotHistory.guestId,
+      role: chatbotHistory.role,
+      conversationId: chatbotHistory.conversationId
+    });
+
     const savedHistory = await this.chatbotRepository.save(chatbotHistory);
+    console.log(
+      '🔧 DEBUG: ChatbotHistory saved successfully:',
+      savedHistory.id,
+    );
+
     return ChatbotHistoryMapper.toDomain(savedHistory);
   }
 
@@ -153,69 +194,65 @@ export class chatbotRelationalRepository implements chatbotRepository {
   > {
     const page = params.page || 1;
     const limit = params.limit || 50;
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    const queryBuilder = this.conversationRepository.createQueryBuilder('conv');
+    console.log('🔧 DEBUG findConversationsByUser params:', params);
 
-    // Filter by user or guest
+    // Build where clause based on user type
+    const whereConditions: any = {};
     if (params.userId) {
-      queryBuilder.where('conv.userId = :userId', { userId: params.userId });
+      whereConditions.userId = params.userId;
     } else if (params.guestId) {
-      queryBuilder.where('conv.guestId = :guestId', {
-        guestId: params.guestId,
-      });
-    } else {
-      return [];
+      whereConditions.guestId = params.guestId;
     }
 
-    // Get conversations with pagination
-    queryBuilder
-      .andWhere('conv.isActive = :isActive', { isActive: true })
-      .orderBy('conv.lastMessageAt', 'DESC')
-      .offset(offset)
-      .limit(limit);
+    console.log('🔧 DEBUG where conditions:', whereConditions);
 
-    const conversations = await queryBuilder.getMany();
+    // Get conversations with proper TypeORM relations
+    const conversations = await this.conversationRepository.find({
+      where: whereConditions,
+      order: {
+        lastMessageAt: 'DESC',
+      },
+      skip,
+      take: limit,
+    });
 
-    // Get last message and message count for each conversation
-    const result: Array<{
-      conversationId: string;
-      title: string | null;
-      lastMessage: string;
-      lastMessageTime: Date;
-      messageCount: number;
-    }> = [];
+    console.log('🔧 DEBUG found conversations count:', conversations.length);
+    console.log('🔧 DEBUG conversations:', conversations.map(c => ({
+      id: c.id,
+      userId: c.userId,
+      guestId: c.guestId,
+      title: c.title,
+      lastMessageAt: c.lastMessageAt
+    })));
 
-    for (const conv of conversations) {
-      // Get last message
-      const lastMessage = await this.chatbotRepository
-        .createQueryBuilder('h')
-        .select('h.content', 'content')
-        .where('h.conversationId = :conversationId', {
-          conversationId: conv.id,
-        })
-        .orderBy('h.createdAt', 'DESC')
-        .limit(1)
-        .getRawOne();
+    // For each conversation, get the latest message and count
+    const results = await Promise.all(
+      conversations.map(async (conversation) => {
+        // Get latest message
+        const latestMessage = await this.chatbotRepository.findOne({
+          where: { conversationId: conversation.id },
+          order: { createdAt: 'DESC' },
+        });
 
-      // Get message count
-      const messageCount = await this.chatbotRepository
-        .createQueryBuilder('h')
-        .where('h.conversationId = :conversationId', {
-          conversationId: conv.id,
-        })
-        .getCount();
+        // Get message count
+        const messageCount = await this.chatbotRepository.count({
+          where: { conversationId: conversation.id },
+        });
 
-      result.push({
-        conversationId: conv.id,
-        title: conv.title ?? null,
-        lastMessage: lastMessage?.content || '',
-        lastMessageTime: conv.lastMessageAt ?? conv.createdAt,
-        messageCount,
-      });
-    }
+        return {
+          conversationId: conversation.id,
+          title: conversation.title || null,
+          lastMessage: latestMessage?.content || '',
+          lastMessageTime: conversation.lastMessageAt || conversation.createdAt,
+          messageCount,
+        };
+      }),
+    );
 
-    return result;
+    console.log('🔧 DEBUG final results count:', results.length);
+    return results;
   }
 
   async findHistoryByConversation(
@@ -245,6 +282,14 @@ export class chatbotRelationalRepository implements chatbotRepository {
     title: string,
   ): Promise<void> {
     await this.conversationRepository.update({ id: conversationId }, { title });
+  }
+
+  async deleteConversation(conversationId: string): Promise<void> {
+    // First delete all messages in the conversation
+    await this.chatbotRepository.delete({ conversationId });
+
+    // Then delete the conversation itself
+    await this.conversationRepository.delete({ id: conversationId });
   }
 
   async removeHistory(id: ChatbotHistory['id']): Promise<void> {

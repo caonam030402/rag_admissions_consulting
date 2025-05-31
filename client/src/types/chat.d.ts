@@ -45,14 +45,15 @@ export interface ChatState {
   clearMessages: () => void;
   startNewAssistantMessage: () => void;
   appendToLastMessage: (content: string) => void;
+  replaceMessages: (conversationId: string, messages: ChatMessage[]) => void;
 
   // Conversation actions
   loadConversations: () => Promise<void>;
   startNewConversation: () => void;
-  loadConversation: (conversationId: string) => Promise<void>;
+  loadConversation: (conversationId: string) => void;
   updateConversationTitle: (
-    conversationId: string,
-    title: string
+    _conversationId: string,
+    _title: string,
   ) => Promise<void>;
 
   // User actions

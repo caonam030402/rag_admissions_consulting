@@ -34,7 +34,7 @@ import { Public } from 'src/decorators/public.decorator';
   version: '1',
 })
 export class chatbotsController {
-  constructor(private readonly chatbotsService: chatbotsService) {}
+  constructor(private readonly chatbotsService: chatbotsService) { }
 
   @Get('history')
   @ApiOkResponse({ type: InfinityPaginationResponse(ChatbotHistory) })
@@ -141,6 +141,20 @@ export class chatbotsController {
     @Body('title') title: string,
   ): Promise<void> {
     return this.chatbotsService.updateConversationTitle(conversationId, title);
+  }
+
+  @Delete('conversations/:conversationId')
+  @ApiOperation({ summary: 'Delete conversation and all its messages' })
+  @ApiParam({
+    name: 'conversationId',
+    type: String,
+    required: true,
+  })
+  @Public()
+  async deleteConversation(
+    @Param('conversationId') conversationId: string,
+  ): Promise<void> {
+    return this.chatbotsService.deleteConversation(conversationId);
   }
 
   @Post('history')

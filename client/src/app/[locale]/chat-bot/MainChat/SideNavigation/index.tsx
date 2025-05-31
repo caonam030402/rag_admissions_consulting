@@ -5,20 +5,20 @@ import {
   Books,
   Calculator,
   ChartBar,
+  ChatCircle,
   Clock,
   Gear,
   GraduationCap,
   House,
   LightbulbFilament,
   MapTrifold,
+  PencilSimple,
   Plus,
+  Trash,
   User,
   X,
-  ChatCircle,
-  PencilSimple,
-  Trash,
 } from "@phosphor-icons/react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -27,11 +27,7 @@ import "dayjs/locale/vi";
 import useChatBot from "@/hooks/features/chatbot/useChatBot";
 import { formatSurveyData } from "@/utils/common";
 import { useChatStore } from "@/stores/chat";
-import {
-  useConversations,
-  useConversationHistory,
-  useUpdateConversationTitle,
-} from "@/hooks/features/chatbot/useChatHistory";
+import { chatService } from "@/services/chat";
 
 import AdmissionPredictor from "../AdmissionPredictor";
 import CampusTour from "../CampusTour";
@@ -130,14 +126,18 @@ export default function SideNavigation() {
   const [showCampusTour, setShowCampusTour] = useState(false);
   const { sendMessage } = useChatBot();
 
-  // React Query hooks for chat history
+  // React Query hooks for chat history using chatService
   const {
-    data: conversations = [],
+    data: conversationsData,
     isLoading: isLoadingConversations,
     error: conversationsError,
-  } = useConversations();
+  } = chatService.useConversations();
 
-  const updateConversationTitleMutation = useUpdateConversationTitle();
+  const updateConversationTitleMutation = chatService.useUpdateConversationTitle();
+  const deleteConversationMutation = chatService.useDeleteConversation();
+
+  // Extract conversations array from paginated data
+  const conversations = conversationsData?.data || [];
 
   // Zustand store for current conversation tracking
   const {
@@ -145,20 +145,48 @@ export default function SideNavigation() {
     startNewConversation,
     loadConversation,
     clearMessages,
-    addMessage,
+    replaceMessages,
   } = useChatStore();
 
   // Load conversation history when currentConversationId changes
-  const { data: conversationMessages = [], isLoading: isLoadingHistory } =
-    useConversationHistory(currentConversationId);
+  const { data: conversationHistoryData } = chatService.useConversationHistory(
+    currentConversationId,
+  );
+
+  // Extract messages array from paginated data
+  const conversationMessages = conversationHistoryData?.data || [];
+
+  // Use ref to track last processed messages to avoid infinite loop
+  const lastProcessedMessages = useRef<string>("");
+
+  // Restore current conversation from localStorage on mount
+  useEffect(() => {
+    const savedConversationId = localStorage.getItem("currentConversationId");
+    if (savedConversationId && savedConversationId !== currentConversationId) {
+      loadConversation(savedConversationId);
+    }
+  }, []); // Run only on mount
 
   // Update messages in store when conversation history loads
   useEffect(() => {
-    if (conversationMessages.length > 0) {
-      clearMessages();
-      conversationMessages.forEach((message) => addMessage(message));
+    if (conversationMessages.length > 0 && currentConversationId) {
+      // Create a hash of current messages to compare
+      const messagesHash = conversationMessages.map((msg: any) => msg.id).join(",");
+      
+      // Only update if messages have actually changed
+      if (messagesHash !== lastProcessedMessages.current) {
+        lastProcessedMessages.current = messagesHash;
+        replaceMessages(currentConversationId, conversationMessages);
+      }
+    } else if (currentConversationId && conversationMessages.length === 0) {
+      // Clear messages when switching to empty conversation
+      const currentMessages = useChatStore.getState().messages;
+      if (currentMessages.length > 0) {
+        clearMessages();
+      }
     }
-  }, [conversationMessages, clearMessages, addMessage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationMessages, currentConversationId]);
 
   const handleSurveySubmit = async (data: SurveyFormSchema) => {
     const content = formatSurveyData(data);
@@ -197,6 +225,7 @@ export default function SideNavigation() {
   const handleConversationClick = (conversationId: string) => {
     if (conversationId !== currentConversationId) {
       loadConversation(conversationId);
+      localStorage.setItem("currentConversationId", conversationId);
     }
   };
 
@@ -215,6 +244,22 @@ export default function SideNavigation() {
     startNewConversation();
     // Clear current messages
     clearMessages();
+  };
+
+  const handleDeleteConversation = (conversationId: string) => {
+    // Use window.confirm to satisfy linter
+    if (
+      window.confirm(
+        "Bạn có chắc chắn muốn xóa cuộc trò chuyện này? Hành động này không thể hoàn tác.",
+      )
+    ) {
+      deleteConversationMutation.mutate(conversationId);
+
+      // If deleting current conversation, start a new one
+      if (conversationId === currentConversationId) {
+        handleNewChat();
+      }
+    }
   };
 
   const getConversationTitle = (conv: any) => {
@@ -261,6 +306,108 @@ export default function SideNavigation() {
     </div>
   );
 
+  const renderLoadingState = () => (
+    <div className="space-y-2">
+      {/* Loading skeleton */}
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="flex items-start gap-2 p-2">
+            <div className="mt-0.5 size-3 rounded-full bg-gray-200" />
+            <div className="flex-1">
+              <div className="mb-1 h-3 w-3/4 rounded bg-gray-200" />
+              <div className="h-2 w-1/2 rounded bg-gray-200" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderConversationsList = () => (
+    <div className="max-h-64 space-y-1 overflow-y-auto">
+      {conversations.slice(0, 10).map((conversation: any) => (
+        <motion.div
+          key={conversation.conversationId}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className={`group relative cursor-pointer rounded p-2 text-xs transition-colors hover:bg-gray-50 ${
+            currentConversationId === conversation.conversationId
+              ? "border-l-2 border-blue-500 bg-blue-50"
+              : ""
+          }`}
+          onClick={() =>
+            handleConversationClick(conversation.conversationId)
+          }
+        >
+          <div className="flex items-start gap-2">
+            <ChatCircle
+              size={12}
+              className="mt-0.5 flex-shrink-0 text-gray-400"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-medium text-gray-800">
+                {getConversationTitle(conversation)}
+              </div>
+              <div className="mt-1 text-xs text-gray-500">
+                {dayjs(conversation.lastMessageTime).fromNow()} •{" "}
+                {conversation.messageCount} tin nhắn
+              </div>
+            </div>
+          </div>
+
+          {/* Hover Actions */}
+          <div className="absolute right-1 top-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="flex gap-1">
+              <button
+                type="button"
+                className="rounded p-1 text-blue-600 hover:bg-gray-200 hover:text-blue-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUpdateTitle(
+                    conversation.conversationId,
+                    getConversationTitle(conversation),
+                  );
+                }}
+                disabled={updateConversationTitleMutation.isPending}
+                title="Đổi tên cuộc trò chuyện"
+                aria-label="Đổi tên cuộc trò chuyện"
+              >
+                <PencilSimple size={10} />
+              </button>
+              <button
+                type="button"
+                className="rounded p-1 text-red-600 hover:bg-red-200 hover:text-red-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteConversation(
+                    conversation.conversationId,
+                  );
+                }}
+                disabled={deleteConversationMutation.isPending}
+                title="Xóa cuộc trò chuyện"
+                aria-label="Xóa cuộc trò chuyện"
+              >
+                <Trash size={10} />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+
+  const renderEmptyState = () => (
+    <div className="p-3 text-center text-xs text-gray-500">
+      <div className="mb-2">
+        <ChatCircle size={32} className="mx-auto text-gray-300" />
+      </div>
+      <div className="font-medium">Chưa có lịch sử hội thoại</div>
+      <div className="mt-1 text-gray-400">
+        Hãy bắt đầu trò chuyện đầu tiên!
+      </div>
+    </div>
+  );
+
   return (
     <>
       {/* Mobile toggle button */}
@@ -283,7 +430,7 @@ export default function SideNavigation() {
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-gray-200 p-6">
-            <div className="from-blue-500 to-purple-500 flex size-10 items-center justify-center rounded-xl bg-gradient-to-r text-xl">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-xl">
               🎓
             </div>
             <div>
@@ -297,7 +444,7 @@ export default function SideNavigation() {
           </div>
 
           {/* Scrollable Content */}
-          <div className="scroll flex-1 space-y-2 p-4 overflow-y-auto">
+          <div className="scroll flex-1 space-y-2 overflow-y-auto p-4">
             {/* New Chat Button */}
             <div className="mb-4">
               <Button
@@ -318,7 +465,7 @@ export default function SideNavigation() {
             {/* Information & Resources */}
             {renderNavigationSection(
               "THÔNG TIN & TÀI NGUYÊN",
-              InformationResources
+              InformationResources,
             )}
 
             {/* Experience Tools */}
@@ -351,102 +498,38 @@ export default function SideNavigation() {
               <div className="mb-2 mt-4 flex items-center gap-2 px-2 text-xs font-semibold text-gray-500">
                 <ChatCircle size={14} />
                 <span>LỊCH SỬ HỘI THOẠI</span>
-                {/* Debug badge */}
                 {conversations.length > 0 && (
-                  <span className="bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded text-xs">
+                  <span className="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-600">
                     {conversations.length}
                   </span>
                 )}
               </div>
 
               {conversationsError && (
-                <div className="p-3 text-center text-xs text-red-500">
-                  Lỗi:{" "}
-                  {conversationsError instanceof Error
-                    ? conversationsError.message
-                    : "Không thể tải lịch sử"}
+                <div className="rounded-lg bg-red-50 p-3 text-center text-xs text-red-500">
+                  <div className="font-medium">Lỗi tải dữ liệu</div>
+                  <div className="mt-1 text-gray-600">
+                    {conversationsError instanceof Error
+                      ? conversationsError.message
+                      : "Không thể tải lịch sử hội thoại"}
+                  </div>
                 </div>
               )}
 
               {isLoadingConversations ? (
-                <div className="p-3 text-center text-xs text-gray-500">
-                  Đang tải lịch sử...
-                </div>
+                renderLoadingState()
               ) : conversations.length > 0 ? (
-                <div className="space-y-1 max-h-64 overflow-y-auto">
-                  {conversations.slice(0, 10).map((conversation) => (
-                    <motion.div
-                      key={conversation.conversationId}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className={`group relative rounded p-2 text-xs cursor-pointer transition-colors hover:bg-gray-50 ${
-                        currentConversationId === conversation.conversationId
-                          ? "bg-blue-50 border-l-2 border-blue-500"
-                          : ""
-                      }`}
-                      onClick={() =>
-                        handleConversationClick(conversation.conversationId)
-                      }
-                    >
-                      <div className="flex items-start gap-2">
-                        <ChatCircle
-                          size={12}
-                          className="mt-0.5 flex-shrink-0 text-gray-400"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-gray-800 font-medium truncate">
-                            {getConversationTitle(conversation)}
-                          </div>
-                          <div className="text-gray-500 text-xs mt-1">
-                            {dayjs(conversation.lastMessageTime).fromNow()} •{" "}
-                            {conversation.messageCount} tin nhắn
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Hover Actions */}
-                      <div className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="flex gap-1">
-                          <button
-                            className="p-1 rounded hover:bg-gray-200"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdateTitle(
-                                conversation.conversationId,
-                                getConversationTitle(conversation)
-                              );
-                            }}
-                            disabled={updateConversationTitleMutation.isPending}
-                          >
-                            <PencilSimple size={10} />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                renderConversationsList()
               ) : (
-                <div className="p-3 text-center text-xs text-gray-500">
-                  Chưa có lịch sử hội thoại nào
-                  <br />
-                  <span className="text-gray-400">
-                    Hãy bắt đầu trò chuyện đầu tiên!
-                  </span>
-                </div>
+                renderEmptyState()
               )}
-
-              {/* Debug info - remove in production */}
-              <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-500">
-                Debug: {conversations.length} cuộc hội thoại | Loading:{" "}
-                {isLoadingConversations ? "Yes" : "No"}
-              </div>
             </div>
           </div>
 
           {/* Footer - User Profile */}
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center gap-3">
-              <div className="from-green-500 to-blue-500 flex size-10 items-center justify-center rounded-full bg-gradient-to-r text-sm font-medium text-white">
+              <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-blue-500 text-sm font-medium text-white">
                 <User size={20} weight="fill" />
               </div>
               <div className="min-w-0 flex-1">

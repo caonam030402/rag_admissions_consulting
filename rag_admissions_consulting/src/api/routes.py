@@ -17,6 +17,7 @@ class ChatRequest(BaseModel):
     message: str
     user_email: str
     conversation_id: str = None  # Optional conversation ID để tiếp tục cuộc trò chuyện
+    user_id: int = None  # Optional user_id for registered users
 
 
 @router.post("/chat")
@@ -30,19 +31,26 @@ async def chat_endpoint(request: ChatRequest):
 async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None]:
     """Stream chat response token by token"""
     try:
-        # Get or create user
-        user_service = UserService()
-        user_id = await user_service.get_or_create_user(request.user_email)
+        # Determine user type and get user_id
+        if request.user_id:
+            # Registered user - use provided user_id
+            user_id = request.user_id
+            logger.info(f"Processing chat request from registered user ID: {user_id}")
+        else:
+            # Guest user - create fake user_id for internal use but don't save to backend
+            user_service = UserService()
+            user_id = await user_service.get_or_create_user(request.user_email)
+            logger.info(
+                f"Processing chat request from guest user: {request.user_email}"
+            )
 
         # Get or create conversation_id using SessionManager
         conversation_id = session_manager.get_or_create_conversation_id(
             request.user_email, request.conversation_id
         )
 
-        # Initialize chat service with managed conversation_id
+        # Initialize chat service with user identification
         chat_service = ChatService(user_id, request.user_email, conversation_id)
-
-        logger.info(f"Processing chat request from user: {request.user_email}")
 
         # Generate streaming response
         full_response = ""

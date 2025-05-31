@@ -8,7 +8,7 @@ import { GetChatbotHistoryDto } from './dto/get-chatbot-history.dto';
 
 @Injectable()
 export class chatbotsService {
-  constructor(private readonly chatbotRepository: chatbotRepository) {}
+  constructor(private readonly chatbotRepository: chatbotRepository) { }
 
   findAllHistoryWithPagination({
     paginationOptions,
@@ -26,7 +26,7 @@ export class chatbotsService {
     });
   }
 
-  removeHistory(id: ChatbotHistory['id']) {
+  async removeHistory(id: ChatbotHistory['id']): Promise<void> {
     return this.chatbotRepository.removeHistory(id);
   }
 
@@ -67,5 +67,23 @@ export class chatbotsService {
       conversationId,
       title,
     );
+  }
+
+  deleteConversation(conversationId: string) {
+    return this.chatbotRepository.deleteConversation(conversationId);
+  }
+
+  async debugConversations(userId: number) {
+    console.log('🔧 DEBUG: Querying conversations for userId:', userId);
+
+    // Direct debug - let's see what's in the conversations table
+    const allConversations = await this.chatbotRepository.findConversationsByUser({
+      userId: userId,
+      page: 1,
+      limit: 100
+    });
+
+    console.log('🔧 DEBUG: Found conversations:', allConversations);
+    return allConversations;
   }
 }

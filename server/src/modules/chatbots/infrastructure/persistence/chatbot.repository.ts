@@ -47,4 +47,6 @@ export abstract class chatbotRepository {
     conversationId: string,
     title: string,
   ): Promise<void>;
+
+  abstract deleteConversation(conversationId: string): Promise<void>;
 }

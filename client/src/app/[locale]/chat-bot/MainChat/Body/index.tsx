@@ -11,6 +11,15 @@ export default function BodyMainChat() {
   const { messages, isTyping } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Debug: Log messages changes
+  useEffect(() => {
+    console.log("🔧 DEBUG Body: Messages updated", {
+      count: messages.length,
+      lastMessage: messages[messages.length - 1],
+      isTyping,
+    });
+  }, [messages, isTyping]);
+
   // Auto-scroll to bottom when messages change or when typing
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

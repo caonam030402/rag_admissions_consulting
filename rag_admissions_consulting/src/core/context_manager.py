@@ -18,10 +18,9 @@ class ContextManager:
         self.max_context_length = 20  # Maximum messages to keep in context
         self.context_window_minutes = 30  # Context window in minutes
 
-        # Initialize ChatHistoryManager for backend integration (disabled for now)
-        # self.history_manager = ChatHistoryManager(user_id, user_email)
-        # self.history_manager.set_conversation_id(conversation_id)
-        self.history_manager = None  # Disable backend integration temporarily
+        # Initialize ChatHistoryManager for backend integration
+        self.history_manager = ChatHistoryManager(user_id, user_email)
+        self.history_manager.set_conversation_id(conversation_id)
 
     async def add_message(self, role: RoleType, content: str):
         """Add a message to the conversation context and save to backend"""
