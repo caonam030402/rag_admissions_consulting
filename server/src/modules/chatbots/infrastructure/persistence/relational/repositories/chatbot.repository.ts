@@ -218,15 +218,6 @@ export class chatbotRelationalRepository implements chatbotRepository {
       take: limit,
     });
 
-    console.log('🔧 DEBUG found conversations count:', conversations.length);
-    console.log('🔧 DEBUG conversations:', conversations.map(c => ({
-      id: c.id,
-      userId: c.userId,
-      guestId: c.guestId,
-      title: c.title,
-      lastMessageAt: c.lastMessageAt
-    })));
-
     // For each conversation, get the latest message and count
     const results = await Promise.all(
       conversations.map(async (conversation) => {

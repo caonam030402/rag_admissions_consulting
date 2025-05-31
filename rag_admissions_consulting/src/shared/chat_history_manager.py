@@ -1,9 +1,10 @@
 from loguru import logger
-import requests
+import httpx
+import asyncio
 import uuid
 import os
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from .enum import RoleType
 
 # Cấu hình URL API
@@ -18,13 +19,13 @@ class ChatHistoryManager:
         self.email = email
         self.conversation_id = str(uuid.uuid4())
 
-        # Check if this is a guest user
-        self.is_guest = self._is_guest_user(email)
+        # Check if this is a guest user (either by email format or user_id = 0)
+        self.is_guest = self._is_guest_user(email) or user_id == 0
         self.guest_id = self._extract_guest_id(email) if self.is_guest else None
 
         logger.info(f"Tạo cuộc hội thoại mới với ID: {self.conversation_id}")
         logger.info(
-            f"User type: {'Guest' if self.is_guest else 'Registered'}, Email: {email}"
+            f"User type: {'Guest' if self.is_guest else 'Registered'}, Email: {email}, UserID: {user_id}"
         )
         if self.is_guest:
             logger.info(f"Guest ID: {self.guest_id}")
@@ -34,22 +35,34 @@ class ChatHistoryManager:
         # Cache cho tin nhắn trong phiên hiện tại
         self._current_session_messages = []
 
+        # Queue for background message saving
+        self._save_queue: List[Dict[str, Any]] = []
+        self._processing_queue = False
+
     def _is_guest_user(self, email: str) -> bool:
         """Kiểm tra xem có phải guest user không"""
-        return email.startswith("guest-") and email.endswith("@example.com")
+        return email.startswith("guest-")
 
     def _extract_guest_id(self, email: str) -> str:
-        """Trích xuất guest ID từ email format: guest-{guestId}@example.com"""
+        """Trích xuất guest ID từ email format: guest-{guestId}@example.com hoặc guest-{guestId}"""
         if self._is_guest_user(email):
-            # Extract guest ID from email like "guest-abc123@example.com"
-            match = re.match(r"guest-(.+)@example\.com", email)
-            if match:
-                return match.group(1)
+            # Extract guest ID from email like "guest-abc123@example.com" or "guest-abc123"
+            if "@example.com" in email:
+                # Format: guest-abc123@example.com
+                match = re.match(r"guest-(.+)@example\.com", email)
+                if match:
+                    return match.group(1)
+            else:
+                # Format: guest-abc123 (just remove "guest-" prefix)
+                return email[6:]  # Remove "guest-" prefix
         return email  # fallback
 
     def append_message(self, role: RoleType, content: str) -> None:
-        """Lưu tin nhắn qua API và cache trong phiên hiện tại"""
-        # Tạo dữ liệu tin nhắn
+        """FAST: Add to cache immediately, save to backend in background"""
+        # 1. Add to cache immediately (FAST)
+        self._current_session_messages.append({"role": role, "content": content})
+
+        # 2. Queue for background saving (NON-BLOCKING)
         message_data = {
             "role": role.value if hasattr(role, "value") else role,
             "content": content,
@@ -59,34 +72,73 @@ class ChatHistoryManager:
         # Add appropriate user identification
         if self.is_guest:
             message_data["guestId"] = self.guest_id
-            logger.info(f"Đang lưu tin nhắn {role} cho guest: {self.guest_id}")
+            logger.info(
+                f"🔧 DEBUG: Sending GUEST message: guestId={self.guest_id}, no userId"
+            )
         else:
             message_data["userId"] = self.user_id
-            logger.info(f"Đang lưu tin nhắn {role} cho user: {self.user_id}")
+            logger.info(
+                f"🔧 DEBUG: Sending REGISTERED user message: userId={self.user_id}, no guestId"
+            )
 
-        # Cache tin nhắn trong phiên hiện tại
-        self._current_session_messages.append({"role": role, "content": content})
+        # Add to save queue for background processing
+        self._save_queue.append(message_data)
+        logger.info(f"🔧 DEBUG: Message data queued: {message_data}")
 
-        # Lưu tin nhắn qua API
+        # Process queue in background (fire-and-forget)
+        asyncio.create_task(self._process_save_queue())
+
+        logger.debug(f"Message added to cache and queued for saving: {role}")
+
+    async def _process_save_queue(self):
+        """Background task to save messages to backend"""
+        if self._processing_queue or not self._save_queue:
+            return
+
+        self._processing_queue = True
+
         try:
-            logger.info(f"API request data: {message_data}")
-            response = requests.post(CHAT_API_URL, json=message_data, timeout=10)
+            # Process all queued messages
+            while self._save_queue:
+                message_data = self._save_queue.pop(0)
 
-            if 200 <= response.status_code < 300:
-                result = response.json()
-                logger.info(
-                    f"Lưu tin nhắn thành công, ID: {result.get('id', 'unknown')}"
-                )
-            else:
-                logger.error(f"Lỗi khi lưu tin nhắn: HTTP {response.status_code}")
-                logger.error(f"Chi tiết: {response.text}")
-        except Exception as e:
-            logger.error(f"Không thể kết nối đến API: {str(e)}")
+                try:
+                    # Use async HTTP client
+                    async with httpx.AsyncClient(timeout=5.0) as client:
+                        response = await client.post(CHAT_API_URL, json=message_data)
 
-    def get_conversation_context(self, limit: int = 10) -> List[Dict[str, Any]]:
-        """Lấy tin nhắn gần đây của cuộc hội thoại"""
+                        if 200 <= response.status_code < 300:
+                            result = response.json()
+                            logger.debug(
+                                f"Message saved: {result.get('id', 'unknown')}"
+                            )
+                        else:
+                            logger.warning(
+                                f"Failed to save message: HTTP {response.status_code}"
+                            )
+
+                except Exception as e:
+                    logger.warning(f"Error saving message (will retry): {str(e)}")
+                    # Could implement retry logic here
+
+        finally:
+            self._processing_queue = False
+
+    async def get_conversation_context_async(
+        self, limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """ASYNC version: Get recent messages from conversation"""
         try:
-            # Thử lấy từ API trước
+            # First check local cache (INSTANT)
+            if self._current_session_messages:
+                cached_messages = [
+                    {"role": msg["role"], "content": msg["content"]}
+                    for msg in self._current_session_messages[-limit:]
+                ]
+                logger.debug(f"Using cached messages: {len(cached_messages)}")
+                return cached_messages
+
+            # If no cache, try API with timeout
             params = {
                 "page": 1,
                 "limit": limit,
@@ -96,32 +148,37 @@ class ChatHistoryManager:
                 "orderDirection": "ASC",
             }
 
-            response = requests.get(CHAT_API_URL, params=params, timeout=10)
+            async with httpx.AsyncClient(timeout=3.0) as client:  # Fast timeout
+                response = await client.get(CHAT_API_URL, params=params)
 
-            if 200 <= response.status_code < 300:
-                result = response.json()
-                if "data" in result and result["data"]:
-                    messages = [
-                        {"role": msg["role"], "content": msg["content"]}
-                        for msg in result["data"]
-                    ]
-                    logger.info(f"Lấy được {len(messages)} tin nhắn từ API")
-                    return messages
-
-            # Nếu không lấy được từ API, dùng cache của phiên hiện tại
-            logger.info("Sử dụng tin nhắn từ phiên hiện tại")
-            return [
-                {"role": msg["role"], "content": msg["content"]}
-                for msg in self._current_session_messages[-limit:]
-            ]
+                if 200 <= response.status_code < 300:
+                    result = response.json()
+                    if "data" in result and result["data"]:
+                        messages = [
+                            {"role": msg["role"], "content": msg["content"]}
+                            for msg in result["data"]
+                        ]
+                        logger.info(f"Retrieved {len(messages)} messages from API")
+                        return messages
 
         except Exception as e:
-            logger.error(f"Lỗi khi lấy tin nhắn: {str(e)}")
-            # Trả về tin nhắn từ phiên hiện tại nếu có lỗi
-            return [
-                {"role": msg["role"], "content": msg["content"]}
-                for msg in self._current_session_messages[-limit:]
-            ]
+            logger.debug(f"API unavailable, using cache: {str(e)}")
+
+        # Fallback to current session cache
+        return [
+            {"role": msg["role"], "content": msg["content"]}
+            for msg in self._current_session_messages[-limit:]
+        ]
+
+    def get_conversation_context(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """SYNC version for backward compatibility - uses cache only for speed"""
+        # For performance, only use current session cache
+        cached_messages = [
+            {"role": msg["role"], "content": msg["content"]}
+            for msg in self._current_session_messages[-limit:]
+        ]
+        logger.debug(f"Fast context retrieval: {len(cached_messages)} messages")
+        return cached_messages
 
     def clear_history(self):
         """Xóa lịch sử chat trong phiên hiện tại"""

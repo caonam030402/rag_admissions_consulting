@@ -48,7 +48,7 @@ export const CHAT_QUERY_KEYS = {
 const getGuestId = (): string => {
   let guestId = localStorage.getItem("guestId");
   if (!guestId) {
-    guestId = `guest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    guestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     localStorage.setItem("guestId", guestId);
   }
   return guestId;
@@ -122,11 +122,11 @@ const streamMessage = async function* (
         user_id: user.userId,
       };
     } else {
-      // Guest user - send guestId in email format
+      // Guest user - send guestId directly as user_email
       requestData = {
         message: content,
         conversation_id: currentConversationId,
-        user_email: `${user.guestId}@example.com`,
+        user_email: user.guestId!, // Send guest ID directly, no @example.com
       };
     }
 

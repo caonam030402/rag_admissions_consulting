@@ -33,17 +33,17 @@ class ContextManager:
 
         self.messages.append(message)
         print(
-            f"🔧 DEBUG: Added {role} message to local cache. Total: {len(self.messages)}"
+            f"🚀 FAST: Added {role} message to local cache. Total: {len(self.messages)}"
         )
 
-        # Save to backend via ChatHistoryManager (disabled for now)
+        # Save to backend in background (NON-BLOCKING)
         if self.history_manager:
             try:
-                await asyncio.to_thread(
-                    self.history_manager.append_message, role, content
-                )
+                # This is now non-blocking background save
+                self.history_manager.append_message(role, content)
+                logger.debug("Message queued for background save")
             except Exception as e:
-                logger.warning(f"Failed to save message to backend: {e}")
+                logger.warning(f"Failed to queue message save: {e}")
         else:
             logger.debug("Backend integration disabled, using local cache only")
 
@@ -57,9 +57,9 @@ class ContextManager:
     async def get_context_messages(
         self, limit: Optional[int] = None
     ) -> List[Dict[str, Any]]:
-        """Get recent context messages for the conversation from backend and local cache"""
+        """OPTIMIZED: Get recent context messages - prioritize local cache for speed"""
 
-        # Always try local cache first for immediate availability
+        # Always prioritize local cache for speed
         cutoff_time = datetime.now() - timedelta(minutes=self.context_window_minutes)
         local_messages = [
             msg for msg in self.messages if msg["timestamp"] > cutoff_time
@@ -71,9 +71,11 @@ class ContextManager:
         else:
             local_messages = local_messages[-self.max_context_length :]
 
-        # If we have local messages, use them
+        # Use local messages if available (FAST PATH)
         if local_messages:
-            logger.info(f"Using {len(local_messages)} messages from local cache")
+            logger.info(
+                f"🚀 FAST: Using {len(local_messages)} messages from local cache"
+            )
             return [
                 {
                     "role": msg["role"],
@@ -83,17 +85,17 @@ class ContextManager:
                 for msg in local_messages
             ]
 
-        # If no local messages, try backend as fallback (disabled for now)
+        # ONLY fallback to backend if no local cache (rare case)
         if self.history_manager:
             try:
-                backend_limit = limit or self.max_context_length
-                backend_messages = await asyncio.to_thread(
-                    self.history_manager.get_conversation_context, backend_limit
+                # Use fast cache-only method to avoid blocking
+                backend_messages = self.history_manager.get_conversation_context(
+                    limit or self.max_context_length
                 )
 
                 if backend_messages:
                     logger.info(
-                        f"Retrieved {len(backend_messages)} messages from backend"
+                        f"Retrieved {len(backend_messages)} messages from history manager cache"
                     )
                     # Convert to our format with timestamps
                     return [
@@ -105,7 +107,7 @@ class ContextManager:
                         for msg in backend_messages
                     ]
             except Exception as e:
-                logger.warning(f"Backend unavailable, using local cache only: {e}")
+                logger.warning(f"History manager unavailable: {e}")
 
         # Return empty if no messages found
         logger.info("No context messages found")

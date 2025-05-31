@@ -37,9 +37,8 @@ async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None
             user_id = request.user_id
             logger.info(f"Processing chat request from registered user ID: {user_id}")
         else:
-            # Guest user - create fake user_id for internal use but don't save to backend
-            user_service = UserService()
-            user_id = await user_service.get_or_create_user(request.user_email)
+            # Guest user - do NOT create user_id, use email-based identification
+            user_id = None  # No user_id for guests
             logger.info(
                 f"Processing chat request from guest user: {request.user_email}"
             )
@@ -49,8 +48,13 @@ async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None
             request.user_email, request.conversation_id
         )
 
-        # Initialize chat service with user identification
-        chat_service = ChatService(user_id, request.user_email, conversation_id)
+        # Initialize chat service with proper user identification
+        # For guests: user_id will be None, but user_email contains guest info
+        chat_service = ChatService(
+            user_id or 0,  # Use 0 as placeholder for guests (ChatService expects int)
+            request.user_email,
+            conversation_id,
+        )
 
         # Generate streaming response
         full_response = ""
