@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Button } from "@heroui/react";
+import { Button } from "@heroui/react";
 import { Plus } from "@phosphor-icons/react";
 import React from "react";
 
