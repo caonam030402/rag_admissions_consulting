@@ -2,7 +2,6 @@
 
 import { useDisclosure } from "@heroui/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -23,6 +22,7 @@ import DataSourceDetail from "./components/DataSourceDetail";
 import DataSourceList, {
   type ITableDataset,
 } from "./components/DataSourceList";
+import { userService } from "@/services/user";
 
 // Helper function for log type
 const getLogType = (status: string): "success" | "error" | "info" => {
@@ -126,7 +126,7 @@ const convertToTableDataset = (dataSource: DataSource): ITableDataset => {
  * Data Source Management Page Component
  */
 export default function DataSourcePage() {
-  const { data: session } = useSession();
+  const { user } = userService.useProfile();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -218,8 +218,8 @@ export default function DataSourcePage() {
         title: data.title,
         content: data.content,
         file: data.file,
-        uploaderEmail: session?.user?.email || "",
-        uploadedBy: session?.user?.id || "",
+        uploaderEmail: user?.email || "",
+        uploadedBy: user?.id || "",
         metadata: {
           uploadedAt: new Date().toISOString(),
           userAgent: navigator.userAgent,

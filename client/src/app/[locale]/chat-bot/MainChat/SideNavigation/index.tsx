@@ -1,5 +1,7 @@
 "use client";
 
+import "dayjs/locale/vi";
+
 import { Button, Divider } from "@heroui/react";
 import {
   Books,
@@ -18,16 +20,16 @@ import {
   User,
   X,
 } from "@phosphor-icons/react";
-import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import "dayjs/locale/vi";
+import { motion } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
 
+import { ENameLocalS } from "@/constants";
 import useChatBot from "@/hooks/features/chatbot/useChatBot";
-import { formatSurveyData } from "@/utils/common";
-import { useChatStore } from "@/stores/chat";
 import { chatService } from "@/services/chat";
+import { useChatStore } from "@/stores/chat";
+import { formatSurveyData } from "@/utils/common";
 
 import AdmissionPredictor from "../AdmissionPredictor";
 import CampusTour from "../CampusTour";
@@ -124,6 +126,7 @@ export default function SideNavigation() {
   const [showSurvey, setShowSurvey] = useState(false);
   const [showPredictor, setShowPredictor] = useState(false);
   const [showCampusTour, setShowCampusTour] = useState(false);
+
   const { sendMessage } = useChatBot();
 
   // React Query hooks for chat history using chatService
@@ -133,7 +136,8 @@ export default function SideNavigation() {
     error: conversationsError,
   } = chatService.useConversations();
 
-  const updateConversationTitleMutation = chatService.useUpdateConversationTitle();
+  const updateConversationTitleMutation =
+    chatService.useUpdateConversationTitle();
   const deleteConversationMutation = chatService.useDeleteConversation();
 
   // Extract conversations array from paginated data
@@ -161,7 +165,9 @@ export default function SideNavigation() {
 
   // Restore current conversation from localStorage on mount
   useEffect(() => {
-    const savedConversationId = localStorage.getItem("currentConversationId");
+    const savedConversationId = localStorage.getItem(
+      ENameLocalS.CURRENT_CONVERSATION_ID,
+    );
     if (savedConversationId && savedConversationId !== currentConversationId) {
       loadConversation(savedConversationId);
     }
@@ -171,8 +177,10 @@ export default function SideNavigation() {
   useEffect(() => {
     if (conversationMessages.length > 0 && currentConversationId) {
       // Create a hash of current messages to compare
-      const messagesHash = conversationMessages.map((msg: any) => msg.id).join(",");
-      
+      const messagesHash = conversationMessages
+        .map((msg: any) => msg.id)
+        .join(",");
+
       // Only update if messages have actually changed
       if (messagesHash !== lastProcessedMessages.current) {
         lastProcessedMessages.current = messagesHash;
@@ -225,7 +233,7 @@ export default function SideNavigation() {
   const handleConversationClick = (conversationId: string) => {
     if (conversationId !== currentConversationId) {
       loadConversation(conversationId);
-      localStorage.setItem("currentConversationId", conversationId);
+      localStorage.setItem(ENameLocalS.CURRENT_CONVERSATION_ID, conversationId);
     }
   };
 
@@ -335,15 +343,10 @@ export default function SideNavigation() {
               ? "border-l-2 border-blue-500 bg-blue-50"
               : ""
           }`}
-          onClick={() =>
-            handleConversationClick(conversation.conversationId)
-          }
+          onClick={() => handleConversationClick(conversation.conversationId)}
         >
           <div className="flex items-start gap-2">
-            <ChatCircle
-              size={12}
-              className="mt-0.5 flex-shrink-0 text-gray-400"
-            />
+            <ChatCircle size={12} className="mt-0.5 shrink-0 text-gray-400" />
             <div className="min-w-0 flex-1">
               <div className="truncate font-medium text-gray-800">
                 {getConversationTitle(conversation)}
@@ -379,9 +382,7 @@ export default function SideNavigation() {
                 className="rounded p-1 text-red-600 hover:bg-red-200 hover:text-red-700"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDeleteConversation(
-                    conversation.conversationId,
-                  );
+                  handleDeleteConversation(conversation.conversationId);
                 }}
                 disabled={deleteConversationMutation.isPending}
                 title="Xóa cuộc trò chuyện"
@@ -402,9 +403,7 @@ export default function SideNavigation() {
         <ChatCircle size={32} className="mx-auto text-gray-300" />
       </div>
       <div className="font-medium">Chưa có lịch sử hội thoại</div>
-      <div className="mt-1 text-gray-400">
-        Hãy bắt đầu trò chuyện đầu tiên!
-      </div>
+      <div className="mt-1 text-gray-400">Hãy bắt đầu trò chuyện đầu tiên!</div>
     </div>
   );
 
@@ -430,7 +429,7 @@ export default function SideNavigation() {
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-gray-200 p-6">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 text-xl">
+            <div className="from-blue-500 to-purple-500 flex size-10 items-center justify-center rounded-xl bg-gradient-to-r text-xl">
               🎓
             </div>
             <div>
@@ -448,7 +447,7 @@ export default function SideNavigation() {
             {/* New Chat Button */}
             <div className="mb-4">
               <Button
-                className="w-full justify-start bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+                className="from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 w-full justify-start bg-gradient-to-r text-white"
                 startContent={<Plus size={16} />}
                 onClick={handleNewChat}
               >
@@ -516,56 +515,21 @@ export default function SideNavigation() {
                 </div>
               )}
 
-              {isLoadingConversations ? (
-                renderLoadingState()
-              ) : conversations.length > 0 ? (
-                renderConversationsList()
-              ) : (
-                renderEmptyState()
-              )}
+              {isLoadingConversations
+                ? renderLoadingState()
+                : conversations.length > 0
+                  ? renderConversationsList()
+                  : renderEmptyState()}
             </div>
           </div>
 
           {/* Footer - User Profile */}
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-blue-500 text-sm font-medium text-white">
+              <div className="from-green-500 to-blue-500 flex size-10 items-center justify-center rounded-full bg-gradient-to-r text-sm font-medium text-white">
                 <User size={20} weight="fill" />
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-gray-800">
-                  {(() => {
-                    // Import chatService to check current user
-                    const user =
-                      typeof window !== "undefined"
-                        ? JSON.parse(localStorage.getItem("profile") || "null")
-                        : null;
 
-                    if (user && user.id) {
-                      return `Người dùng #${user.id}`;
-                    }
-
-                    // Check guest ID
-                    const guestId =
-                      typeof window !== "undefined"
-                        ? localStorage.getItem("guestId")
-                        : null;
-
-                    return guestId ? `Khách: ${guestId.slice(-8)}` : "Thí sinh";
-                  })()}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {(() => {
-                    const user =
-                      typeof window !== "undefined"
-                        ? JSON.parse(localStorage.getItem("profile") || "null")
-                        : null;
-                    return user && user.id
-                      ? "Đã đăng nhập"
-                      : "Đang tư vấn tuyển sinh";
-                  })()}
-                </div>
-              </div>
               <Button
                 isIconOnly
                 variant="light"

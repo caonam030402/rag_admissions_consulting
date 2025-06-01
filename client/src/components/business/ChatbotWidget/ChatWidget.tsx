@@ -1,21 +1,16 @@
 import { AnimatePresence, motion } from "framer-motion";
-import type { Dispatch, SetStateAction } from "react";
 import React from "react";
 
+import { cn } from "@/libs/utils";
 import type { TabTypeChatbotWidget } from "@/types/chat";
 
-import EmailForm from "./EmailForm";
 import HomeChat from "./HomeChat";
 import MainChat from "./MainChat";
-import { cn } from "@/libs/utils";
 
 interface ChatWidgetProps {
   isOpen: boolean;
   activeTab: TabTypeChatbotWidget;
-  showEmailForm: boolean;
-  setShowEmailForm: Dispatch<SetStateAction<boolean>>;
   handleTabSwitch: (tab: TabTypeChatbotWidget) => void;
-  checkEmailHasSaved: () => boolean;
   isOnScreen?: boolean;
   styles?: {
     shadow?:
@@ -34,10 +29,7 @@ interface ChatWidgetProps {
 export const ChatWidget: React.FC<ChatWidgetProps> = ({
   isOpen,
   activeTab,
-  showEmailForm,
-  setShowEmailForm,
   handleTabSwitch,
-  checkEmailHasSaved,
   isOnScreen = true,
   styles = {
     shadow: "shadow-xl",
@@ -58,11 +50,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
       {isOpen && (
         <motion.div
           className={cn(
-            "w-[350px] overflow-hidden rounded-3xl bg-white shadow-xl",
+            "w-[380px] overflow-hidden rounded-3xl bg-white shadow-xl",
             styles?.shadow,
             {
               "fixed bottom-24 right-6 z-40": isOnScreen,
-            }
+            },
           )}
           {...propsTransition}
         >
@@ -73,18 +65,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
               </div>
             ) : (
               <div className={cn("h-full bg-gray-50", styles?.height)}>
-                <MainChat
-                  checkEmailHasSaved={checkEmailHasSaved}
-                  handleTabSwitch={handleTabSwitch}
-                  isTransition={isTransition}
-                />
+                <MainChat handleTabSwitch={handleTabSwitch} />
               </div>
             )}
-
-            <EmailForm
-              showEmailForm={showEmailForm}
-              setShowEmailForm={setShowEmailForm}
-            />
           </div>
         </motion.div>
       )}

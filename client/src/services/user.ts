@@ -40,7 +40,7 @@ export const userService = {
     const query = useQueryCommon<IUser>({
       url: "auth/me",
       queryKey: ["profile"],
-      enabled: !userLs && isAuthenticated,
+      enabled: !userLs,
     });
 
     setLocalStorage({ key: ENameLocalS.PROFILE, value: query.data });

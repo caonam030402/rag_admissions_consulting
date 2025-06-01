@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { ENameLocalS } from "@/constants";
+import { useChatStore } from "@/stores/chat";
 import type { TabTypeChatbotWidget } from "@/types/chat";
 
 import { ChatWidget } from "./ChatWidget";
@@ -11,13 +12,12 @@ import { FloatingButton } from "./FloatingButton";
 export default function ChatbotWidget1() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabTypeChatbotWidget>("home");
-  const [showEmailForm, setShowEmailForm] = useState(false);
+  const { loadConversation } = useChatStore();
 
   const toggleWidget = (): void => {
     setIsOpen(!isOpen);
     if (!isOpen) {
       setActiveTab("home");
-      setShowEmailForm(false);
     }
   };
 
@@ -25,10 +25,21 @@ export default function ChatbotWidget1() {
     setActiveTab(tab);
   };
 
-  const checkEmailHasSaved = () => {
-    const savedEmail = localStorage.getItem(ENameLocalS.EMAIL);
-    return !!savedEmail;
-  };
+  // Load conversation when widget opens and switches to chat
+  useEffect(() => {
+    if (isOpen && activeTab === "chat") {
+      const savedConversationId = localStorage.getItem(
+        ENameLocalS.CURRENT_CONVERSATION_ID,
+      );
+      if (savedConversationId) {
+        console.log(
+          "🔧 Widget - Loading conversation on tab switch:",
+          savedConversationId,
+        );
+        loadConversation(savedConversationId);
+      }
+    }
+  }, [isOpen, activeTab, loadConversation]);
 
   return (
     <>
@@ -36,10 +47,7 @@ export default function ChatbotWidget1() {
       <ChatWidget
         isOpen={isOpen}
         activeTab={activeTab}
-        showEmailForm={showEmailForm}
-        setShowEmailForm={setShowEmailForm}
         handleTabSwitch={handleTabSwitch}
-        checkEmailHasSaved={checkEmailHasSaved}
       />
     </>
   );

@@ -8,11 +8,9 @@ import ChatEnter from "./ChatEnter";
 import Header from "./Header";
 
 export default function MainChat({
-  checkEmailHasSaved,
   handleTabSwitch,
   isTransition = true,
 }: {
-  checkEmailHasSaved: () => void;
   handleTabSwitch: (tab: TabTypeChatbotWidget) => void;
   isTransition?: boolean;
 }) {
@@ -29,7 +27,7 @@ export default function MainChat({
       <div className="scroll h-full flex-1">
         <Body />
       </div>
-      <ChatEnter checkEmailHasSaved={checkEmailHasSaved} />
+      <ChatEnter />
     </motion.div>
   );
 }

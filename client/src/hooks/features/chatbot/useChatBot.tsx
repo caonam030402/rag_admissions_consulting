@@ -7,6 +7,9 @@ import { useChatStore } from "@/stores/chat";
 
 export default function useChatBot() {
   const [message, setMessage] = useState("");
+  const [clientConversationId, setClientConversationId] = useState<
+    string | null
+  >(null);
   const {
     addMessage,
     setTyping,
@@ -18,7 +21,7 @@ export default function useChatBot() {
   } = useChatStore();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize user info on mount
+  // Initialize user info and conversation ID on client mount
   useEffect(() => {
     const userInfo = chatService.getCurrentUser();
     if (userInfo.userId) {
@@ -26,6 +29,10 @@ export default function useChatBot() {
     } else if (userInfo.guestId) {
       setGuestId(userInfo.guestId);
     }
+
+    // Get conversation ID on client side only
+    const conversationId = chatService.getCurrentConversationId();
+    setClientConversationId(conversationId);
   }, [setUserId, setGuestId]);
 
   const sendMessage = async ({
@@ -44,9 +51,11 @@ export default function useChatBot() {
     const trimmedMessage = messageTrim.trim();
     setMessage("");
 
-    // Get or create conversation ID
+    // Get or create conversation ID - prefer currentConversationId from store, then client state
     const conversationId =
-      currentConversationId || chatService.getCurrentConversationId();
+      currentConversationId ||
+      clientConversationId ||
+      chatService.getCurrentConversationId();
 
     // Add user message
     const userMessage = {
@@ -101,6 +110,7 @@ export default function useChatBot() {
   // Function to start new conversation
   const startNewConversation = () => {
     const newConversationId = chatService.startNewConversation();
+    setClientConversationId(newConversationId);
     useChatStore.getState().startNewConversation();
     return newConversationId;
   };
@@ -108,6 +118,7 @@ export default function useChatBot() {
   // Function to switch to existing conversation
   const switchToConversation = (conversationId: string) => {
     chatService.setCurrentConversation(conversationId);
+    setClientConversationId(conversationId);
     useChatStore.getState().loadConversation(conversationId);
   };
 
@@ -119,7 +130,6 @@ export default function useChatBot() {
     inputRef,
     startNewConversation,
     switchToConversation,
-    currentConversationId:
-      currentConversationId || chatService.getCurrentConversationId(),
+    currentConversationId: currentConversationId || clientConversationId,
   };
 }

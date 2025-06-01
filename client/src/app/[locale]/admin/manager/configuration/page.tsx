@@ -5,6 +5,7 @@ import React, { useCallback } from "react";
 
 import Button from "@/components/common/Button";
 import Tab from "@/components/common/Tab";
+import { ChatWidget } from "@/components/business/ChatbotWidget/ChatWidget";
 
 import UnsavedChangesModal from "./components/UnsavedChangesModal";
 import {
@@ -15,7 +16,6 @@ import Appearance from "./tabs/Appearance";
 import BasicInfo from "./tabs/BasicInfo";
 import HumanHandoff from "./tabs/HumanHandoff";
 import WelcomeSetting from "./tabs/WelcomeSetting";
-import { ChatWidget } from "@/components/business/ChatbotWidget/ChatWidget";
 
 const LayoutWithChatWidget = ({
   children,
@@ -26,16 +26,13 @@ const LayoutWithChatWidget = ({
     <div className="flex gap-5">
       <div className="flex-1">{children}</div>
       <ChatWidget
-        isOpen={true}
+        isOpen
         activeTab="chat"
-        showEmailForm={false}
-        setShowEmailForm={() => {}}
         handleTabSwitch={() => {}}
         isOnScreen={false}
-        checkEmailHasSaved={() => false}
         styles={{
           shadow: "shadow-none",
-          height: "h-full",
+          height: "h-[75vh]",
         }}
         isTransition={false}
       />

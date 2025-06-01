@@ -2,13 +2,15 @@
 
 import {
   Button,
+  Card,
+  CardBody,
+  Chip,
   Modal,
   ModalBody,
   ModalContent,
-  ModalFooter,
   ModalHeader,
 } from "@heroui/react";
-import { X } from "@phosphor-icons/react";
+import { ChatCircle, Eye, MapPin, X } from "@phosphor-icons/react";
 import React, { useState } from "react";
 
 import { LocationCard } from "./components/LocationCard";
@@ -61,44 +63,102 @@ export default function CampusTour({
     onClose();
   };
 
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case "academic":
+        return "Học thuật";
+      case "facility":
+        return "Tiện ích";
+      case "housing":
+        return "Ký túc xá";
+      case "recreation":
+        return "Giải trí";
+      default:
+        return type;
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "academic":
+        return "primary";
+      case "facility":
+        return "success";
+      case "housing":
+        return "warning";
+      case "recreation":
+        return "secondary";
+      default:
+        return "default";
+    }
+  };
+
   return (
-    <Modal isOpen onClose={onClose} size="5xl">
-      <ModalContent className="h-[90vh] max-h-[90vh]">
-        <ModalHeader className="flex items-center justify-between border-b p-4">
-          <h1 className="text-xl font-semibold">
-            Tham quan ảo khuôn viên trường
-          </h1>
+    <Modal
+      isOpen
+      onClose={onClose}
+      size="5xl"
+      classNames={{
+        base: "max-h-[95vh]",
+        wrapper: "items-center justify-center",
+      }}
+    >
+      <ModalContent className="h-[90vh] max-w-7xl">
+        <ModalHeader className="from-blue-50 to-purple-50 flex items-center justify-between border-b bg-gradient-to-r px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="from-blue-500 to-purple-500 flex size-10 items-center justify-center rounded-xl bg-gradient-to-r text-white">
+              <MapPin size={20} weight="fill" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">
+                Tham quan ảo khuôn viên trường
+              </h1>
+              <p className="text-sm text-gray-600">
+                Khám phá không gian học tập và sinh hoạt
+              </p>
+            </div>
+          </div>
           <Button
-            onClick={onClose}
-            variant="ghost"
-            size="sm"
-            className="rounded-full"
+            isIconOnly
+            variant="light"
+            onPress={onClose}
+            className="rounded-full text-gray-500 hover:bg-gray-100"
           >
             <X size={20} />
           </Button>
         </ModalHeader>
 
-        <ModalBody className="flex flex-col p-0">
-          <div className="grid h-full grid-cols-1 md:grid-cols-3">
+        <ModalBody className="p-0">
+          <div className="flex h-full">
             {/* Left sidebar - Location list */}
-            <div className="border-r md:col-span-1">
-              <div className="h-full overflow-y-auto p-4">
-                <h2 className="mb-4 text-lg font-medium">Địa điểm tham quan</h2>
-                <div className="space-y-2">
-                  {TOUR_DATA.locations.map((location) => (
-                    <LocationCard
-                      key={location.id}
-                      location={location}
-                      isSelected={selectedLocation?.id === location.id}
-                      onSelect={() => handleLocationSelect(location)}
-                    />
-                  ))}
+            <div className="w-80 border-r bg-gray-50/50">
+              <div className="flex h-full flex-col">
+                <div className="border-b bg-white px-4 py-3">
+                  <h2 className="flex items-center gap-2 text-base font-semibold text-gray-800">
+                    <MapPin size={16} />
+                    Địa điểm tham quan
+                  </h2>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {TOUR_DATA.locations.length} địa điểm
+                  </p>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3">
+                  <div className="space-y-2">
+                    {TOUR_DATA.locations.map((location) => (
+                      <LocationCard
+                        key={location.id}
+                        location={location}
+                        isSelected={selectedLocation?.id === location.id}
+                        onSelect={() => handleLocationSelect(location)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Main content area */}
-            <div className="relative flex flex-col md:col-span-2">
+            <div className="relative flex flex-1 flex-col">
               {showingMedia ? (
                 <MediaViewer
                   media={selectedLocation?.media || []}
@@ -106,71 +166,127 @@ export default function CampusTour({
                 />
               ) : (
                 <>
-                  <div className="h-3/5 overflow-hidden bg-gray-100">
+                  {/* Map area */}
+                  <div className="relative h-3/5 bg-gray-50">
                     <VirtualMap
                       locations={TOUR_DATA.locations}
                       selectedLocation={selectedLocation}
                       onLocationSelect={handleLocationSelect}
                     />
+                    {!selectedLocation && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+                        <Card className="w-80">
+                          <CardBody className="text-center">
+                            <MapPin
+                              size={32}
+                              className="mx-auto mb-2 text-gray-400"
+                            />
+                            <p className="text-sm font-medium text-gray-600">
+                              Nhấp vào một vị trí trên bản đồ để xem thông tin
+                              chi tiết
+                            </p>
+                          </CardBody>
+                        </Card>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex h-2/5 flex-col overflow-y-auto p-4">
+
+                  {/* Details area */}
+                  <div className="flex h-2/5 flex-col bg-white">
                     {selectedLocation ? (
-                      <>
-                        <div className="mb-2 flex items-center justify-between">
-                          <h2 className="text-xl font-medium">
-                            {selectedLocation.name}
-                          </h2>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="light"
-                              onClick={() => setShowingMedia(true)}
-                              disabled={
-                                !selectedLocation.media ||
-                                selectedLocation.media.length === 0
-                              }
-                            >
-                              Xem hình ảnh/video
-                            </Button>
-                            <Button size="sm" onClick={handleSendToChat}>
-                              Gửi vào chat
-                            </Button>
+                      <div className="flex h-full flex-col">
+                        {/* Header */}
+                        <div className="from-gray-50 to-blue-50 border-b bg-gradient-to-r px-6 py-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3">
+                                <h2 className="text-xl font-bold text-gray-900">
+                                  {selectedLocation.name}
+                                </h2>
+                                <Chip
+                                  color={
+                                    getTypeColor(selectedLocation.type) as any
+                                  }
+                                  size="sm"
+                                  variant="flat"
+                                >
+                                  {getTypeLabel(selectedLocation.type)}
+                                </Chip>
+                              </div>
+                              <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                                {selectedLocation.description}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="flat"
+                                color="primary"
+                                startContent={<Eye size={16} />}
+                                onPress={() => setShowingMedia(true)}
+                                isDisabled={
+                                  !selectedLocation.media ||
+                                  selectedLocation.media.length === 0
+                                }
+                              >
+                                Xem hình ảnh
+                              </Button>
+                              <Button
+                                size="sm"
+                                color="primary"
+                                startContent={<ChatCircle size={16} />}
+                                onPress={handleSendToChat}
+                              >
+                                Gửi vào chat
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                        <p className="text-gray-700">
-                          {selectedLocation.description}
-                        </p>
 
-                        {selectedLocation.majors &&
-                          selectedLocation.majors.length > 0 && (
-                            <div className="mt-4">
-                              <h3 className="mb-2 text-lg font-medium">
-                                Ngành học liên quan
-                              </h3>
-                              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                {selectedLocation.majors.map((major) => (
-                                  <div
-                                    key={major.name}
-                                    className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
-                                  >
-                                    <h4 className="mb-1 font-medium">
-                                      {major.name}
-                                    </h4>
-                                    <p className="text-sm text-gray-600">
-                                      {major.description}
-                                    </p>
-                                  </div>
-                                ))}
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto p-6">
+                          {selectedLocation.majors &&
+                            selectedLocation.majors.length > 0 && (
+                              <div>
+                                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-800">
+                                  🎓 Ngành học liên quan
+                                </h3>
+                                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                  {selectedLocation.majors.map((major) => (
+                                    <Card
+                                      key={major.name}
+                                      className="border-l-4 border-l-blue-500"
+                                    >
+                                      <CardBody className="p-4">
+                                        <h4 className="mb-2 font-semibold text-gray-900">
+                                          {major.name}
+                                        </h4>
+                                        <p className="text-sm leading-relaxed text-gray-600">
+                                          {major.description}
+                                        </p>
+                                      </CardBody>
+                                    </Card>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                      </>
+                            )}
+                        </div>
+                      </div>
                     ) : (
                       <div className="flex h-full items-center justify-center">
-                        <p className="text-center text-gray-500">
-                          Chọn một địa điểm trên bản đồ hoặc từ danh sách để xem
-                          thông tin chi tiết
-                        </p>
+                        <div className="text-center">
+                          <MapPin
+                            size={48}
+                            className="mx-auto mb-4 text-gray-300"
+                          />
+                          <p className="text-lg font-medium text-gray-500">
+                            Chọn một địa điểm để xem thông tin
+                          </p>
+                          <p className="mt-1 text-sm text-gray-400">
+                            Bạn có thể nhấp vào bản đồ hoặc chọn từ danh sách
+                            bên trái
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -178,13 +294,15 @@ export default function CampusTour({
               )}
 
               {/* Tour guide floating button */}
-              <div className="absolute bottom-4 right-4">
+              <div className="absolute bottom-6 right-6">
                 <Button
-                  onClick={handleGuideToggle}
-                  className="h-12 w-auto rounded-full bg-blue-500 px-3 text-white shadow-lg transition-colors hover:bg-blue-600"
-                  size="sm"
+                  onPress={handleGuideToggle}
+                  className="from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 h-12 rounded-full bg-gradient-to-r px-6 font-semibold text-white shadow-lg transition-all hover:shadow-xl"
+                  startContent={
+                    <div className="rounded-full bg-white/20 p-1">👋</div>
+                  }
                 >
-                  {guideActive ? "Tắt" : "Hướng dẫn"}
+                  {guideActive ? "Đóng hướng dẫn" : "Hướng dẫn viên"}
                 </Button>
               </div>
             </div>
@@ -197,14 +315,6 @@ export default function CampusTour({
             onClose={() => setGuideActive(false)}
           />
         )}
-
-        <ModalFooter className="border-t p-4">
-          <p className="text-xs text-gray-500">
-            Trải nghiệm tham quan ảo khuôn viên trường giúp bạn khám phá không
-            gian học tập và các ngành học trước khi đăng ký. Hình ảnh và thông
-            tin chỉ mang tính chất minh họa.
-          </p>
-        </ModalFooter>
       </ModalContent>
     </Modal>
   );

@@ -1,17 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 
+import { useQueryCommon } from "@/hooks/useQuery";
+import http from "@/utils/http";
 import { ENameLocalS } from "@/constants";
 import { ActorType } from "@/enums/systemChat";
-import { useQueryCommon } from "@/hooks/useQuery";
 import type {
   ChatMessage,
   PaginatedConversations,
   PaginatedChatMessages,
 } from "@/types/chat";
 import { getLocalStorage } from "@/utils/clientStorage";
-import http from "@/utils/http";
+import { safeLocalStorage } from "@/utils/helpers";
 
 const RAG_API_URL = "http://localhost:8000/api/v1"; // Python RAG API
 
@@ -44,14 +45,18 @@ export const CHAT_QUERY_KEYS = {
     ["conversations", id, "history"] as const,
 };
 
-// Helper functions - Define getGuestId first to avoid usage before definition
+// Helper functions
 const getGuestId = (): string => {
-  let guestId = localStorage.getItem("guestId");
-  if (!guestId) {
-    guestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem("guestId", guestId);
-  }
-  return guestId;
+  const stored = safeLocalStorage.getItem(ENameLocalS.GUEST_ID);
+  if (stored) return stored;
+
+  // During SSR or first time, generate new ID
+  const newGuestId = typeof window === "undefined"
+    ? "temp-guest-ssr"
+    : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+  safeLocalStorage.setItem(ENameLocalS.GUEST_ID, newGuestId);
+  return newGuestId;
 };
 
 const getCurrentUser = (): { userId?: number; guestId?: string } => {
@@ -65,36 +70,39 @@ const getCurrentUser = (): { userId?: number; guestId?: string } => {
 };
 
 const getCurrentConversationId = (): string => {
-  let conversationId = localStorage.getItem("currentConversationId");
-  if (!conversationId) {
-    conversationId = uuidv4();
-    localStorage.setItem("currentConversationId", conversationId);
-  }
-  return conversationId;
+  const stored = safeLocalStorage.getItem(ENameLocalS.CURRENT_CONVERSATION_ID);
+  if (stored) return stored;
+
+  // During SSR or first time, generate new ID
+  const newConversationId = typeof window === "undefined"
+    ? "temp-ssr-id"
+    : uuidv4();
+
+  safeLocalStorage.setItem(ENameLocalS.CURRENT_CONVERSATION_ID, newConversationId);
+  return newConversationId;
 };
 
 // Helper function to cleanup conversation data
 const cleanupConversationData = (): void => {
-  // Clear current conversation from localStorage
-  localStorage.removeItem("currentConversationId");
+  safeLocalStorage.removeItem(ENameLocalS.CURRENT_CONVERSATION_ID);
 };
 
 // Helper function to ensure conversation ID sync
 const ensureConversationSync = (conversationId: string): void => {
-  const currentFromStorage = localStorage.getItem("currentConversationId");
+  const currentFromStorage = safeLocalStorage.getItem(ENameLocalS.CURRENT_CONVERSATION_ID);
   if (currentFromStorage !== conversationId) {
-    localStorage.setItem("currentConversationId", conversationId);
+    safeLocalStorage.setItem(ENameLocalS.CURRENT_CONVERSATION_ID, conversationId);
   }
 };
 
 const setCurrentConversation = (conversationId: string): void => {
-  localStorage.setItem("currentConversationId", conversationId);
+  safeLocalStorage.setItem(ENameLocalS.CURRENT_CONVERSATION_ID, conversationId);
   console.log("Switched to conversation:", conversationId);
 };
 
 const startNewConversation = (): string => {
   const conversationId = uuidv4();
-  localStorage.setItem("currentConversationId", conversationId);
+  safeLocalStorage.setItem(ENameLocalS.CURRENT_CONVERSATION_ID, conversationId);
   console.log("Started new conversation:", conversationId);
   return conversationId;
 };
@@ -114,7 +122,8 @@ const streamMessage = async function* (
     // Add user identification based on login status
     if (user.userId) {
       // Registered user - send userId and email
-      const userEmail = localStorage.getItem(ENameLocalS.EMAIL);
+      const userEmail = safeLocalStorage.getItem(ENameLocalS.EMAIL);
+
       requestData = {
         message: content,
         conversation_id: currentConversationId,
@@ -419,11 +428,11 @@ export const chatService = {
         });
 
         // Clear local storage if this was the current conversation
-        const currentConversationId = localStorage.getItem(
-          "currentConversationId",
+        const currentConversationId = safeLocalStorage.getItem(
+          ENameLocalS.CURRENT_CONVERSATION_ID,
         );
         if (currentConversationId === conversationId) {
-          localStorage.removeItem("currentConversationId");
+          safeLocalStorage.removeItem(ENameLocalS.CURRENT_CONVERSATION_ID);
         }
 
         toast.success("Đã xóa cuộc trò chuyện");
@@ -513,7 +522,7 @@ export const chatService = {
   ): Promise<ChatMessage> => {
     try {
       const userEmail =
-        localStorage.getItem(ENameLocalS.EMAIL) ||
+        safeLocalStorage.getItem(ENameLocalS.EMAIL) ||
         `guest-${getGuestId()}@example.com`;
       const currentConversationId =
         conversationId || getCurrentConversationId();

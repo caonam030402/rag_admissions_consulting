@@ -34,4 +34,6 @@ export enum ENameLocalS {
   PROFILE = "_next-wq.pf",
   EMAIL = "_next-wq.em",
   USER_ID = "_next-wq.uid",
+  GUEST_ID = "_next-wq.gid",
+  CURRENT_CONVERSATION_ID = "_next-wq.ccid",
 }
