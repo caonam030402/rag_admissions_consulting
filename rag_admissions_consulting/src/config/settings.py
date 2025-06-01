@@ -6,6 +6,20 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# Import constants
+from shared.constant import (
+    DEFAULT_LLM_MODEL,
+    DEFAULT_LLM_TEMPERATURE,
+    DEFAULT_LLM_MAX_TOKENS,
+    DEFAULT_MAX_CONTEXT_LENGTH,
+    DEFAULT_CONTEXT_WINDOW_MINUTES,
+    DEFAULT_MAX_RESPONSE_TOKENS,
+    DEFAULT_STREAM_DELAY_MS,
+    DEFAULT_CONTACT_INFO,
+    DEFAULT_PERSONALITY,
+    PERSONALITY_STYLES,
+)
+
 
 @dataclass
 class DatabaseConfig:
@@ -23,11 +37,13 @@ class DatabaseConfig:
 class LLMConfig:
     """LLM configuration"""
 
-    default_model: str = os.getenv("DEFAULT_LLM_MODEL", "GEMINI")
+    default_model: str = os.getenv("DEFAULT_LLM_MODEL", DEFAULT_LLM_MODEL)
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
-    max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "2048"))
-    temperature: float = float(os.getenv("LLM_TEMPERATURE", "0.7"))
+    max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", str(DEFAULT_LLM_MAX_TOKENS)))
+    temperature: float = float(
+        os.getenv("LLM_TEMPERATURE", str(DEFAULT_LLM_TEMPERATURE))
+    )
 
 
 @dataclass
@@ -53,10 +69,18 @@ class VectorStoreConfig:
 class ChatConfig:
     """Chat configuration"""
 
-    max_context_length: int = int(os.getenv("MAX_CONTEXT_LENGTH", "20"))
-    context_window_minutes: int = int(os.getenv("CONTEXT_WINDOW_MINUTES", "30"))
-    max_response_tokens: int = int(os.getenv("MAX_RESPONSE_TOKENS", "1024"))
-    stream_delay_ms: int = int(os.getenv("STREAM_DELAY_MS", "50"))
+    max_context_length: int = int(
+        os.getenv("MAX_CONTEXT_LENGTH", str(DEFAULT_MAX_CONTEXT_LENGTH))
+    )
+    context_window_minutes: int = int(
+        os.getenv("CONTEXT_WINDOW_MINUTES", str(DEFAULT_CONTEXT_WINDOW_MINUTES))
+    )
+    max_response_tokens: int = int(
+        os.getenv("MAX_RESPONSE_TOKENS", str(DEFAULT_MAX_RESPONSE_TOKENS))
+    )
+    stream_delay_ms: int = int(
+        os.getenv("STREAM_DELAY_MS", str(DEFAULT_STREAM_DELAY_MS))
+    )
 
 
 @dataclass
@@ -99,13 +123,17 @@ class Settings:
         self.environment = os.getenv("ENVIRONMENT", "development")
         self.debug = os.getenv("DEBUG", "false").lower() == "true"
 
-        # Contact information
-        self.contact_info = {
-            "hotline": "0236.3.650.403",
-            "email": "tuyensinh@donga.edu.vn",
-            "website": "https://donga.edu.vn",
-            "address": "33 Xô Viết Nghệ Tĩnh, Hải Châu, Đà Nẵng",
-        }
+        # Contact information (use constants)
+        self.contact_info = DEFAULT_CONTACT_INFO.copy()
+
+        # Personality config (use constants)
+        self.personality = DEFAULT_PERSONALITY.copy()
+
+        # Backend config options
+        self.use_backend_config = (
+            os.getenv("USE_BACKEND_CONFIG", "true").lower() == "true"
+        )
+        self.backend_url = os.getenv("BACKEND_URL", "http://localhost:3001")
 
     def is_production(self) -> bool:
         """Check if running in production"""
@@ -114,6 +142,79 @@ class Settings:
     def is_development(self) -> bool:
         """Check if running in development"""
         return self.environment.lower() == "development"
+
+    async def load_config_from_backend(self) -> bool:
+        """
+        Load config từ backend nếu enabled
+
+        Returns:
+            True nếu thành công hoặc không enabled, False nếu có lỗi
+        """
+        if not self.use_backend_config:
+            return True
+
+        try:
+            from .backend_config import load_config_from_backend
+
+            return await load_config_from_backend(self)
+        except ImportError:
+            # Nếu không có httpx hoặc dependencies khác
+            return True
+        except Exception as e:
+            from loguru import logger
+
+            logger.error(f"Failed to load config from backend: {str(e)}")
+            return False
+
+    def load_config_from_backend_sync(self) -> bool:
+        """
+        Load config từ backend (sync version)
+
+        Returns:
+            True nếu thành công hoặc không enabled, False nếu có lỗi
+        """
+        if not self.use_backend_config:
+            return True
+
+        try:
+            from .backend_config import load_config_from_backend_sync
+
+            return load_config_from_backend_sync(self)
+        except ImportError:
+            # Nếu không có httpx hoặc dependencies khác
+            return True
+        except Exception as e:
+            from loguru import logger
+
+            logger.error(f"Failed to load config from backend: {str(e)}")
+            return False
+
+    def get_persona_for_prompt(self) -> str:
+        """Get the main persona text for system prompt"""
+        if hasattr(self, "personality") and isinstance(self.personality, dict):
+            return self.personality.get("persona", "")
+        return ""
+
+    def get_assistant_name(self) -> str:
+        """Get assistant name from personality config"""
+        if hasattr(self, "personality") and isinstance(self.personality, dict):
+            return self.personality.get("name", "một chuyên viên tư vấn tuyển sinh")
+        return "một chuyên viên tư vấn tuyển sinh"
+
+    def get_personality_style(self) -> str:
+        """Get personality style for customizing responses"""
+        if hasattr(self, "personality") and isinstance(self.personality, dict):
+            personality_type = self.personality.get("personality", "professional")
+            return PERSONALITY_STYLES.get(
+                personality_type, "chuyên nghiệp và thân thiện"
+            )
+        return "chuyên nghiệp và thân thiện"
+
+    def get_creativity_level(self) -> float:
+        """Get creativity level from personality config"""
+        if hasattr(self, "personality") and isinstance(self.personality, dict):
+            return self.personality.get("creativityLevel", 0.2)
+        return 0.2
 
 
 # Global settings instance

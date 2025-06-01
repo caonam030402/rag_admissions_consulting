@@ -6,28 +6,9 @@ from loguru import logger
 class PromptEngine:
     """Intelligent prompt engine for context-aware responses"""
 
-    def __init__(self):
-        self.base_system_prompt = """
-Bạn là một chuyên viên tư vấn tuyển sinh thông minh, chuyên nghiệp và thân thiện của Trường Đại học Đông Á. 
-Bạn có khả năng hiểu ngữ cảnh cuộc trò chuyện và đưa ra những câu trả lời chính xác, hữu ích.
-
-🎯 **Nhiệm vụ chính**:
-- Tư vấn chính xác về tuyển sinh, ngành học, học phí, học bổng và mọi thông tin liên quan đến trường
-- Hiểu và sử dụng ngữ cảnh cuộc trò chuyện để đưa ra câu trả lời phù hợp
-- Luôn dựa vào thông tin chính thức từ dữ liệu được cung cấp
-
-📌 **Nguyên tắc trả lời**:
-1. **Ngữ cảnh**: Luôn xem xét ngữ cảnh cuộc trò chuyện trước đó để hiểu đúng ý định của người hỏi
-2. **Chính xác**: Chỉ sử dụng thông tin có trong dữ liệu được cung cấp
-3. **Thân thiện**: Giọng văn ấm áp, chuyên nghiệp nhưng gần gũi
-4. **Cụ thể**: Đưa ra thông tin chi tiết, có cấu trúc rõ ràng
-5. **Hướng dẫn**: Luôn sẵn sàng hướng dẫn bước tiếp theo hoặc cung cấp thông tin liên hệ khi cần
-
-🚫 **Không được**:
-- Phỏng đoán thông tin không có trong dữ liệu
-- Bỏ qua ngữ cảnh cuộc trò chuyện
-- Trả lời máy móc, thiếu cảm xúc
-"""
+    def __init__(self, settings=None):
+        self.settings = settings
+        self.base_system_prompt = self._build_base_system_prompt()
 
         self.specialized_prompts = {
             "specific_program": """
@@ -81,6 +62,78 @@ Người dùng cần làm rõ thông tin. Hãy:
 """,
         }
 
+    def _build_base_system_prompt(self) -> str:
+        """Build base system prompt using settings from backend"""
+
+        # Get persona from backend settings
+        persona_from_backend = ""
+        personality_style = ""
+        assistant_name = "một chuyên viên tư vấn tuyển sinh"
+
+        if self.settings:
+            persona_from_backend = self.settings.get_persona_for_prompt()
+            personality_style = self.settings.get_personality_style()
+            assistant_name = self.settings.get_assistant_name()
+
+        # Use persona from backend if available, otherwise use default
+        if persona_from_backend:
+            introduction = persona_from_backend
+        else:
+            # Fallback introduction
+            introduction = f"Bạn là {assistant_name}, luôn {personality_style}."
+
+        # Add personality style guidance
+        personality_guidance = ""
+        if personality_style:
+            personality_guidance = f"\n\n🎭 **Phong cách giao tiếp**: Luôn thể hiện phong cách {personality_style} trong mọi phản hồi."
+
+        base_prompt = f"""
+{introduction}
+
+🎯 **Nhiệm vụ chính**:
+- Tư vấn chính xác về tuyển sinh, ngành học, học phí, học bổng và mọi thông tin liên quan đến trường
+- Hiểu và sử dụng ngữ cảnh cuộc trò chuyện để đưa ra câu trả lời phù hợp
+- Luôn dựa vào thông tin chính thức từ dữ liệu được cung cấp{personality_guidance}
+
+📌 **Nguyên tắc trả lời**:
+1. **Ngữ cảnh**: Luôn xem xét ngữ cảnh cuộc trò chuyện trước đó để hiểu đúng ý định của người hỏi
+2. **Chính xác**: Chỉ sử dụng thông tin có trong dữ liệu được cung cấp
+3. **Phong cách**: Duy trì phong cách {personality_style if personality_style else 'chuyên nghiệp và thân thiện'}
+4. **Cụ thể**: Đưa ra thông tin chi tiết, có cấu trúc rõ ràng
+5. **Hướng dẫn**: Luôn sẵn sàng hướng dẫn bước tiếp theo hoặc cung cấp thông tin liên hệ khi cần
+
+🚫 **Không được**:
+- Phỏng đoán thông tin không có trong dữ liệu
+- Bỏ qua ngữ cảnh cuộc trò chuyện
+- Trả lời máy móc, thiếu cảm xúc
+- Thay đổi phong cách giao tiếp đã được thiết lập
+"""
+        return base_prompt
+
+    def _get_contact_info_section(self) -> str:
+        """Get contact information section from settings"""
+
+        # Default contact info
+        default_contact = {
+            "hotline": "0236.3.650.403",
+            "email": "tuyensinh@donga.edu.vn",
+            "website": "https://donga.edu.vn",
+            "address": "33 Xô Viết Nghệ Tĩnh, Hải Châu, Đà Nẵng",
+        }
+
+        # Use contact info from settings if available
+        contact_info = default_contact
+        if self.settings and hasattr(self.settings, "contact_info"):
+            contact_info = self.settings.contact_info
+
+        return f"""
+**Thông tin liên hệ khi cần hỗ trợ thêm**:
+📞 Hotline: {contact_info.get('hotline', default_contact['hotline'])}
+📧 Email: {contact_info.get('email', default_contact['email'])}
+🌐 Website: {contact_info.get('website', default_contact['website'])}
+📍 Địa chỉ: {contact_info.get('address', default_contact['address'])}
+"""
+
     def create_context_aware_prompt(
         self,
         query: str,
@@ -117,13 +170,10 @@ Người dùng cần làm rõ thông tin. Hãy:
 - Nếu không tìm thấy thông tin cần thiết, hãy thành thật nói rằng bạn không có thông tin đó
 - Luôn ưu tiên thông tin chính thức từ trường
 - Có thể tham khảo lịch sử trò chuyện trong {chat_history} để hiểu rõ hơn ngữ cảnh
-
-**Thông tin liên hệ khi cần hỗ trợ thêm**:
-📞 Hotline: 0236.3.650.403
-📧 Email: tuyensinh@donga.edu.vn
-🌐 Website: https://donga.edu.vn
-📍 Địa chỉ: 33 Xô Viết Nghệ Tĩnh, Hải Châu, Đà Nẵng
 """
+
+        # Add contact info from settings
+        system_prompt += self._get_contact_info_section()
 
         # Create the prompt template
         prompt = ChatPromptTemplate.from_messages(
@@ -172,6 +222,9 @@ Người dùng cần làm rõ thông tin. Hãy:
 
         if query_type in self.specialized_prompts:
             system_prompt += f"\n\n{self.specialized_prompts[query_type]}"
+
+        # Add contact info
+        system_prompt += self._get_contact_info_section()
 
         return ChatPromptTemplate.from_messages(
             [

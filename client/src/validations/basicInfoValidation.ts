@@ -15,9 +15,9 @@ export const defaultBasicInfoValues = {
   name: "Ned",
   persona: "I am a helpful assistant.",
   creativityLevel: 0.2,
-  modelKey: "0",
+  modelKey: "gemini-pro",
   avatar: "https://i.pravatar.cc/150?img=1",
-  personality: "1", // Default to Professional
+  personality: "professional", // Default to Professional
 };
 
 // Type for form values

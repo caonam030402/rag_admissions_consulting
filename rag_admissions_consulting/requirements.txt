@@ -4,6 +4,7 @@ python-dotenv
 tqdm
 typer
 requests
+httpx
 
 # Web framework
 fastapi>=0.104.0

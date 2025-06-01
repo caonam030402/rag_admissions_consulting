@@ -1,5 +1,5 @@
 import { Radio, RadioGroup } from "@heroui/react";
-import React from "react";
+import React, { useEffect } from "react";
 
 interface Props {
   items: {
@@ -12,6 +12,19 @@ interface Props {
 
 export default function RatioGroup({ items, action, defaultValue }: Props) {
   const [selected, setSelected] = React.useState(defaultValue);
+
+  // Update selected value when defaultValue changes
+  useEffect(() => {
+    if (defaultValue !== undefined) {
+      setSelected(defaultValue);
+    }
+  }, [defaultValue]);
+
+  const handleValueChange = (value: string) => {
+    setSelected(value);
+    action(value);
+  };
+
   return (
     <div className="flex">
       <RadioGroup
@@ -20,16 +33,16 @@ export default function RatioGroup({ items, action, defaultValue }: Props) {
           wrapper: "flex flex-row gap-8",
         }}
         value={selected}
-        onValueChange={setSelected}
+        onValueChange={handleValueChange}
       >
         {items.map((item) => (
           <Radio
+            key={item.value}
             classNames={{
               hiddenInput: "hidden",
               label: "text-sm",
             }}
             value={item.value}
-            onChange={() => action(item.value)}
           >
             {item.title}
           </Radio>

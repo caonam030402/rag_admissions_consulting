@@ -143,7 +143,7 @@ class ApplicationManager:
         start_time = time.time()
         try:
             logger.info("📋 Khởi tạo Prompt Engine...")
-            prompt_engine = PromptEngine()
+            prompt_engine = PromptEngine(settings=settings)
 
             self.components["prompt_engine"] = prompt_engine
             self.initialization_times["prompt_engine"] = time.time() - start_time
@@ -158,12 +158,28 @@ class ApplicationManager:
         start_time = time.time()
         try:
             logger.info("⚙️ Khởi tạo RAG Engine...")
+
+            # Create retriever from vector store and embeddings
+            retriever = None
+            if (
+                "vector_store" in self.components
+                and "embedding_model" in self.components
+            ):
+                vector_store = self.components["vector_store"]
+                embedding_model = self.components["embedding_model"]
+
+                try:
+                    retriever = vector_store.getRetriever(embedding_model)
+                    logger.info("✅ Created retriever from vector store and embeddings")
+                except Exception as e:
+                    logger.error(f"❌ Failed to create retriever: {e}")
+                    logger.warning("⚠️ RAG Engine will be initialized without retriever")
+
             rag_engine = RagEngine(
-                embedding_model=self.components["embedding_model"],
-                vector_store=self.components["vector_store"],
-                llm_model=self.components["llm_model"],
-                query_analyzer=self.components["query_analyzer"],
-                prompt_engine=self.components["prompt_engine"],
+                llm=self.components.get("llm_model"),
+                retriever=retriever,
+                vector_store=self.components.get("vector_store"),
+                settings=settings,
             )
 
             self.components["rag_engine"] = rag_engine

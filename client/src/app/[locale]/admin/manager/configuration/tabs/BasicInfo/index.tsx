@@ -11,6 +11,9 @@ import Divider from "@/components/common/Divider";
 import Input from "@/components/common/Input";
 import Select from "@/components/common/Select";
 import { listModel } from "@/constants/adminConfig";
+import { chatbotConfigService } from "@/services/chatbot-config";
+import { ModelType } from "@/types/chatbot-config.types";
+import type { PersonalityType } from "@/types/chatbot-config.types";
 import {
   basicInfoSchema,
   defaultBasicInfoValues,
@@ -20,19 +23,59 @@ import { useConfiguration } from "../../ConfigurationContext";
 import Avatar from "./components/Avatar";
 import Personality from "./components/Personality";
 
+// Map model keys to ModelType enum (updated to match backend)
+const modelKeyToModelType: Record<string, ModelType> = {
+  "gemini-pro": ModelType.GEMINI_PRO,
+  "gemini-flash": ModelType.GEMINI_FLASH,
+  "gpt-4": ModelType.GPT_4,
+  "gpt-3.5-turbo": ModelType.GPT_3_5_TURBO,
+  "ollama": ModelType.OLLAMA,
+};
+
+const modelTypeToKey: Record<ModelType, string> = {
+  [ModelType.GEMINI_PRO]: "gemini-pro",
+  [ModelType.GEMINI_FLASH]: "gemini-flash",
+  [ModelType.GPT_4]: "gpt-4",
+  [ModelType.GPT_3_5_TURBO]: "gpt-3.5-turbo",
+  [ModelType.OLLAMA]: "ollama",
+};
+
 export default function BasicInfo() {
   const { setIsDirty, registerSaveFunction, unregisterSaveFunction } =
     useConfiguration();
   const tabKey = useRef(1);
 
+  // Get current config data
+  const { data: configData, isLoading } = chatbotConfigService.useGetActiveConfig();
+  const updateBasicInfo = chatbotConfigService.useUpdateBasicInfo();
+
   const {
     control,
     handleSubmit,
     formState: { errors, isDirty },
+    reset,
   } = useForm({
     resolver: zodResolver(basicInfoSchema),
     defaultValues: defaultBasicInfoValues,
   });
+
+  // Update form when config data loads
+  useEffect(() => {
+    if (configData) {
+      console.log("Loading config data:", configData);
+      const formValues = {
+        avatar: configData.personality.avatar || "",
+        name: configData.personality.name,
+        personality: configData.personality.personality,
+        persona: configData.personality.persona,
+        creativityLevel: configData.personality.creativityLevel,
+        modelKey:
+          modelTypeToKey[configData.llmConfig.defaultModel] || "gemini-pro",
+      };
+      console.log("Setting form values:", formValues);
+      reset(formValues);
+    }
+  }, [configData, reset]);
 
   useEffect(() => {
     setIsDirty(isDirty);
@@ -41,10 +84,23 @@ export default function BasicInfo() {
   const saveConfiguration = async (): Promise<boolean> => {
     try {
       await handleSubmit(async (formData) => {
-        console.log(formData);
-        // Actual API call would go here
+        const updateData = {
+          personality: {
+            name: formData.name,
+            persona: formData.persona,
+            personality: formData.personality as PersonalityType,
+            avatar: formData.avatar,
+            creativityLevel: formData.creativityLevel,
+          },
+          llmConfig: {
+            defaultModel: modelKeyToModelType[formData.modelKey],
+            temperature: formData.creativityLevel, // Use creativity level as temperature
+          },
+        };
+
+        await updateBasicInfo.mutateAsync(updateData);
       })();
-      return true; // Return true after successful save
+      return true;
     } catch (error) {
       console.error("Save failed:", error);
       return false;
@@ -60,6 +116,16 @@ export default function BasicInfo() {
       unregisterSaveFunction(tabKey.current);
     };
   }, [registerSaveFunction, unregisterSaveFunction]);
+
+  if (isLoading) {
+    return (
+      <Card className="h-[calc(100vh-210px)]">
+        <div className="flex justify-center items-center h-full">
+          <div>Loading configuration...</div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -172,7 +238,7 @@ export default function BasicInfo() {
               selectedKeys={[field.value]}
               items={listModel}
               onSelectionChange={(keys) => {
-                const selectedKey = Array.from(keys)[0]?.toString() || "0";
+                const selectedKey = Array.from(keys)[0]?.toString() || "gemini-pro";
                 field.onChange(selectedKey);
               }}
               // eslint-disable-next-line react/no-children-prop

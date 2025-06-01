@@ -40,6 +40,19 @@ async def startup_event():
     try:
         logger.info("🚀 Starting RAG Admissions Consulting API...")
 
+        # Load config từ backend trước tiên
+        logger.info("🔧 Loading configuration from backend...")
+        from config.settings import settings
+
+        config_loaded = await settings.load_config_from_backend()
+        if config_loaded:
+            logger.info("✅ Successfully loaded config from backend")
+            logger.info(f"🎭 Personality: {settings.get_assistant_name()}")
+            logger.info(f"🔧 Environment: {settings.environment}")
+            logger.info(f"🤖 LLM Model: {settings.llm.default_model}")
+        else:
+            logger.warning("⚠️ Failed to load config from backend, using local config")
+
         # Setup database connection
         setup_database()
         logger.info("✅ Database setup completed")
@@ -117,15 +130,15 @@ async def clear_user_session(user_email: str):
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # Check if running in development mode
     is_dev = os.getenv("ENVIRONMENT", "development") == "development"
-    
+
     uvicorn.run(
         "main:app",  # Use string format for reload to work properly
-        host="0.0.0.0", 
+        host="0.0.0.0",
         port=8000,
         reload=is_dev,  # Enable auto-reload in development
         reload_dirs=["./"] if is_dev else None,  # Watch current directory
-        log_level="info"
+        log_level="info",
     )

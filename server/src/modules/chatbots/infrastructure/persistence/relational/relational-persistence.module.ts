@@ -6,6 +6,7 @@ import { ChatbotHistoryEntity } from './entities/chatbot-history.entity';
 import { ConversationEntity } from './entities/conversation.entity';
 import { UserEntity } from '../../../../users/infrastructure/persistence/relational/entities/user.entity';
 import { ChatBotEntity } from './entities/chatbot.entity';
+import { ChatbotConfigEntity } from './entities/chatbot-config.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ChatBotEntity } from './entities/chatbot.entity';
       ConversationEntity,
       UserEntity,
       ChatBotEntity,
+      ChatbotConfigEntity,
     ]),
   ],
   providers: [
@@ -24,4 +26,4 @@ import { ChatBotEntity } from './entities/chatbot.entity';
   ],
   exports: [chatbotRepository],
 })
-export class RelationalchatbotPersistenceModule {}
+export class RelationalchatbotPersistenceModule { }

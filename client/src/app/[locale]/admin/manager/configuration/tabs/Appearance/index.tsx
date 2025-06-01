@@ -8,6 +8,7 @@ import Card from "@/components/common/Card";
 import Select from "@/components/common/Select";
 import { fontOptions } from "@/constants/adminConfig";
 import { predefinedThemes } from "@/data/themes";
+import { chatbotConfigService } from "@/services/chatbot-config";
 import type { ColorScheme } from "@/types/appearance";
 import { validateHexColor } from "@/utils/colorValidator";
 import {
@@ -25,11 +26,16 @@ export default function Appearance() {
     useConfiguration();
   const tabKey = useRef(2);
 
+  // Get current config data
+  const { data: configData, isLoading } = chatbotConfigService.useGetActiveConfig();
+  const updateAppearance = chatbotConfigService.useUpdateAppearance();
+
   const {
     control,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isDirty, isSubmitting },
   } = useForm<AppearanceFormValues>({
     resolver: zodResolver(appearanceSchema),
@@ -39,6 +45,29 @@ export default function Appearance() {
   const selectedTheme = watch("theme");
   const colors = watch("colors");
   const [isEditing, setIsEditing] = React.useState(false);
+
+  // Update form when config data loads
+  useEffect(() => {
+    if (configData) {
+      const formValues = {
+        theme: "custom", // Set to custom since we're loading from database
+        colors: {
+          layoutBackground: configData.appearance.primaryColor,
+          minimizedBackground: configData.appearance.secondaryColor,
+          inputBackground: "#ffffff",
+          inputFontColor: "#000000",
+          primaryButton: configData.appearance.primaryColor,
+          borderColor: "#e5e7eb",
+          copilotReplyBackground: "#f3f4f6",
+          copilotFontColor: "#111827",
+          userReplyBackground: configData.appearance.primaryColor,
+          userFontColor: "#ffffff",
+        },
+        font: configData.appearance.fontFamily,
+      };
+      reset(formValues);
+    }
+  }, [configData, reset]);
 
   // Track changes to mark the form as dirty
   useEffect(() => {
@@ -54,10 +83,29 @@ export default function Appearance() {
   };
 
   // Function to save configuration to server
-  const saveConfiguration = async () => {
-    handleSubmit(async (formData) => {
-      console.log(formData);
-    })();
+  const saveConfiguration = async (): Promise<boolean> => {
+    try {
+      await handleSubmit(async (formData) => {
+        const updateData = {
+          appearance: {
+            primaryColor: formData.colors.primaryButton,
+            secondaryColor: formData.colors.minimizedBackground,
+            chatBubbleStyle: "rounded",
+            fontFamily: formData.font,
+            fontSize: 14,
+            darkMode: false,
+            showAvatar: true,
+            windowPosition: "bottom-right",
+          },
+        };
+
+        await updateAppearance.mutateAsync(updateData);
+      })();
+      return true;
+    } catch (error) {
+      console.error("Save failed:", error);
+      return false;
+    }
   };
 
   // Register the save function when component mounts
@@ -123,6 +171,16 @@ export default function Appearance() {
       </div>
     );
   };
+
+  if (isLoading) {
+    return (
+      <Card className="h-[calc(100vh-210px)]">
+        <div className="flex justify-center items-center h-full">
+          <div>Loading appearance configuration...</div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card

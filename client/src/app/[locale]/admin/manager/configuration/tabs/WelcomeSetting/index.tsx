@@ -12,6 +12,7 @@ import Card from "@/components/common/Card";
 import Input from "@/components/common/Input";
 import InputAddMore from "@/components/common/InputAddMore";
 import Textarea from "@/components/common/Textarea";
+import { chatbotConfigService } from "@/services/chatbot-config";
 import type { WelcomeSettingValidation } from "@/validations";
 import { welcomeSettingValidation } from "@/validations";
 
@@ -36,12 +37,17 @@ export default function WelcomeSetting() {
     useConfiguration();
   const tabKey = useRef(3);
 
+  // Get current config data
+  const { data: configData, isLoading } = chatbotConfigService.useGetActiveConfig();
+  const updateWelcomeSettings = chatbotConfigService.useUpdateWelcomeSettings();
+
   // Main form for the entire component
   const {
     control,
     handleSubmit,
     formState: { errors, isDirty, dirtyFields },
     watch,
+    reset,
   } = useForm<WelcomeSettingValidation>({
     resolver: zodResolver(welcomeSettingValidation),
     defaultValues,
@@ -55,6 +61,20 @@ export default function WelcomeSetting() {
       conversationStarters1: "",
     },
   });
+
+  // Update form when config data loads
+  useEffect(() => {
+    if (configData) {
+      const formValues = {
+        title: configData.welcomeSettings.welcomeMessage,
+        subtitle: configData.welcomeSettings.welcomeMessage,
+        conversationStarters: configData.welcomeSettings.suggestedQuestions || [],
+        placeholderText: "Type your question ...",
+        autoSuggestions: configData.welcomeSettings.showSuggestedQuestions,
+      };
+      reset(formValues);
+    }
+  }, [configData, reset]);
 
   // Initialize InputAddMore with existing conversationStarters if available
   useEffect(() => {
@@ -95,11 +115,27 @@ export default function WelcomeSetting() {
     autoSuggestions,
   ]);
 
-  const saveConfiguration = async () => {
-    return handleSubmit(async (formData) => {
-      console.log(formData);
+  const saveConfiguration = async (): Promise<boolean> => {
+    try {
+      await handleSubmit(async (formData) => {
+        const updateData = {
+          welcomeSettings: {
+            welcomeMessage: formData.title,
+            showWelcomeMessage: true,
+            autoGreet: true,
+            greetingDelay: 1000,
+            suggestedQuestions: formData.conversationStarters,
+            showSuggestedQuestions: formData.autoSuggestions,
+          },
+        };
+
+        await updateWelcomeSettings.mutateAsync(updateData);
+      })();
       return true;
-    })();
+    } catch (error) {
+      console.error("Save failed:", error);
+      return false;
+    }
   };
 
   // Register the save function when component mounts
@@ -111,6 +147,16 @@ export default function WelcomeSetting() {
       unregisterSaveFunction(tabKey.current);
     };
   }, [registerSaveFunction, unregisterSaveFunction]);
+
+  if (isLoading) {
+    return (
+      <Card className="h-[calc(100vh-210px)]">
+        <div className="flex justify-center items-center h-full">
+          <div>Loading welcome settings...</div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -205,67 +251,46 @@ export default function WelcomeSetting() {
             </div>
           </div>
 
-          {/* Conversation Starters */}
-          <div className="mb-4">
-            <div className="mb-2 block text-sm">Conversation Starters</div>
-            <Controller
-              name="conversationStarters"
-              control={control}
-              render={({ field }) => {
-                // Sync conversationStarters from InputAddMore to main form
-                useEffect(() => {
-                  const subscription = inputAddMoreForm.watch((value) => {
-                    // Collect all values from inputAddMoreForm that start with 'conversationStarters'
-                    const values = Object.entries(value)
-                      .filter(
-                        ([key, val]) =>
-                          key.startsWith("conversationStarters") && val,
-                      )
-                      .map(([_, val]) => val as string);
-
-                    // Update the main form's conversationStarters field
-                    field.onChange(values);
-                  });
-
-                  return () => subscription.unsubscribe();
-                }, [field, inputAddMoreForm]);
-
-                return (
-                  <InputAddMore
-                    name="conversationStarters"
-                    max={MAX_CONVERSATION}
-                    form={inputAddMoreForm}
-                    rules={{
-                      maxLength: {
-                        value: MAX_CONVERSATION_LENGTH,
-                        message: `Max ${MAX_CONVERSATION_LENGTH} characters`,
-                      },
-                    }}
-                  />
-                );
-              }}
-            />
-          </div>
-
-          {/* Auto Suggestions */}
-          <div className="flex items-center gap-2">
+          {/* Auto Suggestions Switch */}
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium">Auto Suggestions</div>
+              <div className="text-xs text-gray-500">
+                Show suggested questions to help users get started
+              </div>
+            </div>
             <Controller
               name="autoSuggestions"
               control={control}
               render={({ field }) => (
                 <Switch
-                  checked={field.value}
-                  onChange={field.onChange}
-                  color="primary"
+                  isSelected={field.value}
+                  onValueChange={field.onChange}
                 />
               )}
             />
-            <span className="font-semibold">Auto Suggestions</span>
           </div>
-          <div className="mt-1 text-xs text-gray-500">
-            Dynamic follow-up questions or suggestions will appear after each
-            Copilot response. Each set of reply suggestions will consume 1
-            message credit.
+
+          {/* Conversation Starters */}
+          <div>
+            <Controller
+              name="conversationStarters"
+              control={control}
+              render={({ field }) => (
+                <InputAddMore
+                  label="Conversation Starters"
+                  form={inputAddMoreForm}
+                  baseName="conversationStarters"
+                  onItemsChange={(items) => {
+                    field.onChange(items.filter(item => item.trim() !== ""));
+                  }}
+                  maxItems={MAX_CONVERSATION}
+                  maxLength={MAX_CONVERSATION_LENGTH}
+                  placeholder="Add a conversation starter..."
+                  initialItems={field.value}
+                />
+              )}
+            />
           </div>
         </div>
       </form>

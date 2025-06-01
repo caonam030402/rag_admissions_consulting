@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import RatioGroup from "@/components/common/RadioGroup";
 import { personalityOptions } from "@/constants/adminConfig";
@@ -9,16 +9,7 @@ interface PersonalityProps {
 }
 
 export default function Personality({ onChange, value }: PersonalityProps) {
-  const [personalityValue, setPersonalityValue] = useState(value || "1");
-
-  useEffect(() => {
-    if (value !== undefined) {
-      setPersonalityValue(value);
-    }
-  }, [value]);
-
   const handlePersonalityChange = (key: string) => {
-    setPersonalityValue(key);
     onChange?.(key);
   };
 
@@ -28,7 +19,7 @@ export default function Personality({ onChange, value }: PersonalityProps) {
       <RatioGroup
         items={personalityOptions}
         action={handlePersonalityChange}
-        defaultValue={personalityValue}
+        defaultValue={value || "professional"}
       />
     </div>
   );

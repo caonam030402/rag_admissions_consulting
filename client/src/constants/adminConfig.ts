@@ -7,18 +7,20 @@ export const fontOptions = [
 ];
 
 export const personalityOptions = [
-  { title: "Professional 🧐", value: "1" },
-  { title: "Sassy 🤪", value: "2" },
-  { title: "Empathetic 🥺", value: "3" },
-  { title: "Formal 🤓", value: "4" },
-  { title: "Humorous 😉", value: "5" },
-  { title: "Friendly 😚", value: "6" },
+  { title: "Professional 🧐", value: "professional" },
+  { title: "Sassy 🤪", value: "sassy" },
+  { title: "Empathetic 🥺", value: "empathetic" },
+  { title: "Formal 🤓", value: "formal" },
+  { title: "Humorous 😉", value: "humorous" },
+  { title: "Friendly 😚", value: "friendly" },
 ];
 
 export const listModel = [
-  { key: "0", label: "OpenAI GPT-3.5 Turbo (1 credit/message)" },
-  { key: "50", label: "OpenAI GPT-3.5 Turbo (1 credit/message)" },
-  { key: "100", label: "OpenAI GPT-3.5 Turbo (1 credit/message)" },
+  { key: "gemini-pro", label: "Google Gemini Pro (Fast & Reliable)" },
+  { key: "gemini-flash", label: "Google Gemini Flash (Ultra Fast)" },
+  { key: "gpt-4", label: "OpenAI GPT-4 (Most Capable)" },
+  { key: "gpt-3.5-turbo", label: "OpenAI GPT-3.5 Turbo (Balanced)" },
+  { key: "ollama", label: "Ollama (Local/Self-hosted)" },
 ];
 
 export const listTimezone = [

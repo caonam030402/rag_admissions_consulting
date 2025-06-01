@@ -7,6 +7,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 
 import Card from "@/components/common/Card";
+import { chatbotConfigService } from "@/services/chatbot-config";
 import {
   defaultValues,
   type HumanHandoffFormValues,
@@ -25,37 +26,69 @@ export default function HumanHandoff() {
     useConfiguration();
   const tabKey = useRef(4); // HumanHandoff tab key is 4
 
+  // Get current config data
+  const { data: configData, isLoading } =
+    chatbotConfigService.useGetActiveConfig();
+  const updateHumanHandoff = chatbotConfigService.useUpdateHumanHandoff();
+
   const methods = useForm<HumanHandoffFormValues>({
     defaultValues,
     resolver: zodResolver(humanHandoffSchema),
     mode: "onChange",
   });
 
-  const { watch, setValue, formState } = methods;
+  const { watch, setValue, formState, reset } = methods;
   const enabled = watch("enabled");
   const allowSystemMessages = watch("allowSystemMessages");
+
+  // Update form when config data loads
+  useEffect(() => {
+    if (configData) {
+      const formValues: HumanHandoffFormValues = {
+        enabled: configData.humanHandoff.enabled,
+        allowSystemMessages: true, // Default value
+        agentAlias: "Agent", // Default value
+        triggerPattern: "support,help,agent", // Default value
+        timezone: "Asia/Kolkata+05:30", // Default value
+        workingDays: [false, true, true, true, true, true, false], // Default working days
+        workingHours: Array(7).fill({ from: "09:00", to: "18:00" }), // Default working hours
+      };
+      reset(formValues);
+    }
+  }, [configData, reset]);
 
   // Track form changes to update the global dirty state
   useEffect(() => {
     setIsDirty(formState.isDirty);
   }, [formState.isDirty, setIsDirty]);
 
-  const saveConfiguration = async () => {
+  const saveConfiguration = async (): Promise<boolean> => {
     try {
-      // Here you would implement the save logic
-      // For example:
-      // await saveHumanHandoffSettings(methods.getValues());
+      const formData = methods.getValues();
+      const updateData = {
+        humanHandoff: {
+          enabled: formData.enabled,
+          showEscalationButton: formData.enabled,
+          escalationButtonText: "Contact Support",
+          maxWaitTime: 300, // 5 minutes
+          triggerKeywords: formData.triggerPattern ? [formData.triggerPattern] : undefined,
+          agentAvailableMessage: `Hello! ${formData.agentAlias} is here to help you.`,
+          agentUnavailableMessage: "All agents are currently busy. We'll get back to you soon.",
+        },
+      };
+
+      await updateHumanHandoff.mutateAsync(updateData);
 
       // Reset the dirty state after successful save
       methods.reset(methods.getValues());
       setIsDirty(false);
 
       toast.success("Human handoff settings saved successfully");
-      return true; // Return success
+      return true;
     } catch (error) {
       console.error("Error saving human handoff settings:", error);
       toast.error("Failed to save human handoff settings");
-      return false; // Return failure
+      return false;
     }
   };
 
@@ -68,6 +101,16 @@ export default function HumanHandoff() {
       unregisterSaveFunction(tabKey.current);
     };
   }, [registerSaveFunction, unregisterSaveFunction]);
+
+  if (isLoading) {
+    return (
+      <Card className="h-[calc(100vh-210px)]">
+        <div className="flex justify-center items-center h-full">
+          <div>Loading human handoff settings...</div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card
