@@ -119,6 +119,49 @@ async def detailed_status():
     }
 
 
+@app.post("/api/v1/reload-config")
+async def reload_config():
+    """Reload configuration from backend without restarting server"""
+    try:
+        logger.info("🔄 Reloading configuration from backend...")
+
+        from config.settings import settings
+
+        # Reload config from backend
+        config_loaded = await settings.load_config_from_backend()
+
+        if config_loaded:
+            logger.info("✅ Configuration reloaded successfully")
+
+            # Reinitialize components that depend on config
+            logger.info("🔧 Reinitializing application components...")
+            await app_manager.reinitialize_components()
+
+            return {
+                "status": "success",
+                "message": "Configuration reloaded successfully",
+                "config": {
+                    "assistant_name": settings.get_assistant_name(),
+                    "llm_model": settings.llm.default_model,
+                    "temperature": settings.llm.temperature,
+                    "max_tokens": settings.llm.max_tokens,
+                },
+            }
+        else:
+            logger.error("❌ Failed to reload configuration from backend")
+            return {
+                "status": "error",
+                "message": "Failed to reload configuration from backend",
+            }
+
+    except Exception as e:
+        logger.error(f"❌ Error reloading configuration: {e}")
+        return {
+            "status": "error",
+            "message": f"Error reloading configuration: {str(e)}",
+        }
+
+
 @app.post("/api/v1/clear-session")
 async def clear_user_session(user_email: str):
     """Clear session for a specific user"""

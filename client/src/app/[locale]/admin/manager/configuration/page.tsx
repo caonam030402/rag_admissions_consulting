@@ -3,9 +3,9 @@
 import { Spacer } from "@heroui/spacer";
 import React, { useCallback } from "react";
 
+import { ChatWidget } from "@/components/business/ChatbotWidget/ChatWidget";
 import Button from "@/components/common/Button";
 import Tab from "@/components/common/Tab";
-import { ChatWidget } from "@/components/business/ChatbotWidget/ChatWidget";
 
 import UnsavedChangesModal from "./components/UnsavedChangesModal";
 import {
@@ -63,15 +63,15 @@ function ConfigurationContent() {
         </LayoutWithChatWidget>
       ),
     },
-    {
-      title: "Welcome Settings",
-      key: 3,
-      content: (
-        <LayoutWithChatWidget>
-          <WelcomeSetting />
-        </LayoutWithChatWidget>
-      ),
-    },
+    // {
+    //   title: "Welcome Settings",
+    //   key: 3,
+    //   content: (
+    //     <LayoutWithChatWidget>
+    //       <WelcomeSetting />
+    //     </LayoutWithChatWidget>
+    //   ),
+    // },
     {
       title: "Human Handoff",
       key: 4,

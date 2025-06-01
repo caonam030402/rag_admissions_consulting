@@ -7,10 +7,17 @@ import { UpdateChatbotConfigDto } from './dto/update-chatbot-config.dto';
 import { FindChatbotConfigDto } from './dto/find-chatbot-config.dto';
 import { ChatbotConfig } from './domain/chatbot-config';
 import { ChatbotConfigMapper } from './infrastructure/persistence/relational/mappers/chatbot-config.mapper';
-import { ConfigType, ModelType, PersonalityType } from 'src/common/enums/chatbot.enum';
+import {
+    ConfigType,
+    ModelType,
+    PersonalityType,
+} from 'src/common/enums/chatbot.enum';
 
 @Injectable()
 export class ChatbotConfigService {
+    private readonly RAG_SERVICE_URL =
+        process.env.RAG_SERVICE_URL || 'http://localhost:8000';
+
     constructor(
         @InjectRepository(ChatbotConfigEntity)
         private readonly configRepository: Repository<ChatbotConfigEntity>,
@@ -50,7 +57,8 @@ export class ChatbotConfigService {
                 windowPosition: 'bottom-right',
             },
             welcomeSettings: {
-                welcomeMessage: 'Hello! I am here to help you with your admissions questions. How can I assist you today?',
+                welcomeMessage:
+                    'Hello! I am here to help you with your admissions questions. How can I assist you today?',
                 showWelcomeMessage: true,
                 autoGreet: true,
                 greetingDelay: 2,
@@ -89,8 +97,12 @@ export class ChatbotConfigService {
         const merged = { ...defaultConfig };
 
         // Deep merge các nested objects
-        Object.keys(overrideConfig).forEach(key => {
-            if (overrideConfig[key] && typeof overrideConfig[key] === 'object' && !Array.isArray(overrideConfig[key])) {
+        Object.keys(overrideConfig).forEach((key) => {
+            if (
+                overrideConfig[key] &&
+                typeof overrideConfig[key] === 'object' &&
+                !Array.isArray(overrideConfig[key])
+            ) {
                 merged[key] = { ...merged[key], ...overrideConfig[key] };
             } else if (overrideConfig[key] !== undefined) {
                 merged[key] = overrideConfig[key];
@@ -103,12 +115,17 @@ export class ChatbotConfigService {
     /**
      * Tạo config mới
      */
-    async create(createConfigDto: CreateChatbotConfigDto): Promise<ChatbotConfig> {
+    async create(
+        createConfigDto: CreateChatbotConfigDto,
+    ): Promise<ChatbotConfig> {
         // Nếu tạo default config, merge với default values
         let configData = createConfigDto;
         if (createConfigDto.type === ConfigType.DEFAULT) {
             const defaultConfig = this.getDefaultConfig();
-            configData = this.mergeConfigs(defaultConfig, createConfigDto) as CreateChatbotConfigDto;
+            configData = this.mergeConfigs(
+                defaultConfig,
+                createConfigDto,
+            ) as CreateChatbotConfigDto;
         }
 
         const configEntity = this.configRepository.create(configData);
@@ -128,17 +145,21 @@ export class ChatbotConfigService {
         }
 
         if (query.isActive !== undefined) {
-            queryBuilder.andWhere('config.isActive = :isActive', { isActive: query.isActive });
+            queryBuilder.andWhere('config.isActive = :isActive', {
+                isActive: query.isActive,
+            });
         }
 
         if (query.environment) {
-            queryBuilder.andWhere('config.environment = :environment', { environment: query.environment });
+            queryBuilder.andWhere('config.environment = :environment', {
+                environment: query.environment,
+            });
         }
 
         queryBuilder.orderBy('config.createdAt', 'DESC');
 
         const entities = await queryBuilder.getMany();
-        return entities.map(entity => ChatbotConfigMapper.toDomain(entity));
+        return entities.map((entity) => ChatbotConfigMapper.toDomain(entity));
     }
 
     /**
@@ -149,7 +170,7 @@ export class ChatbotConfigService {
         const defaultConfigEntity = await this.configRepository.findOne({
             where: {
                 type: ConfigType.DEFAULT,
-                isActive: true
+                isActive: true,
             },
         });
 
@@ -157,7 +178,7 @@ export class ChatbotConfigService {
         const overrideConfigEntity = await this.configRepository.findOne({
             where: {
                 type: ConfigType.OVERRIDE,
-                isActive: true
+                isActive: true,
             },
             order: { updatedAt: 'DESC' }, // Lấy override mới nhất
         });
@@ -204,7 +225,10 @@ export class ChatbotConfigService {
     /**
      * Update config (chỉ có thể update override config)
      */
-    async update(id: string, updateConfigDto: UpdateChatbotConfigDto): Promise<ChatbotConfig> {
+    async update(
+        id: string,
+        updateConfigDto: UpdateChatbotConfigDto,
+    ): Promise<ChatbotConfig> {
         const existingConfig = await this.configRepository.findOne({
             where: { id },
         });
@@ -255,4 +279,73 @@ export class ChatbotConfigService {
 
         return ChatbotConfigMapper.toDomain(savedEntity);
     }
-} 
+
+    /**
+     * Trigger Python RAG service to reload configuration
+     */
+    private async triggerRagConfigReload(): Promise<void> {
+        try {
+            const response = await fetch(
+                `${this.RAG_SERVICE_URL}/api/v1/reload-config`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                },
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('✅ RAG service config reloaded successfully:', result);
+            } else {
+                console.error(
+                    '❌ Failed to reload RAG service config:',
+                    response.statusText,
+                );
+            }
+        } catch (error) {
+            console.error('❌ Error triggering RAG config reload:', error);
+        }
+    }
+
+    /**
+     * Update config and trigger RAG reload
+     */
+    async updateAndReload(
+        id: string,
+        updateConfigDto: UpdateChatbotConfigDto,
+    ): Promise<ChatbotConfig> {
+        const updatedConfig = await this.update(id, updateConfigDto);
+
+        // Trigger RAG service reload in background
+        this.triggerRagConfigReload().catch((error) =>
+            console.error('Background RAG reload failed:', error),
+        );
+
+        return updatedConfig;
+    }
+
+    /**
+     * Create config and trigger RAG reload
+     */
+    async createAndReload(
+        createConfigDto: CreateChatbotConfigDto,
+    ): Promise<ChatbotConfig> {
+        const createdConfig = await this.create(createConfigDto);
+
+        // Trigger RAG service reload in background
+        this.triggerRagConfigReload().catch((error) =>
+            console.error('Background RAG reload failed:', error),
+        );
+
+        return createdConfig;
+    }
+
+    /**
+     * Public method to trigger RAG config reload
+     */
+    async triggerConfigReload(): Promise<void> {
+        return this.triggerRagConfigReload();
+    }
+}

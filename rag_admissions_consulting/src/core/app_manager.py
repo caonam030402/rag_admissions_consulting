@@ -10,6 +10,7 @@ from infrastructure.embeddings import embeddings
 from infrastructure.store import store
 from infrastructure.llms import LLms
 from shared.enum import ModelType
+from shared.constant import MODEL_TYPE_MAPPING, get_model_type
 from config.settings import settings
 
 
@@ -108,7 +109,36 @@ class ApplicationManager:
         start_time = time.time()
         try:
             logger.info("🤖 Khởi tạo LLM Model...")
-            llm_model = LLms.getLLm(ModelType.GEMINI)
+
+            # Get model type from settings
+            backend_model = getattr(settings.llm, "default_model", "gemini-pro")
+            temperature = getattr(settings.llm, "temperature", 0.7)
+            max_tokens = getattr(settings.llm, "max_tokens", 2000)
+
+            # Use existing mapping function from constants
+            model_type = get_model_type(backend_model)
+
+            logger.info(f"🔧 Backend: {backend_model} -> Python: {model_type}")
+            logger.info(f"🔧 Temperature: {temperature}, Max tokens: {max_tokens}")
+
+            llm_model = LLms.getLLm(
+                type_model=model_type,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                backend_model_key=backend_model,
+            )
+
+            # Check if LLM was created successfully
+            if llm_model is None:
+                logger.error(
+                    f"❌ Failed to create LLM for {model_type}, trying GEMINI fallback"
+                )
+                llm_model = LLms.getLLm(ModelType.GEMINI, temperature, max_tokens)
+
+            if llm_model is None:
+                raise Exception(
+                    f"Failed to create LLM - both {model_type} and GEMINI failed"
+                )
 
             # Test LLM với câu hỏi đơn giản
             test_prompt = "Xin chào"
@@ -188,6 +218,29 @@ class ApplicationManager:
 
         except Exception as e:
             logger.error(f"❌ Lỗi khởi tạo RAG Engine: {e}")
+            raise
+
+    async def reinitialize_components(self):
+        """Reinitialize components that depend on configuration without full restart"""
+        logger.info("🔄 Reinitializing configuration-dependent components...")
+
+        start_time = time.time()
+
+        try:
+            # Reinitialize LLM with new settings
+            await self._initialize_llm_model()
+
+            # Reinitialize Prompt Engine with new settings
+            await self._initialize_prompt_engine()
+
+            # Reinitialize RAG Engine with updated components and settings
+            await self._initialize_rag_engine()
+
+            total_time = time.time() - start_time
+            logger.info(f"✅ Completed component reinitialization in {total_time:.2f}s")
+
+        except Exception as e:
+            logger.error(f"❌ Error during component reinitialization: {e}")
             raise
 
     def get_component(self, component_name: str) -> Any:

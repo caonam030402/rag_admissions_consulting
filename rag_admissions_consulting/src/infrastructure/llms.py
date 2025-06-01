@@ -8,13 +8,16 @@ from shared.constant import (
     OLLAMA_MODEL,
     DEFAULT_LLM_TEMPERATURE,
     DEFAULT_LLM_MAX_TOKENS,
+    get_actual_model_name,
 )
 from config.settings import settings
 
 
 class LLms:
     @staticmethod
-    def getLLm(type_model: ModelType, temperature=None, max_tokens=None):
+    def getLLm(
+        type_model: ModelType, temperature=None, max_tokens=None, backend_model_key=None
+    ):
         """
         Get LLM instance based on model type
 
@@ -22,6 +25,7 @@ class LLms:
             type_model: ModelType enum value
             temperature: Optional temperature override
             max_tokens: Optional max_tokens override
+            backend_model_key: Optional backend model key (e.g. "gemini-pro", "gpt-4")
         """
         # Use provided values or fall back to settings or defaults
         temp = (
@@ -35,9 +39,23 @@ class LLms:
             else getattr(settings.llm, "max_tokens", DEFAULT_LLM_MAX_TOKENS)
         )
 
+        # Get actual model name from backend key or use defaults
+        if backend_model_key:
+            actual_model = get_actual_model_name(backend_model_key, type_model)
+        else:
+            # Use default model names
+            if type_model == ModelType.OPENAI:
+                actual_model = OPENAI_MODEL
+            elif type_model == ModelType.GEMINI:
+                actual_model = GEMINI_MODEL
+            elif type_model == ModelType.OLLAMA:
+                actual_model = OLLAMA_MODEL
+            else:
+                actual_model = GEMINI_MODEL
+
         if type_model == ModelType.GEMINI:
             return ChatGoogleGenerativeAI(
-                model=GEMINI_MODEL,
+                model=actual_model,
                 streaming=True,
                 temperature=temp,
                 max_tokens=tokens,
@@ -45,7 +63,7 @@ class LLms:
             )
         elif type_model == ModelType.OPENAI:
             return ChatOpenAI(
-                model=OPENAI_MODEL,
+                model=actual_model,
                 streaming=True,
                 temperature=temp,
                 max_tokens=tokens,
@@ -53,7 +71,7 @@ class LLms:
             )
         elif type_model == ModelType.OLLAMA:
             return OllamaLLM(
-                model=OLLAMA_MODEL,
+                model=actual_model,
                 temperature=temp,
             )
         else:

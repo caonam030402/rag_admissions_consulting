@@ -94,12 +94,6 @@ export class ChatbotConfigController {
 
     @Patch(':id')
     @ApiOkResponse({ type: ChatbotConfig })
-    @ApiParam({ name: 'id', type: String, required: true })
-    @ApiOperation({
-        summary: 'Update chatbot configuration',
-        description:
-            'Update specific parts of configuration. Use for override configs.',
-    })
     @ApiBearerAuth()
     @Roles(RoleEnum.admin)
     @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -107,18 +101,50 @@ export class ChatbotConfigController {
         @Param('id') id: string,
         @Body() updateConfigDto: UpdateChatbotConfigDto,
     ): Promise<ChatbotConfig> {
-        return this.configService.update(id, updateConfigDto);
+        return this.configService.updateAndReload(id, updateConfigDto);
     }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
-    @ApiParam({ name: 'id', type: String, required: true })
-    @ApiOperation({ summary: 'Delete chatbot configuration' })
     @ApiBearerAuth()
     @Roles(RoleEnum.admin)
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     remove(@Param('id') id: string): Promise<void> {
         return this.configService.remove(id);
+    }
+
+    @Post('trigger-rag-reload')
+    @ApiOkResponse({
+        schema: {
+            type: 'object',
+            properties: {
+                success: { type: 'boolean' },
+                message: { type: 'string' },
+            },
+        },
+    })
+    @ApiOperation({
+        summary: 'Manually trigger RAG service to reload configuration',
+        description:
+            'Force Python RAG service to reload configuration from backend',
+    })
+    @ApiBearerAuth()
+    @Roles(RoleEnum.admin)
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    async triggerRagReload() {
+        try {
+            // Use the private method through a public wrapper
+            await (this.configService as any).triggerRagConfigReload();
+            return {
+                success: true,
+                message: 'RAG service reload triggered successfully',
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: `Failed to trigger RAG reload: ${error.message}`,
+            };
+        }
     }
 
     // API dành cho Frontend - không cần authentication
@@ -327,7 +353,7 @@ export class ChatbotConfigController {
                     ? { ...activeConfig.llmConfig, ...updateData.llmConfig }
                     : activeConfig.llmConfig,
             };
-            return this.configService.create(createDto);
+            return this.configService.createAndReload(createDto);
         } else {
             // Update existing override config
             const updateDto: UpdateChatbotConfigDto = {};
@@ -336,7 +362,7 @@ export class ChatbotConfigController {
             if (updateData.llmConfig)
                 updateDto.llmConfig = updateData.llmConfig as any;
 
-            return this.configService.update(overrideConfig.id, updateDto);
+            return this.configService.updateAndReload(overrideConfig.id, updateDto);
         }
     }
 
@@ -366,9 +392,9 @@ export class ChatbotConfigController {
                     ? { ...activeConfig.appearance, ...updateData.appearance }
                     : activeConfig.appearance,
             };
-            return this.configService.create(createDto);
+            return this.configService.createAndReload(createDto);
         } else {
-            return this.configService.update(overrideConfig.id, {
+            return this.configService.updateAndReload(overrideConfig.id, {
                 appearance: updateData.appearance as any,
             });
         }
@@ -400,9 +426,9 @@ export class ChatbotConfigController {
                     ? { ...activeConfig.welcomeSettings, ...updateData.welcomeSettings }
                     : activeConfig.welcomeSettings,
             };
-            return this.configService.create(createDto);
+            return this.configService.createAndReload(createDto);
         } else {
-            return this.configService.update(overrideConfig.id, {
+            return this.configService.updateAndReload(overrideConfig.id, {
                 welcomeSettings: updateData.welcomeSettings as any,
             });
         }
@@ -434,9 +460,9 @@ export class ChatbotConfigController {
                     ? { ...activeConfig.humanHandoff, ...updateData.humanHandoff }
                     : activeConfig.humanHandoff,
             };
-            return this.configService.create(createDto);
+            return this.configService.createAndReload(createDto);
         } else {
-            return this.configService.update(overrideConfig.id, {
+            return this.configService.updateAndReload(overrideConfig.id, {
                 humanHandoff: updateData.humanHandoff as any,
             });
         }
