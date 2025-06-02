@@ -26,6 +26,14 @@ export const PUBLIC_PAGES = [
   PATH.ACCOUNT_MANAGER,
 ];
 
+// Role-based route configurations
+export const ROLE_ROUTES = {
+  ADMIN_DEFAULT: PATH.OVERVIEW,
+  USER_DEFAULT: PATH.CHATBOT,
+  ADMIN_LOGIN: PATH.LOGIN_ADMIN,
+  USER_LOGIN: PATH.LOGIN_USER,
+};
+
 export enum ENameCookie {
   ACCESS_TOKEN = "_next-auth.htshs",
 }

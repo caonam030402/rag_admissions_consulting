@@ -29,6 +29,10 @@ export interface PaginatedChatMessages {
   hasNextPage: boolean;
 }
 
+export interface ChatSuggestions {
+  suggestions: string[];
+}
+
 export interface ChatState {
   messages: ChatMessage[];
   conversations: Conversation[];

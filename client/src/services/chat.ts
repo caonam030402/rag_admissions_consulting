@@ -1,4 +1,4 @@
-import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 
@@ -51,9 +51,10 @@ const getGuestId = (): string => {
   if (stored) return stored;
 
   // During SSR or first time, generate new ID
-  const newGuestId = typeof window === "undefined"
-    ? "temp-guest-ssr"
-    : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const newGuestId =
+    typeof window === "undefined"
+      ? "temp-guest-ssr"
+      : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   safeLocalStorage.setItem(ENameLocalS.GUEST_ID, newGuestId);
   return newGuestId;
@@ -74,11 +75,13 @@ const getCurrentConversationId = (): string => {
   if (stored) return stored;
 
   // During SSR or first time, generate new ID
-  const newConversationId = typeof window === "undefined"
-    ? "temp-ssr-id"
-    : uuidv4();
+  const newConversationId =
+    typeof window === "undefined" ? "temp-ssr-id" : uuidv4();
 
-  safeLocalStorage.setItem(ENameLocalS.CURRENT_CONVERSATION_ID, newConversationId);
+  safeLocalStorage.setItem(
+    ENameLocalS.CURRENT_CONVERSATION_ID,
+    newConversationId,
+  );
   return newConversationId;
 };
 
@@ -89,9 +92,14 @@ const cleanupConversationData = (): void => {
 
 // Helper function to ensure conversation ID sync
 const ensureConversationSync = (conversationId: string): void => {
-  const currentFromStorage = safeLocalStorage.getItem(ENameLocalS.CURRENT_CONVERSATION_ID);
+  const currentFromStorage = safeLocalStorage.getItem(
+    ENameLocalS.CURRENT_CONVERSATION_ID,
+  );
   if (currentFromStorage !== conversationId) {
-    safeLocalStorage.setItem(ENameLocalS.CURRENT_CONVERSATION_ID, conversationId);
+    safeLocalStorage.setItem(
+      ENameLocalS.CURRENT_CONVERSATION_ID,
+      conversationId,
+    );
   }
 };
 
@@ -159,9 +167,9 @@ const streamMessage = async function* (
 
     const decoder = new TextDecoder();
 
-    // Disable await-in-loop warning for streaming
-    // eslint-disable-next-line no-await-in-loop
+    // Stream reading loop
     while (true) {
+      // eslint-disable-next-line no-await-in-loop
       const { done, value } = await reader.read();
       if (done) break;
 
@@ -503,6 +511,23 @@ export const chatService = {
         });
       },
     };
+  },
+
+  // Hook to get chat suggestions
+  useChatSuggestions: (
+    conversationId: string | null,
+    messagesCount?: number,
+  ) => {
+    return useQueryCommon<{ suggestions: string[] }>({
+      queryKey: ["chatSuggestions", conversationId, messagesCount || 0],
+      url: `chatbots/conversations/${conversationId}/suggestions`,
+      enabled: !!conversationId,
+      staleTime: 1000 * 30, // 30 seconds cache (shorter to get fresh suggestions)
+      gcTime: 1000 * 60 * 2, // 2 minutes cache
+      retry: 1,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    });
   },
 
   // Server-side functions (non-React Query)

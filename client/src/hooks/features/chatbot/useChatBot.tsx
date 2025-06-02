@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { ActorType } from "@/enums/systemChat";
 import { chatService } from "@/services/chat";
@@ -10,6 +11,7 @@ export default function useChatBot() {
   const [clientConversationId, setClientConversationId] = useState<
     string | null
   >(null);
+  const queryClient = useQueryClient();
   const {
     addMessage,
     setTyping,
@@ -94,6 +96,11 @@ export default function useChatBot() {
         // Ensure assistant message has conversation ID
         assistantMessage.conversationId = conversationId;
       }
+
+      // Invalidate suggestions to get fresh ones based on new conversation context
+      queryClient.invalidateQueries({
+        queryKey: ["chatSuggestions", conversationId],
+      });
 
       inputRef.current?.focus();
     } catch (error) {

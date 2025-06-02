@@ -29,6 +29,37 @@ async def chat_endpoint(request: ChatRequest):
     )
 
 
+class SuggestionsRequest(BaseModel):
+    conversation_id: str
+    recent_messages: list = []
+
+
+@router.post("/suggestions")
+async def suggestions_endpoint(request: SuggestionsRequest):
+    """Generate follow-up question suggestions based on conversation context"""
+    try:
+        # Import suggestion service
+        from services.suggestion_service import SuggestionService
+
+        suggestion_service = SuggestionService()
+        suggestions = await suggestion_service.generate_suggestions(
+            request.conversation_id, request.recent_messages
+        )
+
+        return {"suggestions": suggestions}
+
+    except Exception as e:
+        logger.error(f"Error generating suggestions: {e}")
+        # Return default suggestions on error
+        default_suggestions = [
+            "Điều kiện đầu vào của các ngành học như thế nào?",
+            "Hướng dẫn về quy trình nộp hồ sơ xét tuyển?",
+            "Thông tin về học phí và học bổng?",
+            "Cơ hội việc làm sau khi tốt nghiệp?",
+        ]
+        return {"suggestions": default_suggestions}
+
+
 async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None]:
     """Stream chat response token by token"""
     try:

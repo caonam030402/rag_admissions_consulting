@@ -7,22 +7,22 @@ import type { IOptionRQ } from "@/types";
 import { getLocalStorage, setLocalStorage } from "@/utils/clientStorage";
 import http from "@/utils/http";
 import type { CreateUserFormValues } from "@/validations/userValidation";
-import { chatService } from "./chat";
 
-// Types
-interface User {
+// Consistent User interface with role support
+interface IUser {
   id: number;
   email: string;
   firstName?: string;
   lastName?: string;
   name?: string;
-  role?: string | { name: string };
+  role?: { id: number; name: string } | string;
   secretCode?: string;
   google2faEnabled?: boolean;
+  isVerified?: string;
 }
 
 interface UsersResponse {
-  data: User[];
+  data: IUser[];
   hasNextPage: boolean;
 }
 
@@ -34,8 +34,6 @@ interface QRCodeResponse {
 export const userService = {
   // Get user profile
   useProfile: () => {
-    const currentUser = chatService.getCurrentUser();
-    const isAuthenticated = !!currentUser.userId;
     const userLs = getLocalStorage({ key: ENameLocalS.PROFILE });
     const query = useQueryCommon<IUser>({
       url: "auth/me",
@@ -79,7 +77,7 @@ export const userService = {
     return useMutation({
       mutationFn: async (userData: CreateUserFormValues) => {
         const response = await http.post<{
-          user: User;
+          user: IUser;
           secretCode: string;
           qrCodeUrl: string;
         }>("users", { body: userData });
@@ -138,7 +136,7 @@ export const userService = {
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["users"] });
         toast.success(
-          `2FA ${variables.enabled ? "enabled" : "disabled"} successfully`
+          `2FA ${variables.enabled ? "enabled" : "disabled"} successfully`,
         );
       },
     });
@@ -152,7 +150,7 @@ export const userService = {
       mutationFn: async (userId: number) => {
         const response = await http.post<QRCodeResponse>(
           `users/${userId}/secret-code`,
-          { body: {} }
+          { body: {} },
         );
         return response.payload;
       },

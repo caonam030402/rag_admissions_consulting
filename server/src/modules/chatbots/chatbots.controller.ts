@@ -157,6 +157,36 @@ export class chatbotsController {
     return this.chatbotsService.deleteConversation(conversationId);
   }
 
+  @Get('conversations/:conversationId/suggestions')
+  @ApiOperation({
+    summary: 'Get suggested follow-up questions for a conversation',
+  })
+  @ApiOkResponse({
+    description: 'List of suggested questions',
+    schema: {
+      type: 'object',
+      properties: {
+        suggestions: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+      },
+    },
+  })
+  @ApiParam({
+    name: 'conversationId',
+    type: String,
+    required: true,
+  })
+  @Public()
+  async getChatSuggestions(
+    @Param('conversationId') conversationId: string,
+  ): Promise<{ suggestions: string[] }> {
+    return this.chatbotsService.getChatSuggestions(conversationId);
+  }
+
   @Post('history')
   @ApiOperation({ summary: 'Create a new chat message' })
   @ApiCreatedResponse({

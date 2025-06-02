@@ -2,10 +2,13 @@ import { motion } from "framer-motion";
 import React, { useEffect, useRef } from "react";
 
 import { ENameLocalS } from "@/constants";
+import { ActorType } from "@/enums/systemChat";
+import useChatBot from "@/hooks/features/chatbot/useChatBot";
 import { chatService } from "@/services/chat";
 import { useChatStore } from "@/stores/chat";
 
 import ChatMessage from "./ChatMessage";
+import ChatSuggestions from "./ChatSuggestions";
 
 export default function Body() {
   const {
@@ -15,6 +18,7 @@ export default function Body() {
     loadConversation,
     replaceMessages,
   } = useChatStore();
+  const { sendMessage } = useChatBot();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Get conversation history using the hook
@@ -80,16 +84,24 @@ export default function Body() {
     }
   }, [conversationData, currentConversationId, replaceMessages, isLoading]);
 
-  console.log("🔧 Widget Debug - Current state:", {
-    messagesCount: messages.length,
-    currentConversationId,
-    isLoading,
-    conversationDataLength: conversationData?.data?.length || 0,
-  });
+  const handleSuggestionClick = (suggestion: string) => {
+    sendMessage({
+      newMessage: suggestion,
+      role: ActorType.Human,
+    });
+  };
+
+  // Show suggestions only when there are messages and not currently typing
+  const shouldShowSuggestions =
+    messages.length > 0 &&
+    !isTyping &&
+    currentConversationId;
+    // Temporarily remove the bot message condition for testing
+    // messages[messages.length - 1]?.role === ActorType.Bot;
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 scroll">
+      <div className="scroll flex-1">
         {messages.length === 0 && !isLoading && (
           <div className="flex h-full items-center justify-center p-4 text-center">
             <div className="text-gray-500">
@@ -119,6 +131,23 @@ export default function Body() {
             </motion.div>
           );
         })}
+
+        {/* Chat Suggestions */}
+        {shouldShowSuggestions && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="px-4 pb-3"
+          >
+            <ChatSuggestions
+              conversationId={currentConversationId}
+              messagesCount={messages.length}
+              onSuggestionClick={handleSuggestionClick}
+            />
+          </motion.div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
     </div>
