@@ -9,6 +9,7 @@ from loguru import logger
 from services.chat_service import ChatService
 from services.user_service import UserService
 from core.session_manager import session_manager
+from config.settings import settings, initialize_settings_with_backend
 
 router = APIRouter()
 
@@ -75,3 +76,146 @@ async def stream_chat_response(request: ChatRequest) -> AsyncGenerator[str, None
             "conversation_id": "error",
         }
         yield json.dumps(error_response) + "\n"
+
+
+@router.post("/reload-config")
+async def reload_config_endpoint():
+    """Reload configuration from backend API without restarting the application"""
+    try:
+        logger.info("🔄 Reloading configuration from backend...")
+
+        # Store previous config status for comparison
+        previous_status = settings.is_backend_config_loaded()
+        previous_personality = settings.personality.personality
+        previous_name = settings.personality.name
+
+        # Reload configuration from backend
+        await initialize_settings_with_backend()
+
+        # Check if config was successfully loaded
+        new_status = settings.is_backend_config_loaded()
+        new_personality = settings.personality.personality
+        new_name = settings.personality.name
+
+        # Prepare response with config changes
+        config_changes = {
+            "config_loaded": new_status,
+            "previous_config_loaded": previous_status,
+            "changes": {
+                "personality": {
+                    "previous": previous_personality,
+                    "current": new_personality,
+                    "changed": previous_personality != new_personality,
+                },
+                "name": {
+                    "previous": previous_name,
+                    "current": new_name,
+                    "changed": previous_name != new_name,
+                },
+            },
+        }
+
+        if new_status:
+            logger.info("✅ Configuration reloaded successfully from backend")
+            return {
+                "success": True,
+                "message": "Configuration reloaded successfully from backend",
+                "config_status": "loaded_from_backend",
+                "timestamp": asyncio.get_event_loop().time(),
+                "config_changes": config_changes,
+                "current_config": {
+                    "personality": {
+                        "name": settings.personality.name,
+                        "personality": settings.personality.personality,
+                        "creativity_level": settings.personality.creativity_level,
+                        "persona": (
+                            settings.personality.persona[:100] + "..."
+                            if len(settings.personality.persona) > 100
+                            else settings.personality.persona
+                        ),
+                    },
+                    "contact_info": settings.contact_info,
+                    "environment": settings.environment,
+                    "debug": settings.debug,
+                },
+            }
+        else:
+            logger.warning("⚠️ Configuration reload failed, using default settings")
+            return {
+                "success": False,
+                "message": "Failed to reload from backend, using default configuration",
+                "config_status": "using_defaults",
+                "timestamp": asyncio.get_event_loop().time(),
+                "config_changes": config_changes,
+                "current_config": {
+                    "personality": {
+                        "name": settings.personality.name,
+                        "personality": settings.personality.personality,
+                        "creativity_level": settings.personality.creativity_level,
+                        "persona": (
+                            settings.personality.persona[:100] + "..."
+                            if len(settings.personality.persona) > 100
+                            else settings.personality.persona
+                        ),
+                    },
+                    "contact_info": settings.contact_info,
+                    "environment": settings.environment,
+                    "debug": settings.debug,
+                },
+            }
+
+    except Exception as e:
+        logger.error(f"❌ Error reloading configuration: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "success": False,
+                "message": f"Internal server error while reloading configuration: {str(e)}",
+                "config_status": "error",
+                "timestamp": asyncio.get_event_loop().time(),
+            },
+        )
+
+
+@router.get("/config-status")
+async def get_config_status():
+    """Get current configuration status and settings"""
+    try:
+        return {
+            "config_loaded_from_backend": settings.is_backend_config_loaded(),
+            "environment": settings.environment,
+            "debug": settings.debug,
+            "personality": {
+                "name": settings.personality.name,
+                "personality": settings.personality.personality,
+                "creativity_level": settings.personality.creativity_level,
+                "persona_preview": (
+                    settings.personality.persona[:100] + "..."
+                    if len(settings.personality.persona) > 100
+                    else settings.personality.persona
+                ),
+            },
+            "llm_config": {
+                "default_model": settings.llm.default_model,
+                "max_tokens": settings.llm.max_tokens,
+                "temperature": settings.llm.temperature,
+            },
+            "chat_config": {
+                "max_context_length": settings.chat.max_context_length,
+                "context_window_minutes": settings.chat.context_window_minutes,
+                "max_response_tokens": settings.chat.max_response_tokens,
+                "stream_delay_ms": settings.chat.stream_delay_ms,
+            },
+            "contact_info": settings.contact_info,
+            "timestamp": asyncio.get_event_loop().time(),
+        }
+
+    except Exception as e:
+        logger.error(f"❌ Error getting config status: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": f"Failed to get config status: {str(e)}",
+                "timestamp": asyncio.get_event_loop().time(),
+            },
+        )

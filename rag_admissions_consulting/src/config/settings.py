@@ -1,24 +1,10 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import os
 from dataclasses import dataclass, field
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
-
-# Import constants
-from shared.constant import (
-    DEFAULT_LLM_MODEL,
-    DEFAULT_LLM_TEMPERATURE,
-    DEFAULT_LLM_MAX_TOKENS,
-    DEFAULT_MAX_CONTEXT_LENGTH,
-    DEFAULT_CONTEXT_WINDOW_MINUTES,
-    DEFAULT_MAX_RESPONSE_TOKENS,
-    DEFAULT_STREAM_DELAY_MS,
-    DEFAULT_CONTACT_INFO,
-    DEFAULT_PERSONALITY,
-    PERSONALITY_STYLES,
-)
 
 
 @dataclass
@@ -37,13 +23,11 @@ class DatabaseConfig:
 class LLMConfig:
     """LLM configuration"""
 
-    default_model: str = os.getenv("DEFAULT_LLM_MODEL", DEFAULT_LLM_MODEL)
+    default_model: str = os.getenv("DEFAULT_LLM_MODEL", "GEMINI")
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
-    max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", str(DEFAULT_LLM_MAX_TOKENS)))
-    temperature: float = float(
-        os.getenv("LLM_TEMPERATURE", str(DEFAULT_LLM_TEMPERATURE))
-    )
+    max_tokens: int = int(os.getenv("LLM_MAX_TOKENS", "2048"))
+    temperature: float = float(os.getenv("LLM_TEMPERATURE", "0.7"))
 
 
 @dataclass
@@ -69,18 +53,24 @@ class VectorStoreConfig:
 class ChatConfig:
     """Chat configuration"""
 
-    max_context_length: int = int(
-        os.getenv("MAX_CONTEXT_LENGTH", str(DEFAULT_MAX_CONTEXT_LENGTH))
+    max_context_length: int = int(os.getenv("MAX_CONTEXT_LENGTH", "20"))
+    context_window_minutes: int = int(os.getenv("CONTEXT_WINDOW_MINUTES", "30"))
+    max_response_tokens: int = int(os.getenv("MAX_RESPONSE_TOKENS", "1024"))
+    stream_delay_ms: int = int(os.getenv("STREAM_DELAY_MS", "50"))
+
+
+@dataclass
+class PersonalityConfig:
+    """Personality configuration - can be overridden by backend"""
+
+    name: str = "AI Tư vấn viên ĐH Đông Á"
+    persona: str = (
+        "Bạn là một chuyên viên tư vấn tuyển sinh thông minh, chuyên nghiệp và thân thiện của ĐH Đông Á."
     )
-    context_window_minutes: int = int(
-        os.getenv("CONTEXT_WINDOW_MINUTES", str(DEFAULT_CONTEXT_WINDOW_MINUTES))
+    personality: str = (
+        "Professional"  # Professional, Sassy, Empathetic, Formal, Humorous, Friendly
     )
-    max_response_tokens: int = int(
-        os.getenv("MAX_RESPONSE_TOKENS", str(DEFAULT_MAX_RESPONSE_TOKENS))
-    )
-    stream_delay_ms: int = int(
-        os.getenv("STREAM_DELAY_MS", str(DEFAULT_STREAM_DELAY_MS))
-    )
+    creativity_level: float = 0.1
 
 
 @dataclass
@@ -116,6 +106,7 @@ class Settings:
         self.embedding = EmbeddingConfig()
         self.vector_store = VectorStoreConfig()
         self.chat = ChatConfig()
+        self.personality = PersonalityConfig()
         self.api = APIConfig()
         self.logging = LoggingConfig()
 
@@ -123,17 +114,16 @@ class Settings:
         self.environment = os.getenv("ENVIRONMENT", "development")
         self.debug = os.getenv("DEBUG", "false").lower() == "true"
 
-        # Contact information (use constants)
-        self.contact_info = DEFAULT_CONTACT_INFO.copy()
+        # Contact information
+        self.contact_info = {
+            "hotline": "0236.3.650.403",
+            "email": "tuyensinh@donga.edu.vn",
+            "website": "https://donga.edu.vn",
+            "address": "33 Xô Viết Nghệ Tĩnh, Hải Châu, Đà Nẵng",
+        }
 
-        # Personality config (use constants)
-        self.personality = DEFAULT_PERSONALITY.copy()
-
-        # Backend config options
-        self.use_backend_config = (
-            os.getenv("USE_BACKEND_CONFIG", "true").lower() == "true"
-        )
-        self.backend_url = os.getenv("BACKEND_URL", "http://localhost:3001")
+        # Backend config integration flag
+        self._backend_config_loaded = False
 
     def is_production(self) -> bool:
         """Check if running in production"""
@@ -143,79 +133,107 @@ class Settings:
         """Check if running in development"""
         return self.environment.lower() == "development"
 
-    async def load_config_from_backend(self) -> bool:
-        """
-        Load config từ backend nếu enabled
-
-        Returns:
-            True nếu thành công hoặc không enabled, False nếu có lỗi
-        """
-        if not self.use_backend_config:
-            return True
-
+    def update_from_backend_config(self, backend_config: Dict[str, Any]):
+        """Update settings with configuration from backend API"""
         try:
-            from .backend_config import load_config_from_backend
+            # Update LLM config if available
+            if "llmConfig" in backend_config:
+                llm_config = backend_config["llmConfig"]
+                self.llm.default_model = llm_config.get(
+                    "defaultModel", self.llm.default_model
+                )
+                self.llm.max_tokens = llm_config.get("maxTokens", self.llm.max_tokens)
+                self.llm.temperature = llm_config.get(
+                    "temperature", self.llm.temperature
+                )
 
-            return await load_config_from_backend(self)
-        except ImportError:
-            # Nếu không có httpx hoặc dependencies khác
-            return True
+            # Update Chat config if available
+            if "chatConfig" in backend_config:
+                chat_config = backend_config["chatConfig"]
+                self.chat.max_context_length = chat_config.get(
+                    "maxContextLength", self.chat.max_context_length
+                )
+                self.chat.context_window_minutes = chat_config.get(
+                    "contextWindowMinutes", self.chat.context_window_minutes
+                )
+                self.chat.max_response_tokens = chat_config.get(
+                    "maxResponseTokens", self.chat.max_response_tokens
+                )
+                self.chat.stream_delay_ms = chat_config.get(
+                    "streamDelayMs", self.chat.stream_delay_ms
+                )
+
+            # Update Personality config if available
+            if "personality" in backend_config:
+                personality_config = backend_config["personality"]
+                self.personality.name = personality_config.get(
+                    "name", self.personality.name
+                )
+                self.personality.persona = personality_config.get(
+                    "persona", self.personality.persona
+                )
+                self.personality.personality = personality_config.get(
+                    "personality", self.personality.personality
+                )
+                self.personality.creativity_level = personality_config.get(
+                    "creativityLevel", self.personality.creativity_level
+                )
+
+            # Update Contact info if available
+            if "contactInfo" in backend_config:
+                contact_config = backend_config["contactInfo"]
+                self.contact_info.update(
+                    {
+                        "hotline": contact_config.get(
+                            "hotline", self.contact_info["hotline"]
+                        ),
+                        "email": contact_config.get(
+                            "email", self.contact_info["email"]
+                        ),
+                        "website": contact_config.get(
+                            "website", self.contact_info["website"]
+                        ),
+                        "address": contact_config.get(
+                            "address", self.contact_info["address"]
+                        ),
+                    }
+                )
+
+            # Update environment settings if available
+            if "environment" in backend_config:
+                self.environment = backend_config.get("environment", self.environment)
+
+            if "debug" in backend_config:
+                self.debug = backend_config.get("debug", self.debug)
+
+            self._backend_config_loaded = True
+
         except Exception as e:
             from loguru import logger
 
-            logger.error(f"Failed to load config from backend: {str(e)}")
-            return False
+            logger.warning(f"⚠️ Error updating settings from backend config: {e}")
 
-    def load_config_from_backend_sync(self) -> bool:
-        """
-        Load config từ backend (sync version)
-
-        Returns:
-            True nếu thành công hoặc không enabled, False nếu có lỗi
-        """
-        if not self.use_backend_config:
-            return True
-
-        try:
-            from .backend_config import load_config_from_backend_sync
-
-            return load_config_from_backend_sync(self)
-        except ImportError:
-            # Nếu không có httpx hoặc dependencies khác
-            return True
-        except Exception as e:
-            from loguru import logger
-
-            logger.error(f"Failed to load config from backend: {str(e)}")
-            return False
-
-    def get_persona_for_prompt(self) -> str:
-        """Get the main persona text for system prompt"""
-        if hasattr(self, "personality") and isinstance(self.personality, dict):
-            return self.personality.get("persona", "")
-        return ""
-
-    def get_assistant_name(self) -> str:
-        """Get assistant name from personality config"""
-        if hasattr(self, "personality") and isinstance(self.personality, dict):
-            return self.personality.get("name", "một chuyên viên tư vấn tuyển sinh")
-        return "một chuyên viên tư vấn tuyển sinh"
-
-    def get_personality_style(self) -> str:
-        """Get personality style for customizing responses"""
-        if hasattr(self, "personality") and isinstance(self.personality, dict):
-            personality_type = self.personality.get("personality", "professional")
-            return PERSONALITY_STYLES.get(
-                personality_type, "chuyên nghiệp và thân thiện"
-            )
-        return "chuyên nghiệp và thân thiện"
-
-    def get_creativity_level(self) -> float:
-        """Get creativity level from personality config"""
-        if hasattr(self, "personality") and isinstance(self.personality, dict):
-            return self.personality.get("creativityLevel", 0.2)
-        return 0.2
+    def is_backend_config_loaded(self) -> bool:
+        """Check if backend configuration has been loaded"""
+        return self._backend_config_loaded
 
 
 # Global settings instance
 settings = Settings()
+
+
+async def initialize_settings_with_backend():
+    """Initialize settings with backend configuration - called once at startup"""
+    try:
+        from utils.config_client import load_backend_config
+        from loguru import logger
+
+        logger.info("🔧 Loading configuration from backend...")
+        backend_config = await load_backend_config()
+        settings.update_from_backend_config(backend_config)
+        logger.info("✅ Settings updated with backend configuration")
+
+    except Exception as e:
+        from loguru import logger
+
+        logger.warning(f"⚠️ Failed to load backend config: {e}, using default settings")

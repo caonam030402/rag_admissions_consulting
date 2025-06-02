@@ -9,17 +9,8 @@ from infrastructure.llms import LLms
 from infrastructure.store import store
 from infrastructure.embeddings import embeddings
 from shared.enum import ModelType
-from shared.constant import (
-    MODEL_TYPE_MAPPING,
-    DEFAULT_LLM_MODEL,
-    DEFAULT_LLM_TEMPERATURE,
-    DEFAULT_LLM_MAX_TOKENS,
-)
 from core.prompt_engine import PromptEngine
 from core.query_analyzer import QueryAnalyzer
-from langchain_community.vectorstores import Chroma
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
 
 
 class RagEngine:
@@ -27,89 +18,24 @@ class RagEngine:
 
     def __init__(
         self,
-        llm=None,
-        retriever=None,
-        vector_store: Chroma = None,
-        settings=None,
+        embedding_model=None,
+        vector_store=None,
+        llm_model=None,
+        query_analyzer=None,
+        prompt_engine=None,
     ):
+        """Initialize RAG engine with optional pre-initialized components"""
+        self.llm = llm_model
+        self.retriever = None
+        self.prompt_engine = prompt_engine or PromptEngine()
+        self.query_analyzer = query_analyzer or QueryAnalyzer()
+        self.embedding_model = embedding_model
         self.vector_store = vector_store
-        self.retriever = retriever
-        self.settings = settings
 
-        # Initialize LLM with settings
-        self.llm = llm or self._initialize_llm()
-
-        # Initialize components with settings
-        self.prompt_engine = PromptEngine(settings=self.settings)
-        self.query_analyzer = QueryAnalyzer()
-
-        # If no retriever provided, try to create one
-        if self.retriever is None and self.vector_store is not None:
-            self._initialize_retriever()
-
-        logger.info("✅ RAG Engine initialized with intelligent components")
-
-    def _initialize_llm(self):
-        """Initialize LLM based on settings configuration"""
-
-        # Default values from constants
-        default_model = DEFAULT_LLM_MODEL
-        max_tokens = DEFAULT_LLM_MAX_TOKENS
-        temperature = DEFAULT_LLM_TEMPERATURE
-
-        # Use settings if available
-        if self.settings:
-            default_model = getattr(self.settings.llm, "default_model", default_model)
-            max_tokens = getattr(self.settings.llm, "max_tokens", max_tokens)
-            temperature = getattr(self.settings.llm, "temperature", temperature)
-
-            logger.info(
-                f"🤖 Using LLM config from settings: {default_model}, tokens: {max_tokens}, temp: {temperature}"
-            )
-
-        # Get the appropriate ModelType using constants
-        model_type = MODEL_TYPE_MAPPING.get(default_model, ModelType.GEMINI)
-
-        logger.info(f"🤖 Mapped {default_model} -> {model_type}")
-
-        # Use LLms factory to get the LLM
-        try:
-            llm = LLms.getLLm(
-                model_type, temperature=temperature, max_tokens=max_tokens
-            )
-            if llm is not None:
-                logger.info(
-                    f"✅ Successfully initialized LLM: {model_type} (temp: {temperature}, tokens: {max_tokens})"
-                )
-                return llm
-            else:
-                logger.error(f"❌ Failed to get LLM for type: {model_type}")
-                # Fallback to default GEMINI
-                return LLms.getLLm(
-                    ModelType.GEMINI, temperature=temperature, max_tokens=max_tokens
-                )
-        except Exception as e:
-            logger.error(f"❌ Error initializing LLM: {e}")
-            # Fallback to default GEMINI
-            return LLms.getLLm(
-                ModelType.GEMINI, temperature=temperature, max_tokens=max_tokens
-            )
-
-    def set_retriever(self, retriever):
-        """Set the retriever for the RAG engine"""
-        self.retriever = retriever
-        logger.info("✅ Retriever updated in RAG engine")
-
-    def set_vector_store(self, vector_store: Chroma):
-        """Set the vector store for the RAG engine"""
-        self.vector_store = vector_store
-        logger.info("✅ Vector store updated in RAG engine")
-
-    def update_llm_settings(self):
-        """Update LLM settings from backend config"""
-        if self.settings:
-            self.llm = self._initialize_llm()
-            logger.info("🔄 LLM settings updated from backend config")
+        if not self._components_provided():
+            self._initialize_components()
+        else:
+            self._setup_with_provided_components()
 
     def _components_provided(self) -> bool:
         """Check if all required components are provided"""
@@ -215,34 +141,11 @@ class RagEngine:
             )
             yield error_message
 
-    def _initialize_retriever(self):
-        """Initialize retriever if not provided"""
-        try:
-            from infrastructure.embeddings import embeddings
-            from shared.enum import ModelType
-
-            logger.info("🔧 Initializing retriever on demand...")
-            embedding_model = embeddings.get_embeddings(ModelType.HUGGINGFACE)
-            self.retriever = self.vector_store.getRetriever(embedding_model)
-            logger.info("✅ Retriever initialized successfully")
-        except Exception as e:
-            logger.error(f"❌ Failed to initialize retriever: {e}")
-            self.retriever = None
-
     async def _enhanced_retrieval(
         self, query: str, query_analysis: Dict[str, Any]
     ) -> List[Any]:
         """Enhanced document retrieval based on query analysis"""
         try:
-            # Check if retriever is available
-            if self.retriever is None:
-                logger.warning("No retriever available, attempting to initialize...")
-                self._initialize_retriever()
-
-            if self.retriever is None:
-                logger.error("Retriever still not available, returning empty results")
-                return []
-
             # Get base relevant documents
             docs = self.retriever.get_relevant_documents(query)
 
@@ -288,51 +191,9 @@ class RagEngine:
 
     def _create_rag_chain(self, prompt: ChatPromptTemplate):
         """Create RAG chain with the given prompt"""
-        try:
-            question_answer_chain = create_stuff_documents_chain(self.llm, prompt)
-
-            # Check if retriever is available
-            if self.retriever is None:
-                logger.warning(
-                    "No retriever available for RAG chain, attempting to initialize..."
-                )
-                self._initialize_retriever()
-
-            if self.retriever is None:
-                logger.error("Cannot create RAG chain without retriever")
-                # Return a simple chain that just uses the LLM
-                from langchain_core.prompts import ChatPromptTemplate
-                from langchain_core.output_parsers import StrOutputParser
-
-                simple_prompt = ChatPromptTemplate.from_messages(
-                    [
-                        (
-                            "system",
-                            "You are a helpful assistant. Answer the question based on your knowledge.",
-                        ),
-                        ("human", "{input}"),
-                    ]
-                )
-                return simple_prompt | self.llm | StrOutputParser()
-
-            rag_chain = create_retrieval_chain(self.retriever, question_answer_chain)
-            return rag_chain
-        except Exception as e:
-            logger.error(f"Error creating RAG chain: {e}")
-            # Fallback to simple LLM chain
-            from langchain_core.prompts import ChatPromptTemplate
-            from langchain_core.output_parsers import StrOutputParser
-
-            simple_prompt = ChatPromptTemplate.from_messages(
-                [
-                    (
-                        "system",
-                        "You are a helpful assistant. Answer the question based on your knowledge.",
-                    ),
-                    ("human", "{input}"),
-                ]
-            )
-            return simple_prompt | self.llm | StrOutputParser()
+        question_answer_chain = create_stuff_documents_chain(self.llm, prompt)
+        rag_chain = create_retrieval_chain(self.retriever, question_answer_chain)
+        return rag_chain
 
     def _format_documents(self, docs: List[Any]) -> str:
         """Format retrieved documents for context"""

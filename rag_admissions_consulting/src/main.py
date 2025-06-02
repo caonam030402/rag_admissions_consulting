@@ -40,19 +40,6 @@ async def startup_event():
     try:
         logger.info("🚀 Starting RAG Admissions Consulting API...")
 
-        # Load config từ backend trước tiên
-        logger.info("🔧 Loading configuration from backend...")
-        from config.settings import settings
-
-        config_loaded = await settings.load_config_from_backend()
-        if config_loaded:
-            logger.info("✅ Successfully loaded config from backend")
-            logger.info(f"🎭 Personality: {settings.get_assistant_name()}")
-            logger.info(f"🔧 Environment: {settings.environment}")
-            logger.info(f"🤖 LLM Model: {settings.llm.default_model}")
-        else:
-            logger.warning("⚠️ Failed to load config from backend, using local config")
-
         # Setup database connection
         setup_database()
         logger.info("✅ Database setup completed")
@@ -119,49 +106,6 @@ async def detailed_status():
     }
 
 
-@app.post("/api/v1/reload-config")
-async def reload_config():
-    """Reload configuration from backend without restarting server"""
-    try:
-        logger.info("🔄 Reloading configuration from backend...")
-
-        from config.settings import settings
-
-        # Reload config from backend
-        config_loaded = await settings.load_config_from_backend()
-
-        if config_loaded:
-            logger.info("✅ Configuration reloaded successfully")
-
-            # Reinitialize components that depend on config
-            logger.info("🔧 Reinitializing application components...")
-            await app_manager.reinitialize_components()
-
-            return {
-                "status": "success",
-                "message": "Configuration reloaded successfully",
-                "config": {
-                    "assistant_name": settings.get_assistant_name(),
-                    "llm_model": settings.llm.default_model,
-                    "temperature": settings.llm.temperature,
-                    "max_tokens": settings.llm.max_tokens,
-                },
-            }
-        else:
-            logger.error("❌ Failed to reload configuration from backend")
-            return {
-                "status": "error",
-                "message": "Failed to reload configuration from backend",
-            }
-
-    except Exception as e:
-        logger.error(f"❌ Error reloading configuration: {e}")
-        return {
-            "status": "error",
-            "message": f"Error reloading configuration: {str(e)}",
-        }
-
-
 @app.post("/api/v1/clear-session")
 async def clear_user_session(user_email: str):
     """Clear session for a specific user"""
@@ -173,15 +117,15 @@ async def clear_user_session(user_email: str):
 
 if __name__ == "__main__":
     import uvicorn
-
+    
     # Check if running in development mode
     is_dev = os.getenv("ENVIRONMENT", "development") == "development"
-
+    
     uvicorn.run(
         "main:app",  # Use string format for reload to work properly
-        host="0.0.0.0",
+        host="0.0.0.0", 
         port=8000,
         reload=is_dev,  # Enable auto-reload in development
         reload_dirs=["./"] if is_dev else None,  # Watch current directory
-        log_level="info",
+        log_level="info"
     )

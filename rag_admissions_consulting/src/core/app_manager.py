@@ -10,8 +10,7 @@ from infrastructure.embeddings import embeddings
 from infrastructure.store import store
 from infrastructure.llms import LLms
 from shared.enum import ModelType
-from shared.constant import MODEL_TYPE_MAPPING, get_model_type
-from config.settings import settings
+from config.settings import settings, initialize_settings_with_backend
 
 
 class ApplicationManager:
@@ -38,6 +37,9 @@ class ApplicationManager:
         start_time = time.time()
 
         try:
+            # 0. Load configuration from backend first
+            await self._initialize_backend_config()
+
             # 1. Khởi tạo Embedding Model
             await self._initialize_embedding_model()
 
@@ -68,6 +70,24 @@ class ApplicationManager:
         except Exception as e:
             logger.error(f"❌ Lỗi khi khởi tạo thành phần: {e}")
             raise
+
+    async def _initialize_backend_config(self):
+        """Load configuration from backend API"""
+        start_time = time.time()
+        try:
+            logger.info("⚙️ Loading configuration from backend...")
+            await initialize_settings_with_backend()
+
+            self.components["backend_config"] = "loaded"
+            self.initialization_times["backend_config"] = time.time() - start_time
+            logger.info("✅ Backend configuration loaded successfully")
+
+        except Exception as e:
+            logger.warning(
+                f"⚠️ Backend config loading failed: {e}, continuing with defaults"
+            )
+            self.components["backend_config"] = "failed"
+            self.initialization_times["backend_config"] = time.time() - start_time
 
     async def _initialize_embedding_model(self):
         """Khởi tạo Embedding Model"""
@@ -109,36 +129,7 @@ class ApplicationManager:
         start_time = time.time()
         try:
             logger.info("🤖 Khởi tạo LLM Model...")
-
-            # Get model type from settings
-            backend_model = getattr(settings.llm, "default_model", "gemini-pro")
-            temperature = getattr(settings.llm, "temperature", 0.7)
-            max_tokens = getattr(settings.llm, "max_tokens", 2000)
-
-            # Use existing mapping function from constants
-            model_type = get_model_type(backend_model)
-
-            logger.info(f"🔧 Backend: {backend_model} -> Python: {model_type}")
-            logger.info(f"🔧 Temperature: {temperature}, Max tokens: {max_tokens}")
-
-            llm_model = LLms.getLLm(
-                type_model=model_type,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                backend_model_key=backend_model,
-            )
-
-            # Check if LLM was created successfully
-            if llm_model is None:
-                logger.error(
-                    f"❌ Failed to create LLM for {model_type}, trying GEMINI fallback"
-                )
-                llm_model = LLms.getLLm(ModelType.GEMINI, temperature, max_tokens)
-
-            if llm_model is None:
-                raise Exception(
-                    f"Failed to create LLM - both {model_type} and GEMINI failed"
-                )
+            llm_model = LLms.getLLm(ModelType.GEMINI)
 
             # Test LLM với câu hỏi đơn giản
             test_prompt = "Xin chào"
@@ -173,7 +164,7 @@ class ApplicationManager:
         start_time = time.time()
         try:
             logger.info("📋 Khởi tạo Prompt Engine...")
-            prompt_engine = PromptEngine(settings=settings)
+            prompt_engine = PromptEngine()
 
             self.components["prompt_engine"] = prompt_engine
             self.initialization_times["prompt_engine"] = time.time() - start_time
@@ -188,28 +179,12 @@ class ApplicationManager:
         start_time = time.time()
         try:
             logger.info("⚙️ Khởi tạo RAG Engine...")
-
-            # Create retriever from vector store and embeddings
-            retriever = None
-            if (
-                "vector_store" in self.components
-                and "embedding_model" in self.components
-            ):
-                vector_store = self.components["vector_store"]
-                embedding_model = self.components["embedding_model"]
-
-                try:
-                    retriever = vector_store.getRetriever(embedding_model)
-                    logger.info("✅ Created retriever from vector store and embeddings")
-                except Exception as e:
-                    logger.error(f"❌ Failed to create retriever: {e}")
-                    logger.warning("⚠️ RAG Engine will be initialized without retriever")
-
             rag_engine = RagEngine(
-                llm=self.components.get("llm_model"),
-                retriever=retriever,
-                vector_store=self.components.get("vector_store"),
-                settings=settings,
+                embedding_model=self.components["embedding_model"],
+                vector_store=self.components["vector_store"],
+                llm_model=self.components["llm_model"],
+                query_analyzer=self.components["query_analyzer"],
+                prompt_engine=self.components["prompt_engine"],
             )
 
             self.components["rag_engine"] = rag_engine
@@ -218,29 +193,6 @@ class ApplicationManager:
 
         except Exception as e:
             logger.error(f"❌ Lỗi khởi tạo RAG Engine: {e}")
-            raise
-
-    async def reinitialize_components(self):
-        """Reinitialize components that depend on configuration without full restart"""
-        logger.info("🔄 Reinitializing configuration-dependent components...")
-
-        start_time = time.time()
-
-        try:
-            # Reinitialize LLM with new settings
-            await self._initialize_llm_model()
-
-            # Reinitialize Prompt Engine with new settings
-            await self._initialize_prompt_engine()
-
-            # Reinitialize RAG Engine with updated components and settings
-            await self._initialize_rag_engine()
-
-            total_time = time.time() - start_time
-            logger.info(f"✅ Completed component reinitialization in {total_time:.2f}s")
-
-        except Exception as e:
-            logger.error(f"❌ Error during component reinitialization: {e}")
             raise
 
     def get_component(self, component_name: str) -> Any:
@@ -256,6 +208,7 @@ class ApplicationManager:
     def is_initialized(self) -> bool:
         """Kiểm tra xem tất cả thành phần đã được khởi tạo chưa"""
         required_components = [
+            "backend_config",
             "embedding_model",
             "vector_store",
             "llm_model",

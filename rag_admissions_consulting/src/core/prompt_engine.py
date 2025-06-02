@@ -1,14 +1,88 @@
 from typing import List, Dict, Any, Optional
 from langchain_core.prompts import ChatPromptTemplate
 from loguru import logger
+from config.settings import settings
 
 
 class PromptEngine:
     """Intelligent prompt engine for context-aware responses"""
 
-    def __init__(self, settings=None):
-        self.settings = settings
-        self.base_system_prompt = self._build_base_system_prompt()
+    def __init__(self):
+        # Dynamic system prompt that uses settings
+        self._base_system_prompt_template = """
+{persona}
+
+🎯 **Nhiệm vụ chính**:
+- Tư vấn chính xác về tuyển sinh, ngành học, học phí, học bổng và mọi thông tin liên quan đến trường
+- Hiểu và sử dụng ngữ cảnh cuộc trò chuyện để đưa ra câu trả lời phù hợp
+- Luôn dựa vào thông tin chính thức từ dữ liệu được cung cấp
+
+📌 **Phong cách giao tiếp**:
+Bạn phải thể hiện phong cách: {personality_style}
+
+📌 **Nguyên tắc trả lời**:
+1. **Ngữ cảnh**: Luôn xem xét ngữ cảnh cuộc trò chuyện trước đó để hiểu đúng ý định của người hỏi
+2. **Chính xác**: Chỉ sử dụng thông tin có trong dữ liệu được cung cấp  
+3. **Nhất quán phong cách**: Luôn duy trì phong cách giao tiếp đã được chỉ định
+4. **Cụ thể**: Đưa ra thông tin chi tiết, có cấu trúc rõ ràng
+5. **Hướng dẫn**: Luôn sẵn sàng hướng dẫn bước tiếp theo hoặc cung cấp thông tin liên hệ khi cần
+
+🚫 **Không được**:
+- Phỏng đoán thông tin không có trong dữ liệu
+- Bỏ qua ngữ cảnh cuộc trò chuyện
+- Thay đổi phong cách giao tiếp giữa chừng
+- Trả lời máy móc, thiếu cảm xúc
+"""
+
+        # Map backend personality values to Vietnamese descriptions with distinct behaviors
+        self.personality_styles = {
+            "professional": "chuyên nghiệp, trang trọng và có cấu trúc rõ ràng. Sử dụng ngôn ngữ trang trọng, câu văn hoàn chỉnh và luôn đưa ra thông tin một cách có hệ thống",
+            "sassy": "tự tin, năng động và hơi tinh nghịch. Sử dụng emoji nhiều hơn, ngôn ngữ sinh động và có chút hài hước nhẹ nhàng",
+            "empathetic": "cảm thông, ấm áp và quan tâm. Thể hiện sự hiểu biết về cảm xúc của người hỏi, sử dụng ngôn ngữ động viên và an ủi",
+            "formal": "trang trọng, nghiêm túc và tuân thủ quy tắc. Sử dụng ngôn ngữ công thức, tránh từ lóng và luôn giữ giọng điệu tôn trọng",
+            "humorous": "vui vẻ, hài hước và thoải mái. Thỉnh thoảng đưa vào những câu đùa nhẹ nhàng phù hợp và tạo không khí vui vẻ",
+            "friendly": "thân thiện, gần gũi và dễ tiếp cận. Sử dụng ngôn ngữ đời thường, tạo cảm giác như đang nói chuyện với bạn bè",
+        }
+
+        # Style-specific behavioral examples
+        self.style_examples = {
+            "professional": """
+VÍ DỤ PHONG CÁCH PROFESSIONAL:
+- "Tôi xin cung cấp thông tin chi tiết về chương trình đào tạo như sau:"
+- "Theo quy định của trường, điều kiện xét tuyển bao gồm..."
+- "Để hỗ trợ quý vị một cách tốt nhất, tôi khuyến nghị..."
+""",
+            "sassy": """
+VÍ DỤ PHONG CÁCH SASSY:
+- "Ồ, đây là câu hỏi hay đấy! 😎 Để mình giải thích cho bạn nhé..."
+- "Không có gì phải lo lắng cả! Mình sẽ giúp bạn tìm ra đáp án 💪"
+- "Cái này dễ mà! 😊 Ngành này có triển vọng cực kì tốt đấy..."
+""",
+            "empathetic": """
+VÍ DỤ PHONG CÁCH EMPATHETIC:
+- "Mình hiểu bạn đang lo lắng về vấn đề này, đó là điều hoàn toàn bình thường..."
+- "Cảm ơn bạn đã tin tưởng chia sẻ. Mình sẽ cố gắng hỗ trợ bạn tốt nhất có thể..."
+- "Đừng quá áp lực nhé! Mọi thứ sẽ ổn thôi. Hãy cùng mình tìm hiểu từng bước..."
+""",
+            "formal": """
+VÍ DỤ PHONG CÁCH FORMAL:
+- "Kính thưa quý vị, tôi xin trân trọng cung cấp thông tin..."
+- "Theo thông tin chính thức từ phòng tuyển sinh..."
+- "Tôi xin phép được giải đáp thắc mắc của quý vị như sau..."
+""",
+            "humorous": """
+VÍ DỤ PHONG CÁCH HUMOROUS:
+- "Haha, câu hỏi này hay quá! Cứ như đang chơi trò đố vui vậy 😄"
+- "Đây là 'bí kíp' để vào được ngành này nhé... (không phải kungfu đâu 😂)"
+- "Học phí à? Đừng lo, không cần bán thận đâu! 😅 Mình giải thích cho..."
+""",
+            "friendly": """
+VÍ DỤ PHONG CÁCH FRIENDLY:
+- "Chào bạn! Bạn hỏi về cái này à? Mình chia sẻ ngay nhé!"
+- "Ủa, bạn quan tâm đến ngành này hả? Tuyệt vời! Để mình kể cho bạn nghe..."
+- "Mình nghĩ bạn sẽ thích thông tin này đấy! Ngành này rất phù hợp với..."
+""",
+        }
 
         self.specialized_prompts = {
             "specific_program": """
@@ -26,7 +100,7 @@ class PromptEngine:
 - Phương thức xét tuyển và điểm chuẩn
 """,
             "fees_scholarships": """
-Đây là câu hỏi về tài chính. Hãy tập trung vào:
+Đây là câu hỏi về học phí và học bổng. Hãy tập trung vào:
 - Mức học phí cụ thể theo từng ngành
 - Các loại học bổng và điều kiện nhận
 - Hình thức thanh toán và hỗ trợ tài chính
@@ -62,77 +136,24 @@ Người dùng cần làm rõ thông tin. Hãy:
 """,
         }
 
-    def _build_base_system_prompt(self) -> str:
-        """Build base system prompt using settings from backend"""
+    def _get_base_system_prompt(self) -> str:
+        """Get the base system prompt with dynamic personality configuration"""
+        personality_style = self.personality_styles.get(
+            settings.personality.personality, "chuyên nghiệp và thân thiện"
+        )
 
-        # Get persona from backend settings
-        persona_from_backend = ""
-        personality_style = ""
-        assistant_name = "một chuyên viên tư vấn tuyển sinh"
+        # Get style-specific examples
+        style_examples = self.style_examples.get(settings.personality.personality, "")
 
-        if self.settings:
-            persona_from_backend = self.settings.get_persona_for_prompt()
-            personality_style = self.settings.get_personality_style()
-            assistant_name = self.settings.get_assistant_name()
+        base_prompt = self._base_system_prompt_template.format(
+            persona=settings.personality.persona, personality_style=personality_style
+        )
 
-        # Use persona from backend if available, otherwise use default
-        if persona_from_backend:
-            introduction = persona_from_backend
-        else:
-            # Fallback introduction
-            introduction = f"Bạn là {assistant_name}, luôn {personality_style}."
+        # Add style examples if available
+        if style_examples:
+            base_prompt += f"\n\n**HƯỚNG DẪN PHONG CÁCH CỤ THỂ**:\n{style_examples}"
 
-        # Add personality style guidance
-        personality_guidance = ""
-        if personality_style:
-            personality_guidance = f"\n\n🎭 **Phong cách giao tiếp**: Luôn thể hiện phong cách {personality_style} trong mọi phản hồi."
-
-        base_prompt = f"""
-{introduction}
-
-🎯 **Nhiệm vụ chính**:
-- Tư vấn chính xác về tuyển sinh, ngành học, học phí, học bổng và mọi thông tin liên quan đến trường
-- Hiểu và sử dụng ngữ cảnh cuộc trò chuyện để đưa ra câu trả lời phù hợp
-- Luôn dựa vào thông tin chính thức từ dữ liệu được cung cấp{personality_guidance}
-
-📌 **Nguyên tắc trả lời**:
-1. **Ngữ cảnh**: Luôn xem xét ngữ cảnh cuộc trò chuyện trước đó để hiểu đúng ý định của người hỏi
-2. **Chính xác**: Chỉ sử dụng thông tin có trong dữ liệu được cung cấp
-3. **Phong cách**: Duy trì phong cách {personality_style if personality_style else 'chuyên nghiệp và thân thiện'}
-4. **Cụ thể**: Đưa ra thông tin chi tiết, có cấu trúc rõ ràng
-5. **Hướng dẫn**: Luôn sẵn sàng hướng dẫn bước tiếp theo hoặc cung cấp thông tin liên hệ khi cần
-
-🚫 **Không được**:
-- Phỏng đoán thông tin không có trong dữ liệu
-- Bỏ qua ngữ cảnh cuộc trò chuyện
-- Trả lời máy móc, thiếu cảm xúc
-- Thay đổi phong cách giao tiếp đã được thiết lập
-"""
         return base_prompt
-
-    def _get_contact_info_section(self) -> str:
-        """Get contact information section from settings"""
-
-        # Default contact info
-        default_contact = {
-            "hotline": "0236.3.650.403",
-            "email": "tuyensinh@donga.edu.vn",
-            "website": "https://donga.edu.vn",
-            "address": "33 Xô Viết Nghệ Tĩnh, Hải Châu, Đà Nẵng",
-        }
-
-        # Use contact info from settings if available
-        contact_info = default_contact
-        if self.settings and hasattr(self.settings, "contact_info"):
-            contact_info = self.settings.contact_info
-
-        return f"""
-**Thông tin liên hệ khi cần hỗ trợ thêm**:
-📞 Hotline: {contact_info.get('hotline', default_contact['hotline'])}
-📧 Email: {contact_info.get('email', default_contact['email'])}
-🌐 Website: {contact_info.get('website', default_contact['website'])}
-📍 Địa chỉ: {contact_info.get('address', default_contact['address'])}
-"""
 
     def create_context_aware_prompt(
         self,
@@ -144,8 +165,8 @@ Người dùng cần làm rõ thông tin. Hãy:
     ) -> ChatPromptTemplate:
         """Create a context-aware prompt based on query analysis and conversation history"""
 
-        # Build system prompt
-        system_prompt = self.base_system_prompt
+        # Build system prompt with dynamic personality
+        system_prompt = self._get_base_system_prompt()
 
         # Add specialized instructions based on query type
         if query_analysis and query_analysis.get("type") in self.specialized_prompts:
@@ -162,18 +183,21 @@ Người dùng cần làm rõ thông tin. Hãy:
         if context_messages:
             system_prompt += self._build_conversation_context_prompt(context_messages)
 
-        # Add document context instructions
-        system_prompt += """
+        # Add document context instructions with dynamic contact info
+        system_prompt += f"""
 
 **Sử dụng thông tin từ tài liệu**:
-- Dựa vào thông tin trong {context} để trả lời
+- Dựa vào thông tin trong {{context}} để trả lời
 - Nếu không tìm thấy thông tin cần thiết, hãy thành thật nói rằng bạn không có thông tin đó
 - Luôn ưu tiên thông tin chính thức từ trường
-- Có thể tham khảo lịch sử trò chuyện trong {chat_history} để hiểu rõ hơn ngữ cảnh
-"""
+- Có thể tham khảo lịch sử trò chuyện trong {{chat_history}} để hiểu rõ hơn ngữ cảnh
 
-        # Add contact info from settings
-        system_prompt += self._get_contact_info_section()
+**Thông tin liên hệ khi cần hỗ trợ thêm**:
+📞 Hotline: {settings.contact_info['hotline']}
+📧 Email: {settings.contact_info['email']}
+🌐 Website: {settings.contact_info['website']}
+📍 Địa chỉ: {settings.contact_info['address']}
+"""
 
         # Create the prompt template
         prompt = ChatPromptTemplate.from_messages(
@@ -187,6 +211,9 @@ Người dùng cần làm rõ thông tin. Hãy:
 
         logger.debug(
             f"Created context-aware prompt for query type: {query_analysis.get('type', 'unknown') if query_analysis else 'unknown'}"
+        )
+        logger.debug(
+            f"Using personality: {settings.personality.personality} with creativity level: {settings.personality.creativity_level}"
         )
 
         return prompt
@@ -208,7 +235,9 @@ Người dùng cần làm rõ thông tin. Hãy:
         )
 
         for i, msg in enumerate(recent_messages):
-            role_name = "Người dùng" if msg["role"] == "USER" else "Tư vấn viên"
+            role_name = (
+                "Người dùng" if msg["role"] == "USER" else settings.personality.name
+            )
             context_prompt += f"{role_name}: {msg['content']}\n"
 
         context_prompt += "\nHãy sử dụng ngữ cảnh này để đưa ra câu trả lời phù hợp và có liên kết với cuộc trò chuyện."
@@ -218,13 +247,20 @@ Người dùng cần làm rõ thông tin. Hãy:
     def create_simple_prompt(self, query_type: str = "general") -> ChatPromptTemplate:
         """Create a simple prompt for basic queries"""
 
-        system_prompt = self.base_system_prompt
+        system_prompt = self._get_base_system_prompt()
 
         if query_type in self.specialized_prompts:
             system_prompt += f"\n\n{self.specialized_prompts[query_type]}"
 
-        # Add contact info
-        system_prompt += self._get_contact_info_section()
+        # Add contact info to simple prompt as well
+        system_prompt += f"""
+
+**Thông tin liên hệ khi cần hỗ trợ thêm**:
+📞 Hotline: {settings.contact_info['hotline']}
+📧 Email: {settings.contact_info['email']}
+🌐 Website: {settings.contact_info['website']}
+📍 Địa chỉ: {settings.contact_info['address']}
+"""
 
         return ChatPromptTemplate.from_messages(
             [
