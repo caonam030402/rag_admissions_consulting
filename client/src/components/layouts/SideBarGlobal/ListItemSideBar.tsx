@@ -3,6 +3,7 @@ import {
   Database,
   SlidersHorizontal,
   Users,
+  ChatCircle,
 } from "@phosphor-icons/react";
 import React from "react";
 
@@ -30,6 +31,13 @@ export const listSidebarItems = [
     title: "Datasets",
     href: PATH.DATASET,
     icon: <Database size={25} />,
+    children: [],
+  },
+  {
+    id: "4",
+    title: "Human Support",
+    href: PATH.HUMAN_SUPPORT,
+    icon: <ChatCircle size={25} />,
     children: [],
   },
   {

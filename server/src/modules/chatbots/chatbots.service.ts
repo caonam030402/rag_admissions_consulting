@@ -8,7 +8,7 @@ import { GetChatbotHistoryDto } from './dto/get-chatbot-history.dto';
 
 @Injectable()
 export class chatbotsService {
-  constructor(private readonly chatbotRepository: chatbotRepository) { }
+  constructor(private readonly chatbotRepository: chatbotRepository) {}
 
   findAllHistoryWithPagination({
     paginationOptions,
@@ -131,13 +131,15 @@ export class chatbotsService {
     const lastBotMessage =
       recentMessages
         .filter((msg) => msg.role === 'assistant')
-        .pop()?.content?.toLowerCase() || '';
+        .pop()
+        ?.content?.toLowerCase() || '';
 
     // Get last user message to understand user's interest
     const lastUserMessage =
       recentMessages
         .filter((msg) => msg.role === 'user')
-        .pop()?.content?.toLowerCase() || '';
+        .pop()
+        ?.content?.toLowerCase() || '';
 
     // Dynamic suggestions based on conversation flow
     return this.analyzeConversationFlow(

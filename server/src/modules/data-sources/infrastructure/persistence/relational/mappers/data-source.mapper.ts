@@ -45,7 +45,8 @@ export class DataSourceMapper {
     persistenceEntity.uploadedBy = domainEntity.uploadedBy;
     persistenceEntity.uploaderEmail = domainEntity.uploaderEmail;
     persistenceEntity.processingStartedAt = domainEntity.processingStartedAt;
-    persistenceEntity.processingCompletedAt = domainEntity.processingCompletedAt;
+    persistenceEntity.processingCompletedAt =
+      domainEntity.processingCompletedAt;
     persistenceEntity.errorMessage = domainEntity.errorMessage;
     persistenceEntity.metadata = domainEntity.metadata;
     persistenceEntity.createdAt = domainEntity.createdAt;

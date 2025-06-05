@@ -4,9 +4,14 @@ import React, { useEffect, useRef } from "react";
 import { ENameLocalS } from "@/constants";
 import { ActorType } from "@/enums/systemChat";
 import useChatBot from "@/hooks/features/chatbot/useChatBot";
+import {
+  shouldTriggerHumanHandoff,
+  useHumanHandoff,
+} from "@/hooks/useHumanHandoff";
 import { chatService } from "@/services/chat";
 import { useChatStore } from "@/stores/chat";
 
+import HumanHandoffIndicator from "../HumanHandoffIndicator";
 import ChatMessage from "./ChatMessage";
 import ChatSuggestions from "./ChatSuggestions";
 
@@ -20,6 +25,16 @@ export default function Body() {
   } = useChatStore();
   const { sendMessage } = useChatBot();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Human handoff hook
+  const {
+    requestHumanSupport,
+    endHandoff,
+    timeoutRemaining,
+    isWaiting,
+    isConnected,
+    adminName,
+  } = useHumanHandoff({ conversationId: currentConversationId });
 
   // Get conversation history using the hook
   const { data: conversationData, isLoading } =
@@ -85,6 +100,20 @@ export default function Body() {
   }, [conversationData, currentConversationId, replaceMessages, isLoading]);
 
   const handleSuggestionClick = (suggestion: string) => {
+    console.log("🔧 DEBUG - Suggestion clicked:", suggestion);
+    console.log(
+      "🔧 DEBUG - Should trigger handoff:",
+      shouldTriggerHumanHandoff(suggestion),
+    );
+
+    // Check if this is a human handoff trigger
+    if (shouldTriggerHumanHandoff(suggestion)) {
+      console.log("🔧 DEBUG - Triggering human handoff...");
+      requestHumanSupport(suggestion);
+      return;
+    }
+
+    console.log("🔧 DEBUG - Sending normal message...");
     sendMessage({
       newMessage: suggestion,
       role: ActorType.Human,
@@ -93,15 +122,22 @@ export default function Body() {
 
   // Show suggestions only when there are messages and not currently typing
   const shouldShowSuggestions =
-    messages.length > 0 &&
-    !isTyping &&
-    currentConversationId;
-    // Temporarily remove the bot message condition for testing
-    // messages[messages.length - 1]?.role === ActorType.Bot;
+    messages.length > 0 && !isTyping && currentConversationId;
+  // Temporarily remove the bot message condition for testing
+  // messages[messages.length - 1]?.role === ActorType.Bot;
 
   return (
     <div className="flex h-full flex-col">
       <div className="scroll flex-1">
+        {/* Human Handoff Indicator */}
+        <HumanHandoffIndicator
+          isWaiting={isWaiting}
+          isConnected={isConnected}
+          adminName={adminName}
+          timeoutRemaining={timeoutRemaining}
+          onEndHandoff={endHandoff}
+        />
+
         {messages.length === 0 && !isLoading && (
           <div className="flex h-full items-center justify-center p-4 text-center">
             <div className="text-gray-500">
@@ -119,9 +155,12 @@ export default function Body() {
           return (
             <motion.div
               key={message.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{
+                delay: isLastMessage ? 0 : Math.min(index * 0.02, 0.1),
+                duration: 0.2,
+              }}
             >
               <ChatMessage
                 key={message.id}
@@ -137,13 +176,14 @@ export default function Body() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.1 }}
             className="px-4 pb-3"
           >
             <ChatSuggestions
               conversationId={currentConversationId}
               messagesCount={messages.length}
               onSuggestionClick={handleSuggestionClick}
+              isHumanHandoffActive={isWaiting || isConnected}
             />
           </motion.div>
         )}

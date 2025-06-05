@@ -20,4 +20,4 @@ import { RelationalchatbotPersistenceModule } from './infrastructure/persistence
     RelationalchatbotPersistenceModule,
   ],
 })
-export class ChatbotsModule { }
+export class ChatbotsModule {}

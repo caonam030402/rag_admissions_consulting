@@ -17,7 +17,7 @@ export default function Logo({ isOnlyIcon = false, size = "small" }: IProps) {
         height={500}
         className={sizeClass}
       />
-      {!isOnlyIcon && <div className="text-xl font-bold">ChatBot IUH</div>}
+      {!isOnlyIcon && <div className="text-xl font-bold">ChatBot VH</div>}
     </div>
   );
 }

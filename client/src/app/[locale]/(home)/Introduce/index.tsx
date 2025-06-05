@@ -74,7 +74,8 @@ export default function Introduce() {
       <div className="absolute flex size-full items-center justify-center">
         <form onSubmit={handleSubmit} className="text-center">
           <p className="mb-2 text-6xl font-bold text-white">
-            Trợ lý tuyển sinh <span className="text-primary">DAD</span>
+            Trợ lý tuyển sinh
+            <span className="text-primary"> VIỆT HÀN</span>
           </p>
           <p className="mx-auto w-3/5 py-3 text-white">
             là nền tảng hỗ trợ tư vấn và giải đáp thông tin tuyển sinh nhanh

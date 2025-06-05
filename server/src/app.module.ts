@@ -36,6 +36,7 @@ import { OtpsModule } from './modules/otps/otps.module';
 import { MailModule } from './modules/mail/mail.module';
 import { ChatbotsModule } from './modules/chatbots/chatbots.module';
 import { DataSourcesModule } from './modules/data-sources/data-sources.module';
+import { HumanHandoffsModule } from './modules/human-handoffs/human-handoffs.module';
 @Module({
   imports: [
     OtpsModule,
@@ -89,6 +90,7 @@ import { DataSourcesModule } from './modules/data-sources/data-sources.module';
     MailModule,
     MailerModule,
     DataSourcesModule,
+    HumanHandoffsModule,
   ],
 })
 export class AppModule { }

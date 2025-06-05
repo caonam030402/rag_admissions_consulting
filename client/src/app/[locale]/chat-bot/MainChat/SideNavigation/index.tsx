@@ -332,7 +332,7 @@ export default function SideNavigation() {
   );
 
   const renderConversationsList = () => (
-    <div className="max-h-64 space-y-1 overflow-y-auto">
+    <div className="max-h-64 space-y-1 scroll">
       {conversations.slice(0, 10).map((conversation: any) => (
         <motion.div
           key={conversation.conversationId}
@@ -523,7 +523,7 @@ export default function SideNavigation() {
             </div>
           </div>
 
-          {/* Footer - User Profile */}
+          {/* Footer - User Profile
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center gap-3">
               <div className="from-green-500 to-blue-500 flex size-10 items-center justify-center rounded-full bg-gradient-to-r text-sm font-medium text-white">
@@ -539,7 +539,7 @@ export default function SideNavigation() {
                 <Gear size={16} />
               </Button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

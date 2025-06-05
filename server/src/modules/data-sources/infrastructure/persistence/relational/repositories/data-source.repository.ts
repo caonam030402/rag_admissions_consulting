@@ -13,7 +13,7 @@ export class DataSourceRelationalRepository implements DataSourceRepository {
   constructor(
     @InjectRepository(DataSourceEntity)
     private readonly dataSourceRepository: Repository<DataSourceEntity>,
-  ) { }
+  ) {}
 
   async create(data: DataSource): Promise<DataSource> {
     const persistenceModel = DataSourceMapper.toPersistence(data);
@@ -34,7 +34,8 @@ export class DataSourceRelationalRepository implements DataSourceRepository {
       status?: string;
     };
   }): Promise<{ data: DataSource[]; totalCount: number }> {
-    const queryBuilder = this.dataSourceRepository.createQueryBuilder('dataSource');
+    const queryBuilder =
+      this.dataSourceRepository.createQueryBuilder('dataSource');
 
     // Apply search filters if provided
     if (searchOptions?.search) {

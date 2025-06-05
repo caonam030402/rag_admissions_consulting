@@ -20,7 +20,7 @@ export class chatbotRelationalRepository implements chatbotRepository {
     private readonly conversationRepository: Repository<ConversationEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-  ) { }
+  ) {}
 
   async findAllHistoryWithPagination({
     paginationOptions,
@@ -131,10 +131,11 @@ export class chatbotRelationalRepository implements chatbotRepository {
         userId: conversation.userId,
         guestId: conversation.guestId,
         title: conversation.title,
-        isActive: conversation.isActive
+        isActive: conversation.isActive,
       });
 
-      const savedConversation = await this.conversationRepository.save(conversation);
+      const savedConversation =
+        await this.conversationRepository.save(conversation);
       console.log(
         '🔧 DEBUG: Conversation saved successfully:',
         savedConversation.id,
@@ -166,7 +167,7 @@ export class chatbotRelationalRepository implements chatbotRepository {
       userId: chatbotHistory.userId,
       guestId: chatbotHistory.guestId,
       role: chatbotHistory.role,
-      conversationId: chatbotHistory.conversationId
+      conversationId: chatbotHistory.conversationId,
     });
 
     const savedHistory = await this.chatbotRepository.save(chatbotHistory);

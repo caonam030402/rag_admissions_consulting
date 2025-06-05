@@ -8,8 +8,10 @@ export const PATH = {
   DATASET: "/admin/manager/data-source",
   CONFIGURATION: "/admin/manager/configuration",
   OVERVIEW: "/admin/manager/overview",
-  VERIFY: "/admin/verify",
+  VERIFY: "/verify",
+  VERIFY_ADMIN: "/admin/verify",
   ACCOUNT_MANAGER: "/admin/manager/account-manager",
+  HUMAN_SUPPORT: "/admin/manager/human-support",
 };
 
 export const PUBLIC_PAGES = [
@@ -17,13 +19,15 @@ export const PUBLIC_PAGES = [
   PATH.LOGIN_ADMIN,
   PATH.LOGIN_USER,
   PATH.REGISTER_USER,
-  PATH.MANAGER,
   PATH.CHATBOT,
-  PATH.HOME,
-  PATH.DATASET,
-  PATH.CONFIGURATION,
-  PATH.OVERVIEW,
-  PATH.ACCOUNT_MANAGER,
+  PATH.VERIFY,
+  PATH.VERIFY_ADMIN,
+  // ❌ Admin routes removed from public pages - they should be protected!
+  // PATH.MANAGER,
+  // PATH.DATASET,
+  // PATH.CONFIGURATION,
+  // PATH.OVERVIEW,
+  // PATH.ACCOUNT_MANAGER,
 ];
 
 // Role-based route configurations
@@ -45,3 +49,5 @@ export enum ENameLocalS {
   GUEST_ID = "_next-wq.gid",
   CURRENT_CONVERSATION_ID = "_next-wq.ccid",
 }
+
+export const TRIGGER_CONTACT_CABINET = "Chat ngay cán bộ tư vấn?";

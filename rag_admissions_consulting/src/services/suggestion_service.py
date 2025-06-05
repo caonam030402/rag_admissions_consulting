@@ -94,7 +94,7 @@ Yêu cầu:
 - Mỗi câu một dòng
 - Không đánh số, không dấu gạch đầu dòng
 - Bằng tiếng Việt
-
+- Xem xét nếu người dùng đang gặp khó khăn trong việc hỏi hoặc trong đoạn chat có đề cập tôi muốn gặp cán bộ tư vấn thì trả về câu (chat ngay cán bộ tư vấn)
 Ví dụ format:
 Điểm chuẩn ngành nào?
 Học phí bao nhiêu?

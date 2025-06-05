@@ -2,6 +2,7 @@ import { Chip, Skeleton } from "@heroui/react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
+import { TRIGGER_CONTACT_CABINET } from "@/constants/common";
 import { chatService } from "@/services/chat";
 
 interface ChatSuggestionsProps {
@@ -9,6 +10,7 @@ interface ChatSuggestionsProps {
   onSuggestionClick: (suggestion: string) => void;
   messagesCount?: number;
   className?: string;
+  isHumanHandoffActive?: boolean;
 }
 
 export default function ChatSuggestions({
@@ -16,6 +18,7 @@ export default function ChatSuggestions({
   onSuggestionClick,
   messagesCount = 0,
   className = "",
+  isHumanHandoffActive = false,
 }: ChatSuggestionsProps) {
   const { data: suggestionsData, isLoading } = chatService.useChatSuggestions(
     conversationId,
@@ -57,23 +60,44 @@ export default function ChatSuggestions({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {suggestions.map((suggestion, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2, delay: index * 0.05 }}
-          >
-            <Chip
-              variant="flat"
-              color="primary"
-              className="cursor-pointer transition-all hover:scale-105 hover:shadow-sm"
-              onClick={() => onSuggestionClick(suggestion)}
+        {suggestions.map((suggestion, index) => {
+          const isHumanHandoffSuggestion =
+            suggestion === TRIGGER_CONTACT_CABINET;
+          const isDisabled = isHumanHandoffSuggestion && isHumanHandoffActive;
+
+          let chipColor: "default" | "primary" | "success" = "primary";
+          if (isHumanHandoffSuggestion) {
+            chipColor = isDisabled ? "default" : "success";
+          }
+
+          return (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2, delay: index * 0.05 }}
             >
-              <span className="text-xs">{suggestion}</span>
-            </Chip>
-          </motion.div>
-        ))}
+              <Chip
+                variant="flat"
+                color={chipColor}
+                className={`transition-all hover:scale-105 hover:shadow-sm ${
+                  isDisabled
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer"
+                }`}
+                onClick={() => {
+                  if (!isDisabled) {
+                    onSuggestionClick(suggestion);
+                  }
+                }}
+              >
+                <span className="text-xs">
+                  {isDisabled ? "Đã yêu cầu hỗ trợ" : suggestion}
+                </span>
+              </Chip>
+            </motion.div>
+          );
+        })}
       </div>
     </motion.div>
   );

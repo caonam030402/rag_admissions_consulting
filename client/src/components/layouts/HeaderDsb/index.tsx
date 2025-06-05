@@ -1,29 +1,9 @@
 import { Navbar, NavbarBrand, NavbarContent } from "@heroui/react";
 
+import HumanHandoffNotification from "@/components/business/HumanHandoff/HumanHandoffNotification";
 import UserSetting from "@/components/business/UserSetting";
 
-const listNav = [
-  {
-    title: "Product",
-    link: "/",
-  },
-  {
-    title: "Solutions",
-    link: "/",
-  },
-  {
-    title: "Blog",
-    link: "/",
-  },
-  {
-    title: "Trust",
-    link: "/",
-  },
-  {
-    title: "Pricing",
-    link: "/",
-  },
-];
+
 
 export default function HeaderDsh() {
   return (
@@ -43,6 +23,7 @@ export default function HeaderDsh() {
         })} */}
       </NavbarContent>
       <NavbarContent justify="end">
+        <HumanHandoffNotification />
         <UserSetting
           onlyAvatar={false}
           info={{

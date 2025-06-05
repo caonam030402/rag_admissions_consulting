@@ -26,4 +26,4 @@ import { ChatbotConfigEntity } from './entities/chatbot-config.entity';
   ],
   exports: [chatbotRepository],
 })
-export class RelationalchatbotPersistenceModule { }
+export class RelationalchatbotPersistenceModule {}

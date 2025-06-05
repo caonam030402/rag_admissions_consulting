@@ -34,44 +34,50 @@ const authHandler = auth((req) => {
   const isOnAdminLogin = req.nextUrl.pathname === PATH.LOGIN_ADMIN;
   const isOnUserLogin = req.nextUrl.pathname === PATH.LOGIN_USER;
   const isOnAnyLogin = isOnAdminLogin || isOnUserLogin;
+  const isOnVerifyPage = req.nextUrl.pathname === PATH.VERIFY;
 
-  // 1. Handle unauthenticated users trying to access protected areas
+  if (isOnAnyLogin) {
+    if (isAuthenticated) {
+      return Response.redirect(
+        new URL(RoleHelper.getDefaultPath(userRole), req.nextUrl.origin),
+      );
+    }
+    return intlMiddleware(req);
+  }
+
+  // 2. Handle unauthenticated users trying to access protected areas
   if (!isAuthenticated && !isPublicPage) {
     return Response.redirect(
       new URL(RoleHelper.getLoginPath(isAdminPath), req.nextUrl.origin),
     );
   }
 
-  // 2. Handle authenticated users on login pages - redirect to appropriate dashboard
-  if (isAuthenticated && isOnAnyLogin) {
-    return Response.redirect(
-      new URL(RoleHelper.getDefaultPath(userRole), req.nextUrl.origin),
-    );
-  }
-
-  // 3. Handle unverified users - redirect to verification except for allowed pages
   if (
     isAuthenticated &&
     !isVerified &&
     !isPublicPage &&
-    req.nextUrl.pathname !== PATH.VERIFY &&
-    !isOnAnyLogin &&
-    req.nextUrl.pathname !== PATH.REGISTER_USER
+    !isOnVerifyPage &&
+    RoleHelper.isAdmin(userRole)
   ) {
     return Response.redirect(new URL(PATH.VERIFY, req.nextUrl.origin));
   }
 
-  // 4. Role-based access control - prevent unauthorized access
   if (isAuthenticated && isVerified) {
-    // Prevent admin from accessing user-only chatbot page (redirect to admin dashboard)
     if (RoleHelper.isAdmin(userRole) && req.nextUrl.pathname === PATH.CHATBOT) {
       return Response.redirect(new URL(PATH.OVERVIEW, req.nextUrl.origin));
     }
 
-    // Prevent regular users from accessing admin areas
     if (!RoleHelper.isAdmin(userRole) && isAdminPath) {
       return Response.redirect(new URL(PATH.CHATBOT, req.nextUrl.origin));
     }
+  }
+
+  if (
+    isAdminPath &&
+    !isOnAdminLogin &&
+    (!isAuthenticated || !isVerified || !RoleHelper.isAdmin(userRole))
+  ) {
+    return Response.redirect(new URL(PATH.LOGIN_ADMIN, req.nextUrl.origin));
   }
 
   return intlMiddleware(req);

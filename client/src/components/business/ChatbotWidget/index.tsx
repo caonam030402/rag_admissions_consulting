@@ -11,7 +11,7 @@ import { FloatingButton } from "./FloatingButton";
 
 export default function ChatbotWidget1() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabTypeChatbotWidget>("home");
+  const [activeTab, setActiveTab] = useState<TabTypeChatbotWidget>("chat");
   const { loadConversation } = useChatStore();
 
   const toggleWidget = (): void => {

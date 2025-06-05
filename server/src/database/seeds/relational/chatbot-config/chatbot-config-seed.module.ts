@@ -4,8 +4,8 @@ import { ChatbotConfigEntity } from 'src/modules/chatbots/infrastructure/persist
 import { ChatbotConfigSeedService } from './chatbot-config-seed.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([ChatbotConfigEntity])],
-    providers: [ChatbotConfigSeedService],
-    exports: [ChatbotConfigSeedService],
+  imports: [TypeOrmModule.forFeature([ChatbotConfigEntity])],
+  providers: [ChatbotConfigSeedService],
+  exports: [ChatbotConfigSeedService],
 })
-export class ChatbotConfigSeedModule { } 
+export class ChatbotConfigSeedModule {}

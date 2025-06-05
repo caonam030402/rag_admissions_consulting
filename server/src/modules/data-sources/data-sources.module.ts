@@ -8,6 +8,10 @@ import { RelationalDataSourcePersistenceModule } from './infrastructure/persiste
   imports: [RelationalDataSourcePersistenceModule],
   controllers: [DataSourcesController],
   providers: [DataSourcesService, DataSourcesGateway],
-  exports: [DataSourcesService, DataSourcesGateway, RelationalDataSourcePersistenceModule],
+  exports: [
+    DataSourcesService,
+    DataSourcesGateway,
+    RelationalDataSourcePersistenceModule,
+  ],
 })
-export class DataSourcesModule { }
+export class DataSourcesModule {}

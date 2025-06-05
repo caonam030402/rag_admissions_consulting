@@ -23,7 +23,7 @@ export class DataSourcesService {
   constructor(
     private readonly dataSourceRepository: DataSourceRepository,
     private readonly dataSourcesGateway: DataSourcesGateway,
-  ) { }
+  ) {}
 
   create(createDataSourceDto: CreateDataSourceDto) {
     const dataSource = this.createDataSourceFromDto(createDataSourceDto);
