@@ -13,7 +13,6 @@ class LLms:
         if type_model == ModelType.GEMINI:
             lmm = ChatGoogleGenerativeAI(
                 model=gemini_model,
-                streaming=True,
                 temperature=settings.llm.temperature,
                 api_key=settings.llm.gemini_api_key,
             )
@@ -21,7 +20,6 @@ class LLms:
         elif type_model == ModelType.OPENAI:
             lmm = ChatOpenAI(
                 model=openai_model,
-                streaming=True,
                 temperature=settings.llm.temperature,
                 api_key=settings.llm.openai_api_key,
             )
