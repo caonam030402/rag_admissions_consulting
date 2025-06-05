@@ -15,7 +15,11 @@ import HumanHandoffIndicator from "../HumanHandoffIndicator";
 import ChatMessage from "./ChatMessage";
 import ChatSuggestions from "./ChatSuggestions";
 
-export default function Body() {
+interface BodyProps {
+  humanHandoff: ReturnType<typeof useHumanHandoff>;
+}
+
+export default function Body({ humanHandoff }: BodyProps) {
   const {
     messages,
     isTyping,
@@ -34,7 +38,7 @@ export default function Body() {
     isWaiting,
     isConnected,
     adminName,
-  } = useHumanHandoff({ conversationId: currentConversationId });
+  } = humanHandoff;
 
   // Get conversation history using the hook
   const { data: conversationData, isLoading } =
@@ -50,7 +54,7 @@ export default function Body() {
       try {
         // Get current conversation ID from localStorage
         const savedConversationId = localStorage.getItem(
-          ENameLocalS.CURRENT_CONVERSATION_ID,
+          ENameLocalS.CURRENT_CONVERSATION_ID
         );
 
         console.log("🔧 Widget Debug - Loading chat history:", {
@@ -65,7 +69,7 @@ export default function Body() {
         ) {
           console.log(
             "📞 Widget Debug - Loading conversation:",
-            savedConversationId,
+            savedConversationId
           );
           // Load conversation
           loadConversation(savedConversationId);
@@ -93,7 +97,7 @@ export default function Body() {
     ) {
       console.log(
         "✅ Widget Debug - Replacing messages:",
-        conversationData.data.length,
+        conversationData.data.length
       );
       replaceMessages(currentConversationId, conversationData.data);
     }
@@ -103,7 +107,7 @@ export default function Body() {
     console.log("🔧 DEBUG - Suggestion clicked:", suggestion);
     console.log(
       "🔧 DEBUG - Should trigger handoff:",
-      shouldTriggerHumanHandoff(suggestion),
+      shouldTriggerHumanHandoff(suggestion)
     );
 
     // Check if this is a human handoff trigger

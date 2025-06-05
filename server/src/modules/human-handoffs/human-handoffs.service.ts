@@ -15,6 +15,8 @@ import { HumanHandoffEntity } from './infrastructure/persistence/relational/enti
 import { HumanHandoffMapper } from './infrastructure/persistence/relational/mappers/human-handoff.mapper';
 import { IPaginationOptions } from '../../utils/types/pagination-options';
 import { HumanHandoffsGateway } from './human-handoffs.gateway';
+import { chatbotsService } from '../chatbots/chatbots.service';
+import { ChatbotRole } from '../../common/enums/chatbot.enum';
 
 @Injectable()
 export class HumanHandoffsService {
@@ -22,7 +24,8 @@ export class HumanHandoffsService {
     @InjectRepository(HumanHandoffEntity)
     private readonly humanHandoffRepository: Repository<HumanHandoffEntity>,
     private readonly gateway: HumanHandoffsGateway,
-  ) { }
+    private readonly chatbotsService: chatbotsService,
+  ) {}
 
   async create(createDto: CreateHumanHandoffDto): Promise<HumanHandoff> {
     // Check for existing active handoff for this user (not just conversation)
@@ -31,20 +34,20 @@ export class HumanHandoffsService {
         // If user is authenticated, check by userId
         ...(createDto.userId
           ? [
-            {
-              userId: createDto.userId,
-              status: In(['waiting', 'connected']),
-            },
-          ]
+              {
+                userId: createDto.userId,
+                status: In(['waiting', 'connected']),
+              },
+            ]
           : []),
         // If guest user, check by guestId
         ...(createDto.guestId
           ? [
-            {
-              guestId: createDto.guestId,
-              status: In(['waiting', 'connected']),
-            },
-          ]
+              {
+                guestId: createDto.guestId,
+                status: In(['waiting', 'connected']),
+              },
+            ]
           : []),
       ],
     });
@@ -196,6 +199,12 @@ export class HumanHandoffsService {
       where: { id: sessionId },
     });
 
+    // 🔥 FIX: Notify user that session ended
+    this.gateway.notifyUserEnded({
+      sessionId,
+      conversationId: session.conversationId,
+    });
+
     return HumanHandoffMapper.toDomain(updatedSession!);
   }
 
@@ -290,6 +299,20 @@ export class HumanHandoffsService {
       );
     }
 
+    // Save user message to chat history
+    try {
+      await this.chatbotsService.createHistory({
+        userId: session.userId,
+        guestId: session.guestId,
+        role: ChatbotRole.USER,
+        content: sendMessageDto.message,
+        conversationId: conversationId,
+        title: 'Human Handoff Chat',
+      });
+    } catch (error) {
+      console.error('Failed to save user message to history:', error);
+    }
+
     // Send message to admin via socket
     if (session.adminId) {
       this.gateway.sendMessageToAdmin(
@@ -319,6 +342,24 @@ export class HumanHandoffsService {
 
     if (session.status !== 'connected') {
       throw new BadRequestException('Session is not in connected state');
+    }
+
+    // Save message to chat history
+    try {
+      const role =
+        sendMessageDto.senderType === 'admin'
+          ? ChatbotRole.ASSISTANT
+          : ChatbotRole.USER;
+      await this.chatbotsService.createHistory({
+        userId: session.userId,
+        guestId: session.guestId,
+        role: role,
+        content: sendMessageDto.message,
+        conversationId: session.conversationId,
+        title: 'Human Handoff Chat',
+      });
+    } catch (error) {
+      console.error('Failed to save message to history:', error);
     }
 
     if (sendMessageDto.senderType === 'admin') {

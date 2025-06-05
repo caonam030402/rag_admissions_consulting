@@ -3,19 +3,21 @@ import React from "react";
 
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
+import { ActorType } from "@/enums/systemChat";
 import useChatBot from "@/hooks/features/chatbot/useChatBot";
-import { useHumanHandoff } from "@/hooks/useHumanHandoff";
 import { humanHandoffService } from "@/services/humanHandoff";
 import { useChatStore } from "@/stores/chat";
+import { useHumanHandoff } from "@/hooks/useHumanHandoff";
 
-export default function ChatEnter() {
+interface ChatEnterProps {
+  humanHandoff: ReturnType<typeof useHumanHandoff>;
+}
+
+export default function ChatEnter({ humanHandoff }: ChatEnterProps) {
   const { sendMessage, inputRef, message, setMessage } = useChatBot();
-  const { isTyping, currentConversationId } = useChatStore();
+  const { isTyping, currentConversationId, addMessage } = useChatStore();
 
-  // Human handoff hook
-  const { isConnected } = useHumanHandoff({
-    conversationId: currentConversationId,
-  });
+  const { isConnected, status } = humanHandoff;
 
   // Send user message mutation for human handoff
   const sendUserMessage = humanHandoffService.useSendUserMessage();
@@ -23,18 +25,54 @@ export default function ChatEnter() {
   const handleSendMessage = () => {
     if (!message.trim()) return;
 
+    console.log("📤 ChatEnter - Sending message:", {
+      message: message.trim(),
+      isConnected,
+      currentConversationId,
+      status,
+    });
+
     // If in human handoff session, send to admin
     if (isConnected && currentConversationId) {
-      sendUserMessage.mutate({
+      console.log("🎯 ChatEnter - Routing to admin");
+
+      const messageText = message.trim();
+
+      // Add user message to chat UI immediately
+      addMessage({
+        id: Date.now().toString(),
+        content: messageText,
+        role: ActorType.Human,
+        timestamp: Date.now(),
         conversationId: currentConversationId,
-        message: message.trim(),
       });
 
-      // Clear the input after sending
+      // Clear input immediately for better UX
       setMessage("");
+
+      // Find the admin ID from the session if available
+      const adminId = (status as any)?.adminId;
+
+      sendUserMessage.mutate(
+        {
+          conversationId: currentConversationId,
+          message: messageText,
+          adminId,
+        },
+        {
+          onSuccess: () => {
+            console.log("✅ ChatEnter - Message sent to admin successfully");
+          },
+          onError: (error) => {
+            console.error("❌ ChatEnter - Failed to send to admin:", error);
+            // Could potentially remove the message from UI here if needed
+          },
+        }
+      );
       return;
     }
 
+    console.log("🤖 ChatEnter - Routing to bot");
     // Normal chatbot flow
     sendMessage({});
   };

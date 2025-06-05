@@ -15,67 +15,74 @@ export default function AdminChatPage() {
   const router = useRouter();
   const sessionId = params.sessionId as string;
 
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [sessionInfo, setSessionInfo] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const { user } = userService.useProfile();
-  const sendMessageMutation = humanHandoffService.useSendMessage();
+  const sendAdminMessage = humanHandoffService.useSendAdminMessage();
+  const endMutation = humanHandoffService.useEndHandoff();
 
   useEffect(() => {
+    // Get admin ID for socket connection
+    const adminId = user?.id || 1;
+
+    // Connect to socket as admin
+    humanHandoffService.connectSocket(undefined, adminId);
+
     // Setup socket listeners for real-time messages
     const cleanup = humanHandoffService.setupSocketListeners({
-      onSupportAccepted: () => {},
       onSupportEnded: () => {
         toast.success("Phiên hỗ trợ đã kết thúc");
         setTimeout(() => window.close(), 1000);
       },
-      onSupportTimeout: () => {
-        toast.error("Phiên hỗ trợ đã hết thời gian");
-        setTimeout(() => window.close(), 1000);
-      },
-      onAdminNotification: () => {},
+
       onUserMessage: (data) => {
         // User sent a message to admin
         const newMsg = {
           id: Date.now().toString(),
           content: data.message,
           role: "user",
-          timestamp: new Date(),
+          timestamp: new Date(data.timestamp),
         };
         setMessages((prev) => [...prev, newMsg]);
         toast.success("Tin nhắn mới từ người dùng");
       },
     });
 
-    // Initialize with sample data for now
-    setUserInfo({
-      name: "John Doe",
-      email: "john@example.com",
+    // Initialize with session data (you might want to fetch this from API)
+    setSessionInfo({
+      name: "User", // You can fetch real session data here
+      email: "user@example.com",
       sessionId,
+      conversationId: "conversation-id", // This should come from session data
     });
 
+    // Add welcome message
     setMessages([
       {
-        id: "1",
-        content: "Chào admin, tôi cần hỗ trợ về tuyển sinh",
-        role: "user",
+        id: "welcome",
+        content: "Chào bạn! Tôi sẵn sàng hỗ trợ bạn về tuyển sinh.",
+        role: "admin",
         timestamp: new Date(),
       },
     ]);
 
     toast.success("Đã kết nối với người dùng!");
 
-    return cleanup;
-  }, [sessionId]);
+    return () => {
+      cleanup();
+      humanHandoffService.disconnectSocket();
+    };
+  }, [sessionId, user?.id]);
 
   const handleSendMessage = () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !sessionInfo) return;
 
     setIsLoading(true);
 
-    // Add message to chat locally
+    // Add message to chat locally first for immediate feedback
     const newMsg = {
       id: Date.now().toString(),
       content: newMessage,
@@ -87,32 +94,43 @@ export default function AdminChatPage() {
     const messageToSend = newMessage;
     setNewMessage("");
 
-    // Send message via API
-    sendMessageMutation.mutate({
-      sessionId,
-      message: messageToSend,
-      senderType: "admin",
-      adminId: user?.id,
-      adminName: user?.fullName || user?.firstName || "Admin",
-    }, {
-      onSuccess: () => {
-        setIsLoading(false);
-        toast.success("Tin nhắn đã được gửi");
+    // Send message via API and socket
+    sendAdminMessage.mutate(
+      {
+        sessionId,
+        conversationId: sessionInfo.conversationId,
+        message: messageToSend,
+        adminName: user?.fullName || user?.firstName || "Admin",
       },
-      onError: () => {
-        setIsLoading(false);
-        // Remove message from local state if failed
-        setMessages((prev) => prev.filter(msg => msg.id !== newMsg.id));
-        setNewMessage(messageToSend); // Restore message
-      },
-    });
+      {
+        onSuccess: () => {
+          setIsLoading(false);
+        },
+        onError: () => {
+          setIsLoading(false);
+          // Remove message from local state if failed
+          setMessages((prev) => prev.filter((msg) => msg.id !== newMsg.id));
+          setNewMessage(messageToSend); // Restore message
+          toast.error("Không thể gửi tin nhắn. Vui lòng thử lại.");
+        },
+      }
+    );
   };
 
   const handleEndSession = () => {
-    toast.success("Đã kết thúc phiên hỗ trợ!");
-    setTimeout(() => {
-      window.close(); // Close popup window
-    }, 1000);
+    if (!sessionId) return;
+
+    endMutation.mutate(sessionId, {
+      onSuccess: () => {
+        toast.success("Đã kết thúc phiên hỗ trợ!");
+        setTimeout(() => {
+          window.close(); // Close popup window
+        }, 1000);
+      },
+      onError: () => {
+        toast.error("Không thể kết thúc phiên. Vui lòng thử lại.");
+      },
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -134,10 +152,10 @@ export default function AdminChatPage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-white p-4 shadow-sm">
         <div className="flex items-center gap-3">
-          <Avatar name={userInfo?.name || "User"} size="sm" />
+          <Avatar name={sessionInfo?.name || "User"} size="sm" />
           <div>
             <h3 className="text-lg font-semibold">
-              {userInfo?.name || "Guest User"}
+              {sessionInfo?.name || "Guest User"}
             </h3>
             <div className="flex items-center gap-2">
               <div className="size-2 animate-pulse rounded-full bg-success-500" />
@@ -153,7 +171,8 @@ export default function AdminChatPage() {
             size="sm"
             color="danger"
             variant="flat"
-            onPress={handleEndSession}
+            onClick={handleEndSession}
+            isLoading={endMutation.isPending}
           >
             Kết thúc
           </Button>
@@ -200,24 +219,17 @@ export default function AdminChatPage() {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleKeyPress}
-            variant="bordered"
-            size="lg"
             disabled={isLoading}
             className="flex-1"
           />
           <Button
-            size="lg"
             color="primary"
-            onPress={handleSendMessage}
-            isLoading={isLoading}
+            onClick={handleSendMessage}
+            isLoading={isLoading || sendAdminMessage.isPending}
             disabled={!newMessage.trim()}
           >
             Gửi
           </Button>
-        </div>
-
-        <div className="mt-2 text-center text-xs text-gray-500">
-          Session ID: {sessionId}
         </div>
       </div>
     </div>

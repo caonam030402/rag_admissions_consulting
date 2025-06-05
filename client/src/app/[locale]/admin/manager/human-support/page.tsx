@@ -47,7 +47,10 @@ export default function HumanSupportPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
 
-  // Queries with more frequent updates for real-time feel
+  // Get current admin ID (you might need to adjust this based on your auth system)
+  const adminId = 1; // TODO: Get from auth context
+
+  // Queries with optimized refresh
   const { data: notifications, refetch: refetchNotifications } =
     humanHandoffService.useAdminNotifications();
   const { data: sessions, refetch: refetchSessions } =
@@ -57,13 +60,13 @@ export default function HumanSupportPage() {
   const acceptMutation = humanHandoffService.useAcceptHandoff();
   const endMutation = humanHandoffService.useEndHandoff();
 
-  // Aggressive auto refresh every 2 seconds for real-time experience
+  // Optimized refresh - every 3 seconds instead of 2
   useEffect(() => {
     const interval = setInterval(() => {
       refetchNotifications();
       refetchSessions();
       setLastUpdate(Date.now());
-    }, 2000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [refetchNotifications, refetchSessions]);
@@ -72,7 +75,6 @@ export default function HumanSupportPage() {
   const handleAcceptRequest = async (sessionId: string) => {
     acceptMutation.mutate(sessionId, {
       onSuccess: () => {
-        // Immediate refresh after action
         refetchNotifications();
         refetchSessions();
         toast.success("Đã nhận yêu cầu hỗ trợ! Bạn có thể bắt đầu chat.");
@@ -109,7 +111,7 @@ export default function HumanSupportPage() {
           initialMessage: session.initialMessage,
           requestedAt: session.requestedAt,
           timeElapsed: Math.floor(
-            (Date.now() - new Date(session.requestedAt).getTime()) / 1000,
+            (Date.now() - new Date(session.requestedAt).getTime()) / 1000
           ),
         }));
       setPendingRequests(pending);
@@ -127,7 +129,7 @@ export default function HumanSupportPage() {
           userProfile: session.userProfile,
           connectedAt: session.connectedAt!,
           duration: Math.floor(
-            (Date.now() - new Date(session.connectedAt!).getTime()) / 1000,
+            (Date.now() - new Date(session.connectedAt!).getTime()) / 1000
           ),
         }));
       setActiveSessions(active);
@@ -136,43 +138,79 @@ export default function HumanSupportPage() {
 
   // Enhanced Socket setup for real-time updates
   useEffect(() => {
+    // Connect as admin
+    humanHandoffService.connectSocket(undefined, adminId);
+
     const cleanup = humanHandoffService.setupSocketListeners({
-      onSupportAccepted: () => {
-        refetchNotifications();
-        refetchSessions();
-        toast.success("Có admin khác đã nhận yêu cầu!");
-      },
-      onSupportEnded: () => {
-        refetchSessions();
-        toast("Một phiên hỗ trợ đã kết thúc", { icon: 'ℹ️' });
-      },
-      onSupportTimeout: () => {
-        refetchNotifications();
-        toast("Một yêu cầu hỗ trợ đã timeout", { icon: "⚠️" });
-      },
       onAdminNotification: (notification: any) => {
+        console.log("🔔 Admin received notification:", notification);
+
         // Force immediate refetch when new request comes in
         refetchNotifications();
         refetchSessions();
-        
+
         // Show prominent notification
         toast.success(
           `🔔 YÊU CẦU MỚI: ${notification.userProfile?.name || "User"} cần hỗ trợ!`,
           {
             duration: 8000,
             style: {
-              background: '#10B981',
-              color: 'white',
-              fontWeight: 'bold',
+              background: "#10B981",
+              color: "white",
+              fontWeight: "bold",
             },
-          },
+          }
         );
+      },
+
+      onSupportAccepted: () => {
+        console.log("✅ Admin saw support accepted");
+        refetchNotifications();
+        refetchSessions();
+        toast.success("Có admin khác đã nhận yêu cầu!");
+      },
+
+      onSupportEnded: () => {
+        console.log("❌ Admin saw support ended");
+        refetchSessions();
+        toast("Một phiên hỗ trợ đã kết thúc", { icon: "ℹ️" });
+      },
+
+      onUserMessage: (data) => {
+        console.log("📨 Admin received user message:", data);
+
+        // Prevent duplicate notifications with a simple debounce
+        const messageKey = `${data.conversationId}-${data.message}-${Date.now()}`;
+        const lastNotification = sessionStorage.getItem(
+          "lastMessageNotification"
+        );
+
+        if (lastNotification !== messageKey) {
+          sessionStorage.setItem("lastMessageNotification", messageKey);
+
+          // Show notification for new user messages
+          toast(
+            `📨 Tin nhắn mới từ cuộc hội thoại ${data.conversationId.slice(-8)}`,
+            {
+              duration: 5000,
+              style: {
+                background: "#3B82F6",
+                color: "white",
+              },
+            }
+          );
+        }
       },
     });
 
     setIsLoading(false);
-    return cleanup;
-  }, [refetchNotifications, refetchSessions]);
+
+    return () => {
+      console.log("🧹 Cleaning up admin socket listeners");
+      cleanup();
+      humanHandoffService.disconnectSocket();
+    };
+  }, [refetchNotifications, refetchSessions, adminId]);
 
   // Format time duration
   const formatDuration = (seconds: number) => {
@@ -183,7 +221,10 @@ export default function HumanSupportPage() {
 
   // Render pending request card
   const renderPendingRequest = (request: PendingRequest) => (
-    <Card key={request.id} className="mb-4 border-l-4 border-l-warning hover:shadow-lg transition-all">
+    <Card
+      key={request.id}
+      className="mb-4 border-l-4 border-l-warning hover:shadow-lg transition-all"
+    >
       <CardBody className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
@@ -198,31 +239,38 @@ export default function HumanSupportPage() {
                   {request.userProfile?.name || "Guest User"}
                 </h4>
                 <Badge color="warning" size="sm" className="animate-pulse">
-                  🔔 Đang chờ
+                  {formatDuration(request.timeElapsed)}
                 </Badge>
               </div>
-              <p className="text-sm text-gray-600">
-                {request.userProfile?.email || "No email"}
-              </p>
-              <p className="mt-2 text-sm bg-gray-50 p-2 rounded italic">
-                &ldquo;{request.initialMessage}&rdquo;
-              </p>
-              <div className="mt-2 flex items-center gap-2 text-xs text-red-600 font-medium">
-                <Clock size={14} />
-                Đã chờ {formatDuration(request.timeElapsed)} ⏰
+              {request.userProfile?.email && (
+                <p className="text-sm text-gray-600">
+                  {request.userProfile.email}
+                </p>
+              )}
+              <div className="mt-2">
+                <p className="text-sm text-gray-700 line-clamp-2">
+                  "{request.initialMessage}"
+                </p>
+              </div>
+              <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                <Clock size={12} />
+                <span>
+                  Yêu cầu lúc{" "}
+                  {new Date(request.requestedAt).toLocaleTimeString()}
+                </span>
               </div>
             </div>
           </div>
           <div className="flex gap-2">
             <Button
               size="sm"
-              color="primary"
+              color="success"
+              variant="flat"
               startContent={<CheckCircle size={16} />}
-              onPress={() => handleAcceptRequest(request.id)}
+              onClick={() => handleAcceptRequest(request.id)}
               isLoading={acceptMutation.isPending}
-              className="animate-pulse"
             >
-              NHẬN NGAY
+              Nhận
             </Button>
           </div>
         </div>
@@ -232,7 +280,10 @@ export default function HumanSupportPage() {
 
   // Render active session card
   const renderActiveSession = (session: ActiveSession) => (
-    <Card key={session.id} className="mb-4 border-l-4 border-l-success hover:shadow-lg transition-all">
+    <Card
+      key={session.id}
+      className="mb-4 border-l-4 border-l-success hover:shadow-lg transition-all"
+    >
       <CardBody className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
@@ -248,17 +299,22 @@ export default function HumanSupportPage() {
                 </h4>
                 <Badge color="success" size="sm">
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-success-500 animate-ping" />
-                    ✅ Đang kết nối
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    {formatDuration(session.duration)}
                   </div>
                 </Badge>
               </div>
-              <p className="text-sm text-gray-600">
-                {session.userProfile?.email || "No email"}
-              </p>
-              <div className="mt-2 flex items-center gap-2 text-xs text-green-600 font-medium">
-                <Phone size={14} />
-                Thời gian: {formatDuration(session.duration)} 📞
+              {session.userProfile?.email && (
+                <p className="text-sm text-gray-600">
+                  {session.userProfile.email}
+                </p>
+              )}
+              <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                <Phone size={12} />
+                <span>
+                  Kết nối lúc{" "}
+                  {new Date(session.connectedAt).toLocaleTimeString()}
+                </span>
               </div>
             </div>
           </div>
@@ -268,16 +324,16 @@ export default function HumanSupportPage() {
               color="primary"
               variant="flat"
               startContent={<ChatCircle size={16} />}
-              onPress={() => handleOpenChat(session)}
+              onClick={() => handleOpenChat(session)}
             >
-              💬 Chat
+              Chat
             </Button>
             <Button
               size="sm"
               color="danger"
               variant="flat"
               startContent={<X size={16} />}
-              onPress={() => handleEndSession(session.id)}
+              onClick={() => handleEndSession(session.id)}
               isLoading={endMutation.isPending}
             >
               Kết thúc
@@ -288,126 +344,91 @@ export default function HumanSupportPage() {
     </Card>
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex h-[calc(100vh-80px)] items-center justify-center">
-        <div className="text-center">
-          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent mx-auto" />
-          <p>Đang tải dữ liệu real-time...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-[calc(100vh-80px)] space-y-4">
-      {/* Header */}
-      <div className="rounded-lg bg-white p-6 shadow-sm border">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">
-              Human Support Dashboard
-            </h1>
-            <p className="mt-2 text-gray-500">
-              Quản lý hỗ trợ trực tiếp với người dùng (Real-time)
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Cập nhật cuối: {new Date(lastUpdate).toLocaleTimeString("vi-VN")}
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600">
-                {pendingRequests.length}
-              </div>
-              <div className="text-sm text-gray-500">🔔 Đang chờ</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
-                {activeSessions.length}
-              </div>
-              <div className="text-sm text-gray-500">✅ Đang kết nối</div>
-            </div>
-          </div>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Hỗ trợ trực tiếp</h1>
+          <p className="text-gray-600">
+            Quản lý các yêu cầu hỗ trợ và phiên chat trực tiếp
+          </p>
+        </div>
+        <div className="flex items-center gap-4 text-sm text-gray-500">
+          <span>
+            Cập nhật lần cuối: {new Date(lastUpdate).toLocaleTimeString()}
+          </span>
+          {isLoading && <Badge color="warning">Đang tải...</Badge>}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="rounded-lg bg-white shadow-sm border">
-        <Tabs aria-label="Human support tabs" className="p-4">
-          <Tab
-            key="pending"
-            title={
-              <div className="flex items-center gap-2">
-                <Clock size={18} />
-                <span>🔔 Yêu cầu chờ</span>
-                {pendingRequests.length > 0 && (
-                  <Badge color="warning" size="sm" className="animate-bounce">
-                    {pendingRequests.length}
-                  </Badge>
-                )}
-              </div>
-            }
-          >
-            <div className="mt-4">
-              {pendingRequests.length === 0 ? (
-                <div className="py-12 text-center text-gray-500">
-                  <ChatCircle size={48} className="mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Không có yêu cầu hỗ trợ nào đang chờ</p>
-                  <p className="text-sm mt-2">
-                    🔄 Trang sẽ tự động cập nhật mỗi 2 giây khi có yêu cầu mới
-                  </p>
-                  <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-ping" />
-                    <span>Đang lắng nghe real-time...</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="text-sm text-orange-600 font-medium mb-4">
-                    ⚠️ Có {pendingRequests.length} yêu cầu cần xử lý ngay!
-                  </div>
-                  {pendingRequests.map(renderPendingRequest)}
-                </div>
+      <Tabs aria-label="Support tabs" className="w-full">
+        <Tab
+          key="pending"
+          title={
+            <div className="flex items-center gap-2">
+              <Clock size={16} />
+              <span>Chờ xử lý</span>
+              {pendingRequests.length > 0 && (
+                <Badge color="warning" size="sm">
+                  {pendingRequests.length}
+                </Badge>
               )}
             </div>
-          </Tab>
+          }
+        >
+          <div className="mt-6">
+            {pendingRequests.length === 0 ? (
+              <Card>
+                <CardBody className="text-center py-12">
+                  <Clock size={48} className="mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    Không có yêu cầu chờ xử lý
+                  </h3>
+                  <p className="text-gray-500">
+                    Tất cả yêu cầu hỗ trợ đã được xử lý hoặc chưa có yêu cầu nào
+                    mới.
+                  </p>
+                </CardBody>
+              </Card>
+            ) : (
+              <div>{pendingRequests.map(renderPendingRequest)}</div>
+            )}
+          </div>
+        </Tab>
 
-          <Tab
-            key="active"
-            title={
-              <div className="flex items-center gap-2">
-                <Users size={18} />
-                <span>💬 Phiên đang hoạt động</span>
-                {activeSessions.length > 0 && (
-                  <Badge color="success" size="sm">
-                    {activeSessions.length}
-                  </Badge>
-                )}
-              </div>
-            }
-          >
-            <div className="mt-4">
-              {activeSessions.length === 0 ? (
-                <div className="py-12 text-center text-gray-500">
-                  <Users size={48} className="mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Không có phiên hỗ trợ nào đang hoạt động</p>
-                  <p className="text-sm mt-2">
-                    👆 Nhận yêu cầu từ tab "Yêu cầu chờ" để bắt đầu hỗ trợ
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="text-sm text-green-600 font-medium mb-4">
-                    ✅ Đang hỗ trợ {activeSessions.length} người dùng
-                  </div>
-                  {activeSessions.map(renderActiveSession)}
-                </div>
+        <Tab
+          key="active"
+          title={
+            <div className="flex items-center gap-2">
+              <Users size={16} />
+              <span>Đang hoạt động</span>
+              {activeSessions.length > 0 && (
+                <Badge color="success" size="sm">
+                  {activeSessions.length}
+                </Badge>
               )}
             </div>
-          </Tab>
-        </Tabs>
-      </div>
+          }
+        >
+          <div className="mt-6">
+            {activeSessions.length === 0 ? (
+              <Card>
+                <CardBody className="text-center py-12">
+                  <Users size={48} className="mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    Không có phiên chat đang hoạt động
+                  </h3>
+                  <p className="text-gray-500">
+                    Hiện tại không có phiên hỗ trợ trực tiếp nào đang diễn ra.
+                  </p>
+                </CardBody>
+              </Card>
+            ) : (
+              <div>{activeSessions.map(renderActiveSession)}</div>
+            )}
+          </div>
+        </Tab>
+      </Tabs>
     </div>
   );
-} 
+}

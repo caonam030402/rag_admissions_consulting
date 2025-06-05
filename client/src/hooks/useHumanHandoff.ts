@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import io from "socket.io-client";
 
 import { TRIGGER_CONTACT_CABINET } from "@/constants/common";
 import { ActorType } from "@/enums/systemChat";
@@ -36,70 +35,86 @@ export const useHumanHandoff = ({
   const [isConnected, setIsConnected] = useState(false);
   const [adminName, setAdminName] = useState<string>();
   const [sessionId, setSessionId] = useState<string>();
+  const [timeoutInterval, setTimeoutInterval] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   // Chat store for adding messages
   const { addMessage } = useChatStore();
 
   // Queries and mutations
   const { data: status, isLoading } = humanHandoffService.useHandoffStatus(
-    conversationId || "",
+    conversationId || ""
   );
   const requestMutation = humanHandoffService.useRequestHumanSupport();
   const endMutation = humanHandoffService.useEndHandoff();
 
+  // Clear timeout helper
+  const clearTimeoutHandler = useCallback(() => {
+    if (timeoutInterval) {
+      clearInterval(timeoutInterval);
+      setTimeoutInterval(null);
+    }
+    setTimeoutRemaining(0);
+  }, [timeoutInterval]);
+
+  // Start timeout for waiting state
+  const startTimeout = useCallback(() => {
+    clearTimeoutHandler();
+
+    let remaining = 60000; // 60 seconds
+    setTimeoutRemaining(remaining);
+
+    const interval = setInterval(() => {
+      remaining -= 1000;
+      setTimeoutRemaining(Math.max(0, remaining));
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+        setTimeoutInterval(null);
+        setIsWaiting(false);
+        toast.error(
+          "Không tìm được cán bộ tư vấn. Hệ thống sẽ tiếp tục hỗ trợ bạn."
+        );
+      }
+    }, 1000);
+
+    setTimeoutInterval(interval);
+  }, [clearTimeoutHandler]);
+
   // Handle human support request
   const requestHumanSupport = useCallback(
     (message: string) => {
-      console.log("🔧 DEBUG - requestHumanSupport called with:", message);
-      console.log("🔧 DEBUG - conversationId:", conversationId);
+      console.log("🚀 Starting human support request with message:", message);
 
       if (!conversationId) {
-        console.log("🔧 DEBUG - No conversationId, showing error toast");
         toast.error("Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại.");
         return;
       }
 
       const request = humanHandoffService.createHandoffRequest(
         conversationId,
-        message,
+        message
       );
 
-      console.log("🔧 DEBUG - Created request:", request);
+      console.log("📝 Created handoff request:", request);
 
       requestMutation.mutate(request, {
         onSuccess: (session) => {
-          console.log("🔧 DEBUG - Request success:", session);
+          console.log("✅ Handoff request successful:", session);
           setSessionId(session.id);
           setIsWaiting(true);
           setIsConnected(false);
-
-          // Start 60-second timeout
-          const clearTimeoutFn = humanHandoffService.startTimeout(
-            conversationId,
-            () => {
-              // Timeout reached - go back to chatbot
-              setIsWaiting(false);
-              setTimeoutRemaining(0);
-              toast.error(
-                "Không tìm được cán bộ tư vấn. Hệ thống sẽ tiếp tục hỗ trợ bạn.",
-              );
-            },
-            (remaining) => {
-              setTimeoutRemaining(remaining);
-            },
-          );
-
-          // Store cleanup function
-          window.humanHandoffCleanup = clearTimeoutFn;
+          startTimeout();
         },
         onError: (error) => {
-          console.log("🔧 DEBUG - Request error:", error);
+          console.error("❌ Handoff request failed:", error);
           setIsWaiting(false);
-          setTimeoutRemaining(0);
+          clearTimeoutHandler();
         },
       });
     },
-    [conversationId, requestMutation],
+    [conversationId, requestMutation, startTimeout, clearTimeoutHandler]
   );
 
   // Handle ending handoff
@@ -111,86 +126,55 @@ export const useHumanHandoff = ({
           setIsConnected(false);
           setAdminName(undefined);
           setSessionId(undefined);
-          setTimeoutRemaining(0);
-
-          // Clear timeout
-          if (window.humanHandoffCleanup) {
-            window.humanHandoffCleanup();
-            window.humanHandoffCleanup = undefined;
-          }
+          clearTimeoutHandler();
         },
       });
     }
-  }, [sessionId, endMutation]);
+  }, [sessionId, endMutation, clearTimeoutHandler]);
 
   // Socket event handlers
   useEffect(() => {
     if (!conversationId) return;
 
-    console.log(
-      "🔧 DEBUG - Setting up socket for conversationId:",
-      conversationId,
-    );
+    // Connect socket
+    humanHandoffService.connectSocket(conversationId);
 
-    // Direct socket implementation to avoid service issues
-    const socketInstance = io(
-      `${process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000"}/human-handoff`,
-      {
-        transports: ["websocket"],
-        query: { conversationId },
+    // Setup listeners
+    const cleanup = humanHandoffService.setupSocketListeners({
+      onSupportAccepted: (data) => {
+        setIsWaiting(false);
+        setIsConnected(true);
+        setAdminName(data.adminName);
+        clearTimeoutHandler();
+        toast.success(`Đã kết nối với ${data.adminName}`);
       },
-    );
 
-    // Listen for admin acceptance
-    socketInstance.on("human-support-accepted", (data: { sessionId: string; adminName: string }) => {
-      console.log("🔧 DEBUG - Support accepted:", data);
-      setIsWaiting(false);
-      setIsConnected(true);
-      setAdminName(data.adminName);
-      setTimeoutRemaining(0);
+      onSupportEnded: () => {
+        setIsWaiting(false);
+        setIsConnected(false);
+        setAdminName(undefined);
+        setSessionId(undefined);
+        clearTimeoutHandler();
+        toast("Cán bộ tư vấn đã kết thúc phiên hỗ trợ");
+      },
 
-      if (window.humanHandoffCleanup) {
-        window.humanHandoffCleanup();
-        window.humanHandoffCleanup = undefined;
-      }
-
-      toast.success(`Đã kết nối với ${data.adminName}`);
+      onHumanMessage: (data) => {
+        addMessage({
+          id: Date.now().toString(),
+          content: data.message,
+          role: ActorType.Bot,
+          timestamp: Date.now(),
+          conversationId,
+        });
+        toast(`Tin nhắn từ ${data.adminName}`);
+      },
     });
-
-    // Listen for session end
-    socketInstance.on("human-support-ended", () => {
-      console.log("🔧 DEBUG - Support ended");
-      setIsWaiting(false);
-      setIsConnected(false);
-      setAdminName(undefined);
-      setSessionId(undefined);
-      setTimeoutRemaining(0);
-
-      toast("Cán bộ tư vấn đã kết thúc phiên hỗ trợ");
-    });
-
-    // Listen for admin messages
-    socketInstance.on("human-message", (data: { message: string; adminName: string }) => {
-      console.log("🔧 DEBUG - Received admin message:", data);
-      addMessage({
-        id: Date.now().toString(),
-        content: data.message,
-        role: ActorType.Bot,
-        timestamp: Date.now(),
-        conversationId,
-      });
-
-      toast(`Tin nhắn từ ${data.adminName}`);
-    });
-
-    socketInstance.connect();
-    console.log("🔧 DEBUG - Socket connected");
 
     return () => {
-      console.log("🔧 DEBUG - Cleaning up socket");
-      socketInstance.disconnect();
+      cleanup();
+      humanHandoffService.disconnectSocket();
     };
-  }, [conversationId, addMessage]);
+  }, [conversationId, addMessage, clearTimeoutHandler]);
 
   // Update state from server status
   useEffect(() => {
@@ -198,7 +182,8 @@ export const useHumanHandoff = ({
       setIsWaiting(status.isWaiting);
       setIsConnected(status.isConnected);
       setAdminName(status.adminName);
-      if (status.timeoutRemaining) {
+
+      if (status.timeoutRemaining && status.isWaiting) {
         setTimeoutRemaining(status.timeoutRemaining);
       }
     }
@@ -207,12 +192,9 @@ export const useHumanHandoff = ({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (window.humanHandoffCleanup) {
-        window.humanHandoffCleanup();
-        window.humanHandoffCleanup = undefined;
-      }
+      clearTimeoutHandler();
     };
-  }, []);
+  }, [clearTimeoutHandler]);
 
   return {
     status,
@@ -226,23 +208,7 @@ export const useHumanHandoff = ({
   };
 };
 
-// Global window interface for cleanup function
-declare global {
-  interface Window {
-    humanHandoffCleanup?: () => void;
-  }
-}
-
 export const shouldTriggerHumanHandoff = (message: string): boolean => {
   const trimmed = message.trim();
-  const result = trimmed === TRIGGER_CONTACT_CABINET;
-
-  console.log("🔧 DEBUG - shouldTriggerHumanHandoff:", {
-    message,
-    trimmed,
-    TRIGGER_CONTACT_CABINET,
-    result,
-  });
-
-  return result;
+  return trimmed === TRIGGER_CONTACT_CABINET;
 };
