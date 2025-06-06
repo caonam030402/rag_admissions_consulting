@@ -132,16 +132,16 @@ export default function Body({ humanHandoff }: BodyProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="scroll flex-1">
-        {/* Human Handoff Indicator */}
-        <HumanHandoffIndicator
-          isWaiting={isWaiting}
-          isConnected={isConnected}
-          adminName={adminName}
-          timeoutRemaining={timeoutRemaining}
-          onEndHandoff={endHandoff}
-        />
-
+      {/* Human Handoff Indicator - Outside scroll container for sticky */}
+      <HumanHandoffIndicator
+        isWaiting={isWaiting}
+        isConnected={isConnected}
+        adminName={adminName}
+        timeoutRemaining={timeoutRemaining}
+        onEndHandoff={endHandoff}
+      />
+      
+      <div className="scroll flex-1 overflow-y-auto">
         {messages.length === 0 && !isLoading && (
           <div className="flex h-full items-center justify-center p-4 text-center">
             <div className="text-gray-500">

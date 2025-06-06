@@ -1,52 +1,65 @@
+"use client";
+
 import React from "react";
 
-import type { TabTypeChatbotWidget } from "@/types/chat";
-
-import Header from "../MainChat/Header";
-import BottomNavigation from "./BottomNavigation";
-import ConversationHistory from "./ConversationHistory";
-import LiveChatFooter from "./LiveChatFooter";
-import WelcomeSection from "./WelcomeSection";
+import {
+  BottomNavigation,
+  ConversationHistory,
+  HomeHeader,
+  LiveChatFooter,
+  PopularQuestions,
+  QuickActions,
+} from "./components";
 
 interface HomeChatProps {
-  onTabChange?: (tab: TabTypeChatbotWidget) => void;
-  activeTab?: TabTypeChatbotWidget;
+  onChatStart: () => void;
+  activeTab?: "home" | "chat";
+  onTabChange?: (tab: "home" | "chat") => void;
 }
 
 export default function HomeChat({
+  onChatStart,
+  activeTab,
   onTabChange,
-  activeTab = "home",
 }: HomeChatProps) {
-  const handleChatClick = () => {
-    onTabChange && onTabChange("chat");
-  };
-
-  const handleTabSwitch = (tab: TabTypeChatbotWidget) => {
-    onTabChange && onTabChange(tab);
+  const handleStartChat = () => {
+    onChatStart();
   };
 
   const handleConversationSelect = (_conversationId: string) => {
-    // Switch to chat tab when conversation is selected
-    onTabChange && onTabChange("chat");
+    onChatStart();
+  };
+
+  const handleQuickAction = (_topic: string) => {
+    handleStartChat();
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <Header handleTabSwitch={handleTabSwitch} />
+    <div className="flex h-full flex-col bg-gray-50">
+      {/* Main content */}
+      <div className="flex flex-1 flex-col overflow-hidden bg-white">
+        <HomeHeader onHistoryClick={() => {}} />
 
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <WelcomeSection />
-        <ConversationHistory onConversationSelect={handleConversationSelect} />
+        {/* Scrollable Content Area */}
+        <div className="flex-1 scroll">
+          <QuickActions onQuickAction={handleQuickAction} />
+
+          {/* Conversation History */}
+          <div className="mx-2 mb-2">
+            <ConversationHistory
+              onConversationSelect={handleConversationSelect}
+            />
+          </div>
+
+          <PopularQuestions onQuestionClick={handleQuickAction} />
+        </div>
+
+        {/* Live Chat Footer - Fixed */}
+        <LiveChatFooter onChatClick={handleStartChat} />
       </div>
 
-      {/* Fixed footer area */}
-      <div className="">
-        <LiveChatFooter onChatClick={handleChatClick} />
-        <p className="mb-2 text-center text-[10px] text-gray-500">
-          Powered by <span className="font-bold">CaoNam</span>
-        </p>
-        <BottomNavigation activeTab={activeTab} onTabChange={onTabChange} />
-      </div>
+      {/* Bottom Navigation */}
+      <BottomNavigation activeTab={activeTab} onTabChange={onTabChange} />
     </div>
   );
 }

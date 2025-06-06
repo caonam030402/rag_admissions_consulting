@@ -13,35 +13,31 @@ export default function BottomNavigation({
   onTabChange,
 }: BottomNavigationProps) {
   return (
-    <div className="border-t border-gray-200 bg-white px-4 py-2">
+    <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-2">
       <div className="flex justify-around">
         <button
           type="button"
           onClick={() => onTabChange?.("home")}
-          className={`flex flex-col items-center rounded-lg px-4 py-2 transition-colors ${
-            activeTab === "home"
-              ? "bg-blue-50 text-blue-500"
-              : "text-gray-500 hover:text-gray-700"
+          className={`flex flex-col items-center gap-1 p-2 ${
+            activeTab === "home" ? "text-blue-600" : "text-gray-500"
           }`}
         >
-          <House size={24} weight={activeTab === "home" ? "fill" : "regular"} />
-          <span className="mt-1 text-xs font-medium">Home</span>
+          <House size={20} weight={activeTab === "home" ? "fill" : "regular"} />
+          <span className="text-xs">Trang chủ</span>
         </button>
 
         <button
           type="button"
           onClick={() => onTabChange?.("chat")}
-          className={`flex flex-col items-center rounded-lg px-4 py-2 transition-colors ${
-            activeTab === "chat"
-              ? "bg-blue-50 text-blue-500"
-              : "text-gray-500 hover:text-gray-700"
+          className={`flex flex-col items-center gap-1 p-2 ${
+            activeTab === "chat" ? "text-blue-600" : "text-gray-500"
           }`}
         >
           <ChatCircle
-            size={24}
+            size={20}
             weight={activeTab === "chat" ? "fill" : "regular"}
           />
-          <span className="mt-1 text-xs font-medium">Chat</span>
+          <span className="text-xs">Chat</span>
         </button>
       </div>
     </div>
