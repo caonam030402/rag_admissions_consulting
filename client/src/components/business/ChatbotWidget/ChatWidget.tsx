@@ -21,7 +21,7 @@ interface ChatWidgetProps {
       | "shadow-xl"
       | "shadow-2xl"
       | "shadow-3xl";
-    height?: "h-full" | "h-[75vh]";
+    height?: "h-full" | "h-[75vh]" | string;
   };
   isTransition?: boolean;
 }
@@ -60,11 +60,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
         >
           <div className="relative h-full">
             {activeTab === "home" ? (
-              <div className={cn("h-full bg-gray-50", styles?.height)}>
+              <div className={cn("h-full bg-white", styles?.height)}>
                 <HomeChat onTabChange={handleTabSwitch} />
               </div>
             ) : (
-              <div className={cn("h-full bg-gray-50", styles?.height)}>
+              <div className={cn("h-full bg-white", styles?.height)}>
                 <MainChat handleTabSwitch={handleTabSwitch} />
               </div>
             )}

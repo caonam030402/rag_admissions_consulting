@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { randomUUID } from 'crypto';
 import { ChatbotConfigEntity } from './infrastructure/persistence/relational/entities/chatbot-config.entity';
 import { CreateChatbotConfigDto } from './dto/create-chatbot-config.dto';
 import { UpdateChatbotConfigDto } from './dto/update-chatbot-config.dto';
@@ -21,7 +22,7 @@ export class ChatbotConfigService {
   constructor(
     @InjectRepository(ChatbotConfigEntity)
     private readonly configRepository: Repository<ChatbotConfigEntity>,
-  ) {}
+  ) { }
 
   /**
    * Default config - tương tự Python RAG config
@@ -72,6 +73,18 @@ export class ChatbotConfigService {
       },
       humanHandoff: {
         enabled: false,
+        agentAlias: 'Agent',
+        triggerPattern: 'support,help,agent',
+        timezone: 'Asia/Ho_Chi_Minh',
+        workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+        workingHours: {
+          monday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+          tuesday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+          wednesday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+          thursday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+          friday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+        },
+        timeoutDuration: 60,
         maxWaitTime: 30,
         showEscalationButton: true,
         escalationButtonText: 'Talk to human agent',

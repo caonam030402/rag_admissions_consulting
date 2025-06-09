@@ -126,9 +126,85 @@ export class WelcomeSettings {
   suggestedQuestions?: string[];
 }
 
+export interface WorkingHours {
+  start: string; // HH:mm format
+  end: string; // HH:mm format
+  hours?: string; // calculated display value
+}
+
+export interface WorkingDaysConfig {
+  sunday?: WorkingHours;
+  monday?: WorkingHours;
+  tuesday?: WorkingHours;
+  wednesday?: WorkingHours;
+  thursday?: WorkingHours;
+  friday?: WorkingHours;
+  saturday?: WorkingHours;
+}
+
 export class HumanHandoffConfig {
   @ApiProperty({ description: 'Enable human handoff', default: false })
   enabled: boolean;
+
+  @ApiProperty({
+    description: 'Agent alias display name',
+    example: 'Agent',
+    default: 'Agent',
+  })
+  agentAlias: string;
+
+  @ApiProperty({
+    description: 'Trigger pattern for human handoff (comma separated)',
+    example: 'support,help,agent',
+    default: 'support,help,agent',
+  })
+  triggerPattern: string;
+
+  @ApiProperty({
+    description: 'Timezone for working hours',
+    example: 'Asia/Ho_Chi_Minh',
+    default: 'Asia/Ho_Chi_Minh',
+  })
+  timezone: string;
+
+  @ApiProperty({
+    type: Array,
+    description: 'Working days of the week',
+    example: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+    enum: [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ],
+    isArray: true,
+    default: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+  })
+  workingDays: string[];
+
+  @ApiProperty({
+    type: 'object',
+    description: 'Working hours configuration for each day',
+    example: {
+      monday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+      tuesday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+      wednesday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+      thursday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+      friday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+    },
+  })
+  workingHours: WorkingDaysConfig;
+
+  @ApiProperty({
+    description: 'Timeout duration in seconds',
+    minimum: 30,
+    maximum: 300,
+    default: 60,
+  })
+  timeoutDuration: number;
 
   @ApiProperty({
     description: 'Trigger keywords for escalation',

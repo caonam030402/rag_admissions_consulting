@@ -77,6 +77,20 @@ class ConfigClient:
                 "website": "https://donga.edu.vn",
                 "address": "33 Xô Viết Nghệ Tĩnh, Hải Châu, Đà Nẵng",
             },
+            "humanHandoff": {
+                "enabled": True,
+                "triggerPattern": "support,help,agent",
+                "timezone": "Asia/Ho_Chi_Minh",
+                "workingDays": ["monday", "tuesday", "wednesday", "thursday", "friday"],
+                "workingHours": {
+                    "monday": {"start": "09:00", "end": "18:00"},
+                    "tuesday": {"start": "09:00", "end": "18:00"},
+                    "wednesday": {"start": "09:00", "end": "18:00"},
+                    "thursday": {"start": "09:00", "end": "18:00"},
+                    "friday": {"start": "09:00", "end": "18:00"},
+                },
+                "timeoutDuration": 60,
+            },
             "environment": "development",
             "debug": False,
         }

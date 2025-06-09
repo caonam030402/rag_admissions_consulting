@@ -181,7 +181,7 @@ export default function WelcomeSetting() {
           </div>
         </div>
       }
-      className="h-[calc(100vh-210px)]"
+      className="scroll h-[calc(100vh-160px)]"
     >
       <form>
         {/* Welcome Content Section */}

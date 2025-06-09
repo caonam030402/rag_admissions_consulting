@@ -3,7 +3,7 @@
 import { Switch } from "@heroui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useRef } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 
 import Card from "@/components/common/Card";
@@ -24,7 +24,7 @@ import WorkingHoursSelector from "./components/WorkingHoursSelector";
 export default function HumanHandoff() {
   const { setIsDirty, registerSaveFunction, unregisterSaveFunction } =
     useConfiguration();
-  const tabKey = useRef(4); // HumanHandoff tab key is 4
+  const tabKey = useRef(5); // HumanHandoff tab key is 5
 
   // Get current config data
   const { data: configData, isLoading } =
@@ -34,24 +34,65 @@ export default function HumanHandoff() {
   const methods = useForm<HumanHandoffFormValues>({
     defaultValues,
     resolver: zodResolver(humanHandoffSchema),
-    mode: "onChange",
+    mode: "all", // Change mode to track all changes
   });
 
-  const { watch, setValue, formState, reset } = methods;
+  const { watch, formState, reset } = methods;
   const enabled = watch("enabled");
-  const allowSystemMessages = watch("allowSystemMessages");
 
   // Update form when config data loads
   useEffect(() => {
     if (configData) {
+      const config = configData.humanHandoff;
+
+      // Convert working days from string array to boolean array
+      const workingDaysArray = [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ];
+      const dayMapping = [
+        "sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+      ];
+      config.workingDays?.forEach((day) => {
+        const index = dayMapping.indexOf(day);
+        if (index !== -1) workingDaysArray[index] = true;
+      });
+
+      // Convert working hours from object to array format
+      const workingHoursArray = Array(7).fill({ from: "09:00", to: "18:00" });
+      if (config.workingHours) {
+        dayMapping.forEach((day, index) => {
+          const dayHours =
+            config.workingHours[day as keyof typeof config.workingHours];
+          if (dayHours) {
+            workingHoursArray[index] = {
+              from: dayHours.start,
+              to: dayHours.end,
+            };
+          }
+        });
+      }
+
       const formValues: HumanHandoffFormValues = {
-        enabled: configData.humanHandoff.enabled,
-        allowSystemMessages: true, // Default value
-        agentAlias: "Agent", // Default value
-        triggerPattern: "support,help,agent", // Default value
-        timezone: "Asia/Kolkata+05:30", // Default value
-        workingDays: [false, true, true, true, true, true, false], // Default working days
-        workingHours: Array(7).fill({ from: "09:00", to: "18:00" }), // Default working hours
+        enabled: config.enabled,
+        agentAlias: config.agentAlias || "Agent",
+        triggerPattern: config.triggerPattern || "support,help,agent",
+        timezone: config.timezone || "Asia/Ho_Chi_Minh",
+        workingDays: workingDaysArray,
+        workingHours: workingHoursArray,
+        timeoutDuration: config.timeoutDuration || 60,
+        allowSystemMessages: true, // Keep default value
       };
       reset(formValues);
     }
@@ -60,20 +101,65 @@ export default function HumanHandoff() {
   // Track form changes to update the global dirty state
   useEffect(() => {
     setIsDirty(formState.isDirty);
-  }, [formState.isDirty, setIsDirty]);
+  }, [formState.isDirty, setIsDirty, methods]);
 
   const saveConfiguration = async (): Promise<boolean> => {
     try {
       const formData = methods.getValues();
+
+      // Convert working days from boolean array to string array
+      const dayMapping = [
+        "sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+      ];
+      const workingDaysStringArray = dayMapping.filter(
+        (_, index) => formData.workingDays[index],
+      );
+
+      // Convert working hours from array format to object format
+      const workingHoursObject: Record<
+        string,
+        { start: string; end: string; hours?: string }
+      > = {};
+      dayMapping.forEach((day, index) => {
+        if (formData.workingDays[index] && formData.workingHours[index]) {
+          const hours = formData.workingHours[index];
+          const startTime = new Date(`2000-01-01 ${hours.from}`);
+          const endTime = new Date(`2000-01-01 ${hours.to}`);
+          const diffMs = endTime.getTime() - startTime.getTime();
+          const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+
+          workingHoursObject[day] = {
+            start: hours.from,
+            end: hours.to,
+            hours: `${diffHours} hrs`,
+          };
+        }
+      });
+
       const updateData = {
         humanHandoff: {
           enabled: formData.enabled,
+          agentAlias: formData.agentAlias,
+          triggerPattern: formData.triggerPattern,
+          timezone: formData.timezone,
+          workingDays: workingDaysStringArray,
+          workingHours: workingHoursObject,
+          timeoutDuration: formData.timeoutDuration,
           showEscalationButton: formData.enabled,
           escalationButtonText: "Contact Support",
-          maxWaitTime: 300, // 5 minutes
-          triggerKeywords: formData.triggerPattern ? [formData.triggerPattern] : undefined,
+          maxWaitTime: Math.round(formData.timeoutDuration / 60), // Convert seconds to minutes
+          triggerKeywords: formData.triggerPattern
+            .split(",")
+            .map((k) => k.trim()),
           agentAvailableMessage: `Hello! ${formData.agentAlias} is here to help you.`,
-          agentUnavailableMessage: "All agents are currently busy. We'll get back to you soon.",
+          agentUnavailableMessage:
+            "All agents are currently busy. We'll get back to you soon.",
         },
       };
 
@@ -105,7 +191,7 @@ export default function HumanHandoff() {
   if (isLoading) {
     return (
       <Card className="h-[calc(100vh-210px)]">
-        <div className="flex justify-center items-center h-full">
+        <div className="flex h-full items-center justify-center">
           <div>Loading human handoff settings...</div>
         </div>
       </Card>
@@ -114,7 +200,7 @@ export default function HumanHandoff() {
 
   return (
     <Card
-      className="h-[calc(100vh-210px)] overflow-y-auto"
+      className="scroll h-[calc(100vh-160px)]"
       header={
         <div className="flex w-full items-center justify-between">
           <div>
@@ -125,9 +211,15 @@ export default function HumanHandoff() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Switch
-              isSelected={enabled}
-              onValueChange={(value) => setValue("enabled", value)}
+            <Controller
+              name="enabled"
+              control={methods.control}
+              render={({ field }) => (
+                <Switch
+                  isSelected={field.value}
+                  onValueChange={field.onChange}
+                />
+              )}
             />
           </div>
         </div>
@@ -156,12 +248,16 @@ export default function HumanHandoff() {
                   requested, agent joined, call started, and more.
                 </p>
               </div>
-              <Switch
-                isSelected={allowSystemMessages}
-                onValueChange={(value) =>
-                  setValue("allowSystemMessages", value)
-                }
-                isDisabled={!enabled}
+              <Controller
+                name="allowSystemMessages"
+                control={methods.control}
+                render={({ field }) => (
+                  <Switch
+                    isSelected={field.value}
+                    onValueChange={field.onChange}
+                    isDisabled={!enabled}
+                  />
+                )}
               />
             </div>
           </div>

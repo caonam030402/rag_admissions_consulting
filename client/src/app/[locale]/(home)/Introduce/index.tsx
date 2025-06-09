@@ -72,31 +72,24 @@ export default function Introduce() {
       </div>
 
       <div className="absolute flex size-full items-center justify-center">
-        <form onSubmit={handleSubmit} className="text-center">
+        <div  className="text-center">
           <p className="mb-2 text-6xl font-bold text-white">
             Trợ lý tuyển sinh
-            <span className="text-primary"> VIỆT HÀN</span>
+            <span className="text-primary">ĐẠI HỌC VIỆT HÀN</span>
           </p>
           <p className="mx-auto w-3/5 py-3 text-white">
             là nền tảng hỗ trợ tư vấn và giải đáp thông tin tuyển sinh nhanh
             chóng, chính xác cho thí sinh và phụ huynh, giúp kết nối hiệu quả
             giữa nhà trường và người học
           </p>
-          <Input
-            ref={emailRef}
-            classNames={{
-              inputWrapper: "pr-1",
-            }}
-            placeholder="Vui lòng nhập email để tiếp tục chat"
-            size="lg"
-            className="mx-auto mt-4 w-3/5"
-            endContent={
-              <Button isLoading={loading} type="submit" color="primary">
-                Chat ngay
-              </Button>
-            }
-          />
-        </form>
+          <Button
+            onPress={() => navigate({ customUrl: "/chat-bot" })}
+            isLoading={loading}
+            color="primary"
+          >
+            Chat ngay
+          </Button>
+        </div>
       </div>
     </div>
   );

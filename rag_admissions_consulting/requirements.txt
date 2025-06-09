@@ -6,6 +6,10 @@ typer
 requests
 httpx
 
+# Web scraping
+beautifulsoup4
+chardet
+
 # Web framework
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0

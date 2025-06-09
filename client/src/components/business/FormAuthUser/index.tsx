@@ -58,7 +58,7 @@ export default function FormAuthUser({
           <h1 className="text-2xl font-bold">{title}</h1>
           <Input
             size="md"
-            placeholder="name@work.com"
+            placeholder="email@truong.edu.vn"
             errorMessage={errors.email?.message}
             isInvalid={!!errors.email?.message}
             type="email"
@@ -71,7 +71,7 @@ export default function FormAuthUser({
             <div className="flex gap-3">
               <Input
                 size="md"
-                placeholder="first name"
+                placeholder="Tên"
                 errorMessage={errors.firstName?.message}
                 isInvalid={!!errors.firstName?.message}
                 startContent={
@@ -81,7 +81,7 @@ export default function FormAuthUser({
               />
               <Input
                 size="md"
-                placeholder="last name"
+                placeholder="Họ"
                 errorMessage={errors.lastName?.message}
                 isInvalid={!!errors.lastName?.message}
                 {...form.register("lastName")}
@@ -91,7 +91,7 @@ export default function FormAuthUser({
           <Input
             size="md"
             errorMessage={errors.password?.message}
-            placeholder="password"
+            placeholder="Mật khẩu"
             isInvalid={!!errors.password?.message}
             startContent={
               <Lock className="pointer-events-none shrink-0 text-xl text-default-400" />
@@ -117,7 +117,7 @@ export default function FormAuthUser({
             <Input
               size="md"
               errorMessage={errors.confirmPassword?.message}
-              placeholder="confirm password"
+              placeholder="Xác nhận mật khẩu"
               isInvalid={!!errors.confirmPassword?.message}
               startContent={
                 <Lock className="pointer-events-none shrink-0 text-xl text-default-400" />

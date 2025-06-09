@@ -8,6 +8,7 @@ export const PATH = {
   DATASET: "/admin/manager/data-source",
   CONFIGURATION: "/admin/manager/configuration",
   OVERVIEW: "/admin/manager/overview",
+  ANALYTICS: "/admin/manager/analytics",
   VERIFY: "/verify",
   VERIFY_ADMIN: "/admin/verify",
   ACCOUNT_MANAGER: "/admin/manager/account-manager",

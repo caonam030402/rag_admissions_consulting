@@ -39,9 +39,8 @@ def process_pdf_file(file_path: str, data_source_id: str) -> str:
     try:
         logger.info(f"📄 Processing PDF file: {file_path}")
 
-        # Extract text from PDF using existing helper
-        # Note: helper.load_pdf_files expects a directory, not a file
-        documents = helper.load_pdf_files(path=os.path.dirname(file_path))
+        # Extract text from PDF using helper - single file processing
+        documents = helper.load_pdf_file(file_path)
 
         if not documents:
             raise Exception("No text extracted from PDF file")

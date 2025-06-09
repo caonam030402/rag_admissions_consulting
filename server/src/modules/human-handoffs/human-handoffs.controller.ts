@@ -151,6 +151,9 @@ export class HumanHandoffsController {
     @Param('conversationId') conversationId: string,
     @Body() sendMessageDto: SendMessageDto,
   ) {
-    return this.humanHandoffsService.sendUserMessage(conversationId, sendMessageDto);
+    return this.humanHandoffsService.sendUserMessage(
+      conversationId,
+      sendMessageDto,
+    );
   }
 }

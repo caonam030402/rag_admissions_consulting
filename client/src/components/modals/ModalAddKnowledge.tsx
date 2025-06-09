@@ -133,9 +133,7 @@ export default function ModalAddKnowledge({
       await onAdd(submitData);
       onOpenChange(false);
       resetForm();
-      toast.success("Knowledge added successfully");
     } catch (error) {
-      toast.error("Failed to add knowledge");
     } finally {
       setIsLoading(false);
     }

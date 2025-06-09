@@ -8,6 +8,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from api.routes import router
+
 from shared.database import setup_database
 from core.app_manager import app_manager
 
@@ -117,15 +118,15 @@ async def clear_user_session(user_email: str):
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # Check if running in development mode
     is_dev = os.getenv("ENVIRONMENT", "development") == "development"
-    
+
     uvicorn.run(
         "main:app",  # Use string format for reload to work properly
-        host="0.0.0.0", 
+        host="0.0.0.0",
         port=8000,
         reload=is_dev,  # Enable auto-reload in development
         reload_dirs=["./"] if is_dev else None,  # Watch current directory
-        log_level="info"
+        log_level="info",
     )

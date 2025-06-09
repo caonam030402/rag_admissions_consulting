@@ -19,13 +19,13 @@ export default function Login() {
         isLogin
         isLoading={isLoading}
         handleSubmitMail={handleLogin}
-        title="Login to your account"
-        labelAction="Login"
+        title="Đăng nhập vào tài khoản"
+        labelAction="Đăng nhập"
         description={
           <div className="text-sm text-default-500">
-            <span> If you don&apos;t have an account, </span>
+            <span> Nếu bạn chưa có tài khoản, </span>
             <Link size="sm" href={PATH.REGISTER_USER}>
-              Register
+              Đăng ký
             </Link>
           </div>
         }

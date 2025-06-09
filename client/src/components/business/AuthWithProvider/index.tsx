@@ -31,7 +31,7 @@ export default function AuthWithProvider() {
       <div className="flex w-full items-center">
         <Divider className="h-px w-full bg-default-300" />
         <div className="w-1/2 text-center text-default-500">
-          Or continue with
+          Hoặc tiếp tục với
         </div>
         <Divider className="h-px w-full bg-default-300" />
       </div>

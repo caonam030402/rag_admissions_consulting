@@ -9,6 +9,7 @@ import React, {
 interface SaveFunctions {
   basicInfo?: () => Promise<boolean>;
   appearance?: () => Promise<boolean>;
+  contactInfo?: () => Promise<boolean>;
   welcomeSetting?: () => Promise<boolean>;
   humanHandoff?: () => Promise<boolean>;
 }
@@ -69,8 +70,10 @@ export const ConfigurationProvider: React.FC<{ children: React.ReactNode }> = ({
       case 2:
         return "appearance";
       case 3:
-        return "welcomeSetting";
+        return "contactInfo";
       case 4:
+        return "welcomeSetting";
+      case 5:
         return "humanHandoff";
       default:
         return null;

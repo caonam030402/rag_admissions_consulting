@@ -77,7 +77,7 @@ export default function HumanSupportPage() {
       onSuccess: () => {
         refetchNotifications();
         refetchSessions();
-        toast.success("Đã nhận yêu cầu hỗ trợ! Bạn có thể bắt đầu chat.");
+        // toast.success("Support request accepted! You can start chatting.");
       },
     });
   };
@@ -87,7 +87,7 @@ export default function HumanSupportPage() {
     endMutation.mutate(sessionId, {
       onSuccess: () => {
         refetchSessions();
-        toast.success("Đã kết thúc phiên hỗ trợ!");
+        // toast.success("Support session ended!");
       },
     });
   };
@@ -96,7 +96,7 @@ export default function HumanSupportPage() {
   const handleOpenChat = (session: ActiveSession) => {
     const chatUrl = `/admin/manager/human-support/chat/${session.id}`;
     window.open(chatUrl, "_blank", "width=800,height=600");
-    toast.success("Mở cửa sổ chat trong tab mới");
+    toast.success("Chat window opened in new tab");
   };
 
   // Process notifications into pending requests
@@ -111,7 +111,7 @@ export default function HumanSupportPage() {
           initialMessage: session.initialMessage,
           requestedAt: session.requestedAt,
           timeElapsed: Math.floor(
-            (Date.now() - new Date(session.requestedAt).getTime()) / 1000
+            (Date.now() - new Date(session.requestedAt).getTime()) / 1000,
           ),
         }));
       setPendingRequests(pending);
@@ -129,7 +129,7 @@ export default function HumanSupportPage() {
           userProfile: session.userProfile,
           connectedAt: session.connectedAt!,
           duration: Math.floor(
-            (Date.now() - new Date(session.connectedAt!).getTime()) / 1000
+            (Date.now() - new Date(session.connectedAt!).getTime()) / 1000,
           ),
         }));
       setActiveSessions(active);
@@ -151,7 +151,7 @@ export default function HumanSupportPage() {
 
         // Show prominent notification
         toast.success(
-          `🔔 YÊU CẦU MỚI: ${notification.userProfile?.name || "User"} cần hỗ trợ!`,
+          `🔔 NEW REQUEST: ${notification.userProfile?.name || "User"} needs support!`,
           {
             duration: 8000,
             style: {
@@ -159,7 +159,7 @@ export default function HumanSupportPage() {
               color: "white",
               fontWeight: "bold",
             },
-          }
+          },
         );
       },
 
@@ -167,13 +167,13 @@ export default function HumanSupportPage() {
         console.log("✅ Admin saw support accepted");
         refetchNotifications();
         refetchSessions();
-        toast.success("Có admin khác đã nhận yêu cầu!");
+        // toast.success("Another admin has accepted the request!");
       },
 
       onSupportEnded: () => {
         console.log("❌ Admin saw support ended");
         refetchSessions();
-        toast("Một phiên hỗ trợ đã kết thúc", { icon: "ℹ️" });
+        // toast("A support session has ended", { icon: "ℹ️" });
       },
 
       onUserMessage: (data) => {
@@ -182,7 +182,7 @@ export default function HumanSupportPage() {
         // Prevent duplicate notifications with a simple debounce
         const messageKey = `${data.conversationId}-${data.message}-${Date.now()}`;
         const lastNotification = sessionStorage.getItem(
-          "lastMessageNotification"
+          "lastMessageNotification",
         );
 
         if (lastNotification !== messageKey) {
@@ -190,14 +190,14 @@ export default function HumanSupportPage() {
 
           // Show notification for new user messages
           toast(
-            `📨 Tin nhắn mới từ cuộc hội thoại ${data.conversationId.slice(-8)}`,
+            `📨 New message from conversation ${data.conversationId.slice(-8)}`,
             {
               duration: 5000,
               style: {
                 background: "#3B82F6",
                 color: "white",
               },
-            }
+            },
           );
         }
       },
@@ -223,7 +223,7 @@ export default function HumanSupportPage() {
   const renderPendingRequest = (request: PendingRequest) => (
     <Card
       key={request.id}
-      className="mb-4 border-l-4 border-l-warning hover:shadow-lg transition-all"
+      className="mb-4 border-l-4 border-l-warning transition-all hover:shadow-lg"
     >
       <CardBody className="p-4">
         <div className="flex items-start justify-between">
@@ -231,7 +231,7 @@ export default function HumanSupportPage() {
             <Avatar
               name={request.userProfile?.name || "Guest"}
               size="sm"
-              className="flex-shrink-0"
+              className="shrink-0"
             />
             <div>
               <div className="flex items-center gap-2">
@@ -248,14 +248,14 @@ export default function HumanSupportPage() {
                 </p>
               )}
               <div className="mt-2">
-                <p className="text-sm text-gray-700 line-clamp-2">
-                  "{request.initialMessage}"
+                <p className="line-clamp-2 text-sm text-gray-700">
+                  &ldquo;{request.initialMessage}&rdquo;
                 </p>
               </div>
               <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
                 <Clock size={12} />
                 <span>
-                  Yêu cầu lúc{" "}
+                  Requested at{" "}
                   {new Date(request.requestedAt).toLocaleTimeString()}
                 </span>
               </div>
@@ -270,7 +270,7 @@ export default function HumanSupportPage() {
               onClick={() => handleAcceptRequest(request.id)}
               isLoading={acceptMutation.isPending}
             >
-              Nhận
+              Accept
             </Button>
           </div>
         </div>
@@ -282,7 +282,7 @@ export default function HumanSupportPage() {
   const renderActiveSession = (session: ActiveSession) => (
     <Card
       key={session.id}
-      className="mb-4 border-l-4 border-l-success hover:shadow-lg transition-all"
+      className="mb-4 border-l-4 border-l-success transition-all hover:shadow-lg"
     >
       <CardBody className="p-4">
         <div className="flex items-start justify-between">
@@ -290,7 +290,7 @@ export default function HumanSupportPage() {
             <Avatar
               name={session.userProfile?.name || "Guest"}
               size="sm"
-              className="flex-shrink-0"
+              className="shrink-0"
             />
             <div>
               <div className="flex items-center gap-2">
@@ -299,7 +299,7 @@ export default function HumanSupportPage() {
                 </h4>
                 <Badge color="success" size="sm">
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <div className="size-2 animate-pulse rounded-full bg-green-500" />
                     {formatDuration(session.duration)}
                   </div>
                 </Badge>
@@ -312,7 +312,7 @@ export default function HumanSupportPage() {
               <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
                 <Phone size={12} />
                 <span>
-                  Kết nối lúc{" "}
+                  Connected at{" "}
                   {new Date(session.connectedAt).toLocaleTimeString()}
                 </span>
               </div>
@@ -336,7 +336,7 @@ export default function HumanSupportPage() {
               onClick={() => handleEndSession(session.id)}
               isLoading={endMutation.isPending}
             >
-              Kết thúc
+              End
             </Button>
           </div>
         </div>
@@ -345,29 +345,14 @@ export default function HumanSupportPage() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Hỗ trợ trực tiếp</h1>
-          <p className="text-gray-600">
-            Quản lý các yêu cầu hỗ trợ và phiên chat trực tiếp
-          </p>
-        </div>
-        <div className="flex items-center gap-4 text-sm text-gray-500">
-          <span>
-            Cập nhật lần cuối: {new Date(lastUpdate).toLocaleTimeString()}
-          </span>
-          {isLoading && <Badge color="warning">Đang tải...</Badge>}
-        </div>
-      </div>
-
+    <div className="mx-auto">
       <Tabs aria-label="Support tabs" className="w-full">
         <Tab
           key="pending"
           title={
             <div className="flex items-center gap-2">
               <Clock size={16} />
-              <span>Chờ xử lý</span>
+              <span>Pending</span>
               {pendingRequests.length > 0 && (
                 <Badge color="warning" size="sm">
                   {pendingRequests.length}
@@ -376,17 +361,16 @@ export default function HumanSupportPage() {
             </div>
           }
         >
-          <div className="mt-6">
+          <div className="mt-2">
             {pendingRequests.length === 0 ? (
               <Card>
-                <CardBody className="text-center py-12">
-                  <Clock size={48} className="mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    Không có yêu cầu chờ xử lý
+                <CardBody className="py-12 text-center">
+                  <Clock size={48} className="mx-auto mb-4 text-gray-400" />
+                  <h3 className="mb-2 text-lg font-semibold text-gray-700">
+                    No pending requests
                   </h3>
                   <p className="text-gray-500">
-                    Tất cả yêu cầu hỗ trợ đã được xử lý hoặc chưa có yêu cầu nào
-                    mới.
+                    All support requests have been processed or there are no new requests yet.
                   </p>
                 </CardBody>
               </Card>
@@ -401,7 +385,7 @@ export default function HumanSupportPage() {
           title={
             <div className="flex items-center gap-2">
               <Users size={16} />
-              <span>Đang hoạt động</span>
+              <span>Active</span>
               {activeSessions.length > 0 && (
                 <Badge color="success" size="sm">
                   {activeSessions.length}
@@ -410,16 +394,16 @@ export default function HumanSupportPage() {
             </div>
           }
         >
-          <div className="mt-6">
+          <div className="mt-2">
             {activeSessions.length === 0 ? (
               <Card>
-                <CardBody className="text-center py-12">
-                  <Users size={48} className="mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    Không có phiên chat đang hoạt động
+                <CardBody className="py-12 text-center">
+                  <Users size={48} className="mx-auto mb-4 text-gray-400" />
+                  <h3 className="mb-2 text-lg font-semibold text-gray-700">
+                    No active chat sessions
                   </h3>
                   <p className="text-gray-500">
-                    Hiện tại không có phiên hỗ trợ trực tiếp nào đang diễn ra.
+                    There are currently no live support sessions in progress.
                   </p>
                 </CardBody>
               </Card>

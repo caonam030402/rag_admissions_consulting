@@ -129,7 +129,7 @@ export default function BasicInfo() {
 
   return (
     <Card
-      className="h-[calc(100vh-210px)]"
+      className="scroll h-[calc(100vh-160px)]"
       header={
         <div className="flex w-full justify-between">
           <div>

@@ -93,49 +93,66 @@ def run_individual_pipeline(data_source_id: str, data_type: str, input_path: str
                 csv_file = f"data_pipeline/processed_data/csv_{data_source_id}.csv"
 
         elif data_type == "manual":
-            # For manual input - use base64 encoding to safely pass JSON
+            # For manual input - create temporary file to avoid command line length limits
             logger.info(f"📝 Original input_path: {input_path}")
             logger.info(f"📝 Input type: {type(input_path)}")
 
             try:
-                # Encode JSON as base64 to avoid command line issues
-                if isinstance(input_path, str):
-                    # If it looks like JSON but missing quotes, try to fix it
-                    if input_path.startswith("{") and not input_path.startswith('{"'):
-                        # Fix common command line quote stripping
-                        # {title:value,content:value} -> {"title":"value","content":"value"}
-                        import re
+                # Parse input data
+                input_data = None
 
-                        # This is a simple fix for the specific case
-                        fixed_json = re.sub(
-                            r"(\w+):", r'"\1":', input_path
-                        )  # Add quotes to keys
-                        fixed_json = re.sub(
-                            r":(\w+)", r':"\1"', fixed_json
-                        )  # Add quotes to values
-                        logger.info(f"📝 Fixed JSON: {fixed_json}")
-                        json_data = fixed_json
+                # Check if input is base64 encoded (from NestJS)
+                import re
+
+                if (
+                    re.match(r"^[A-Za-z0-9+/]*={0,2}$", input_path)
+                    and len(input_path) > 20
+                ):
+                    try:
+                        # Decode base64
+                        decoded_json = base64.b64decode(input_path).decode("utf-8")
+                        input_data = json.loads(decoded_json)
+                        logger.info(f"📝 Decoded base64 input from NestJS")
+                        logger.info(f"📝 Parsed data: {input_data}")
+                    except (
+                        base64.binascii.Error,
+                        json.JSONDecodeError,
+                        UnicodeDecodeError,
+                    ):
+                        # Not base64, treat as raw JSON
+                        logger.info(f"📝 Not base64, treating as raw JSON")
+                        input_data = None
+
+                if input_data is None:
+                    # Handle raw JSON input
+                    if isinstance(input_path, str):
+                        # If it looks like JSON but missing quotes, try to fix it
+                        if input_path.startswith("{") and not input_path.startswith(
+                            '{"'
+                        ):
+                            # Fix common command line quote stripping
+                            fixed_json = re.sub(r"(\w+):", r'"\1":', input_path)
+                            fixed_json = re.sub(r":(\w+)", r':"\1"', fixed_json)
+                            logger.info(f"📝 Fixed JSON: {fixed_json}")
+                            input_data = json.loads(fixed_json)
+                        else:
+                            input_data = json.loads(input_path)
                     else:
-                        json_data = input_path
+                        # Create JSON object
+                        input_data = {"content": str(input_path)}
 
-                    # Validate JSON
-                    parsed = json.loads(json_data)
-                    logger.info(f"📝 Parsed JSON successfully: {parsed}")
+                # Create temporary file with input data
+                temp_dir = "data_pipeline/temp"
+                os.makedirs(temp_dir, exist_ok=True)
+                temp_file_path = f"{temp_dir}/manual_input_{data_source_id}.json"
 
-                    # Encode as base64
-                    encoded_json = base64.b64encode(json_data.encode("utf-8")).decode(
-                        "ascii"
-                    )
-                    logger.info(f"📝 Base64 encoded length: {len(encoded_json)}")
+                with open(temp_file_path, "w", encoding="utf-8") as f:
+                    json.dump(input_data, f, ensure_ascii=False, indent=2)
 
-                else:
-                    # Create JSON object
-                    json_data = json.dumps({"content": str(input_path)})
-                    encoded_json = base64.b64encode(json_data.encode("utf-8")).decode(
-                        "ascii"
-                    )
+                logger.info(f"📄 Created temporary input file: {temp_file_path}")
 
-                command = f'python data_pipeline/processors/manual_processor.py "{encoded_json}" "{data_source_id}"'
+                # Call processor with file method
+                command = f'python data_pipeline/processors/manual_processor.py --file "{temp_file_path}" "{data_source_id}"'
                 description = f"Manual Input Processing - DataSource {data_source_id}"
 
                 if not run_command(command, description):

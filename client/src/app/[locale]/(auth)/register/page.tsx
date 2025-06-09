@@ -29,16 +29,16 @@ export default function SignIn() {
       case STEP_FORM_AUTH.FORM_AUTH:
         return (
           <FormAuthUser
-            labelAction="Sign Up for Free"
-            title="Create account"
+            labelAction="Đăng ký miễn phí"
+            title="Tạo tài khoản"
             form={form}
             isLoading={isPending}
             handleSubmitMail={handleSubmitMail}
             description={
               <div className="text-sm text-default-500">
-                <span>If you already have an account, </span>
+                <span>Nếu bạn đã có tài khoản, </span>
                 <Link size="sm" href={PATH.LOGIN_USER}>
-                  Login
+                  Đăng nhập
                 </Link>
               </div>
             }

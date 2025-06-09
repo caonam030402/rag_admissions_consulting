@@ -12,8 +12,9 @@ import {
   ArrowClockwise,
   DotsThree,
   Eye,
-  FunnelSimple,
   Lightning,
+  LinkSimple,
+  MagnifyingGlass,
   Plus,
   Trash,
 } from "@phosphor-icons/react";
@@ -21,6 +22,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
 import Button from "@/components/common/Button";
+import Card from "@/components/common/Card";
 import TableList from "@/components/common/Table";
 import type { ILogEntry } from "@/components/modals/ModalViewLog";
 import type { EStatusUpload } from "@/enums/adminChat";
@@ -172,16 +174,6 @@ export default function DataSourceList({
   ]);
 
   /**
-   * Handles re-sync of a dataset item
-   * @param item Dataset item to re-sync
-   */
-  const handleReSync = (item: ITableDataset) => {
-    console.log("Re-syncing item:", item.id);
-    toast.success(`${item.name} re-sync started`);
-    // TODO: Implement actual re-sync functionality
-  };
-
-  /**
    * Handles deletion of a dataset item
    * @param item Dataset item to delete
    */
@@ -195,137 +187,146 @@ export default function DataSourceList({
    * Renders source chip for an item
    * @param item Dataset item
    */
-  const renderSourceChip = (item: ITableDataset) => (
-    <Chip size="sm" variant="flat" color="primary">
-      {item.source}
-    </Chip>
-  );
-
-  /**
-   * Renders used by tags for an item
-   * @param item Dataset item
-   */
-  const renderUsedBy = (item: ITableDataset) => {
-    const tags = item.usedBy.split(", ");
-    return (
-      <div className="flex flex-wrap gap-1">
-        {tags.map((tag, index) => (
-          <Chip key={index} size="sm" variant="flat" color="success">
-            {tag}
-          </Chip>
-        ))}
-      </div>
-    );
-  };
-
-  /**
-   * Renders clickable name with arrow - truncated for mobile
-   * @param item Dataset item
-   */
-  const renderNameWithLink = (item: ITableDataset) => (
-    <button
-      type="button"
-      className="text-left transition-colors hover:text-primary-500"
-      onClick={() => onViewDetail(item)}
-    >
-      <div className="flex items-center gap-2">
-        <span className="max-w-[200px] truncate sm:max-w-none">
-          {item.name}
-        </span>
-        <span className="shrink-0 text-gray-400">›</span>
-      </div>
-    </button>
-  );
-
-  /**
-   * Renders status chip with proper colors and icons
-   * @param item Dataset item
-   */
-  const renderStatusChip = (item: ITableDataset) => {
-    // Get original status from logs to show detailed status
-    const latestLog = item.logs?.[item.logs.length - 1];
-    let statusText = "Unknown";
-    let color:
-      | "default"
-      | "primary"
-      | "secondary"
-      | "success"
-      | "warning"
-      | "danger" = "default";
-    let icon = "";
-
-    // Determine status from latest log message
-    if (latestLog?.message.includes("🔄 Processing")) {
-      statusText = "Processing";
-      color = "primary";
-      icon = "🔄";
-    } else if (latestLog?.message.includes("⏳ Waiting")) {
-      statusText = "Pending";
-      color = "warning";
-      icon = "⏳";
-    } else if (latestLog?.message.includes("✅ Completed")) {
-      statusText = "Completed";
-      color = "success";
-      icon = "✅";
-    } else if (latestLog?.message.includes("❌ Failed")) {
-      statusText = "Failed";
-      color = "danger";
-      icon = "❌";
-    } else {
-      statusText = "Created";
-      color = "default";
-      icon = "📄";
-    }
+  const renderSourceChip = (item: ITableDataset) => {
+    const getSourceColor = (source: string) => {
+      switch (source) {
+        case "Website":
+          return "primary";
+        case "File":
+          return "success";
+        case "Manual":
+          return "warning";
+        default:
+          return "default";
+      }
+    };
 
     return (
-      <Chip size="sm" variant="flat" color={color}>
-        <span className="flex items-center gap-1">
-          <span>{icon}</span>
-          <span>{statusText}</span>
-        </span>
+      <Chip
+        size="sm"
+        variant="flat"
+        color={getSourceColor(item.source)}
+        className="font-medium"
+      >
+        {item.source}
       </Chip>
     );
   };
 
   /**
-   * Renders action dropdown menu for an item
+   * Renders the 'Used By' cell
+   * @param item Dataset item
+   */
+  const renderUsedBy = (item: ITableDataset) => {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="size-2 rounded-full bg-green-500" />
+        <span className="text-sm font-medium text-gray-700">{item.usedBy}</span>
+      </div>
+    );
+  };
+
+  /**
+   * Renders name with clickable link for viewing details
+   * @param item Dataset item
+   */
+  const renderNameWithLink = (item: ITableDataset) => (
+    <div className="flex flex-col gap-1">
+      <button
+        type="button"
+        onClick={() => onViewDetail(item)}
+        className="text-left text-sm font-semibold text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+      >
+        {item.name}
+      </button>
+      {item.url && (
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <LinkSimple size={12} />
+          <span className="max-w-[200px] truncate">{item.url}</span>
+        </div>
+      )}
+    </div>
+  );
+
+  /**
+   * Renders status chip with appropriate color and icon
+   * @param item Dataset item
+   */
+  const renderStatusChip = (item: ITableDataset) => {
+    const getStatusConfig = (logs: ILogEntry[] | undefined) => {
+      if (!logs || logs.length === 0)
+        return { color: "default", text: "Unknown", icon: "⚪" };
+
+      const lastLog = logs[logs.length - 1];
+
+      if (lastLog.message.includes("✅")) {
+        return { color: "success", text: "Completed", icon: "✅" };
+      }
+      if (lastLog.message.includes("❌")) {
+        return { color: "danger", text: "Failed", icon: "❌" };
+      }
+      if (lastLog.message.includes("🔄")) {
+        return { color: "primary", text: "Processing", icon: "🔄" };
+      }
+      if (lastLog.message.includes("⏳")) {
+        return { color: "warning", text: "Pending", icon: "⏳" };
+      }
+
+      return { color: "default", text: "Created", icon: "📄" };
+    };
+
+    const { color, text, icon } = getStatusConfig(item.logs);
+
+    return (
+      <Chip
+        size="sm"
+        variant="flat"
+        color={color as any}
+        className="font-medium"
+        startContent={<span className="text-xs">{icon}</span>}
+      >
+        {text}
+      </Chip>
+    );
+  };
+
+  /**
+   * Renders action menu dropdown for each row
    * @param item Dataset item
    */
   const renderActionMenu = (item: ITableDataset) => (
     <Dropdown>
       <DropdownTrigger>
-        <Button variant="light" size="xxs">
-          <DotsThree size={25} />
+        <Button
+          isIconOnly
+          size="sm"
+          variant="light"
+          className="size-8 min-w-8 rounded-full transition-colors hover:bg-gray-100"
+        >
+          <DotsThree size={16} weight="bold" />
         </Button>
       </DropdownTrigger>
-      <DropdownMenu aria-label="Actions">
+      <DropdownMenu aria-label="Actions" className="border shadow-lg">
         <DropdownItem
-          key="resync"
-          startContent={
-            <ArrowClockwise size={20} className="text-primary-500" />
-          }
-          onPress={() => handleReSync(item)}
-        >
-          Re-sync
-        </DropdownItem>
-        <DropdownItem
-          key="view"
-          startContent={<Eye size={20} className="text-primary-500" />}
+          key="viewLog"
+          startContent={<Eye size={16} className="text-gray-600" />}
           onPress={() => onViewLog(item)}
+          className="hover:bg-gray-50"
         >
           View Log
         </DropdownItem>
         <DropdownItem
           key="viewRealTimeLogs"
-          startContent={<Lightning size={20} className="text-primary-500" />}
+          startContent={<Lightning size={16} className="text-primary-500" />}
           onPress={() => onViewRealTimeLogs?.(item)}
+          className="hover:bg-primary-50"
         >
           View Real-Time Logs
         </DropdownItem>
         <DropdownItem
           key="delete"
-          startContent={<Trash size={20} className="text-danger-500" />}
-          className="text-danger-500"
+          startContent={<Trash size={16} className="text-danger-500" />}
+          className="text-danger-500 hover:bg-danger-50"
           onPress={() => handleDelete(item)}
         >
           Delete
@@ -334,177 +335,163 @@ export default function DataSourceList({
     </Dropdown>
   );
 
-  // Table column definitions with responsive design
+  // Table column definitions with fixed widths to prevent layout shift
   const tableColumns = [
     {
       key: "name",
       label: "NAME",
       render: renderNameWithLink,
+      width: "35%", // Main content column
     },
     {
       key: "source",
       label: "SOURCE",
       render: renderSourceChip,
+      width: "12%", // Fixed for chip
     },
     {
       key: "status",
       label: "STATUS",
       render: renderStatusChip,
+      width: "15%", // Fixed for status chip
     },
     {
       key: "usedBy",
       label: "USED BY",
       render: renderUsedBy,
+      width: "15%", // Fixed for used by
     },
     {
       key: "lastUpdated",
       label: "LAST UPDATED",
+      width: "18%", // Fixed for date
     },
     {
       key: "action",
       label: "",
       render: renderActionMenu,
+      width: "5%", // Fixed for action button
     },
   ];
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Header section */}
-      <div className="mb-6">
-        <h1 className="mb-2 text-2xl font-semibold">Data sources</h1>
-        <p className="mb-4 text-gray-600">
-          Lyro will use the knowledge you add here to answer customer questions.
-        </p>
-
-        {/* Search and filter section - Mobile responsive */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          {/* Left side - Search and filters */}
-          <div className="flex flex-1 flex-col gap-3 sm:flex-row">
-            <Input
-              placeholder="Search by keyword or URL"
-              className="w-full sm:w-64"
-              value={localSearchTerm}
-              isDisabled={isLoading}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              startContent={
-                <FunnelSimple size={16} className="text-gray-400" />
-              }
-            />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Select
-                size="sm"
-                placeholder="All Sources"
-                className="w-32"
-                selectedKeys={currentSourceFilter ? [currentSourceFilter] : []}
+    <div className="flex h-full flex-col space-y-4">
+      {/* Results section with search query */}
+      <Card>
+        <div className="flex justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
+              <Input
+                placeholder="Search by keyword or URL..."
+                className="w-full sm:w-80"
+                value={localSearchTerm}
                 isDisabled={isLoading}
-                onSelectionChange={(keys) => {
-                  const selected = Array.from(keys)[0] as string;
-                  handleSourceFilterChange(selected || "all");
-                }}
-                items={[
-                  { key: "all", label: "All Sources" },
-                  { key: "Website", label: "Website" },
-                  { key: "File", label: "File" },
-                  { key: "Manual", label: "Manual" },
-                ]}
-              >
-                {(item: any) => (
-                  <SelectItem key={item.key}>{item.label}</SelectItem>
-                )}
-              </Select>
+                onChange={(e) => handleSearchChange(e.target.value)}
+                startContent={
+                  <MagnifyingGlass size={18} className="text-gray-400" />
+                }
+                size="md"
+              />
 
-              <Select
-                size="sm"
-                placeholder="All Status"
-                className="w-32"
-                selectedKeys={currentStatusFilter ? [currentStatusFilter] : []}
-                isDisabled={isLoading}
-                onSelectionChange={(keys) => {
-                  const selected = Array.from(keys)[0] as string;
-                  handleStatusFilterChange(selected || "all");
-                }}
-                items={[
-                  { key: "all", label: "All Status" },
-                  { key: "completed", label: "Completed" },
-                  { key: "processing", label: "Processing" },
-                  { key: "pending", label: "Pending" },
-                  { key: "failed", label: "Failed" },
-                ]}
-              >
-                {(item: any) => (
-                  <SelectItem key={item.key}>{item.label}</SelectItem>
-                )}
-              </Select>
+              <div className="flex flex-wrap items-center gap-3">
+                <Select
+                  size="md"
+                  placeholder="All Sources"
+                  className="w-40"
+                  selectedKeys={
+                    currentSourceFilter ? [currentSourceFilter] : []
+                  }
+                  isDisabled={isLoading}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as string;
+                    handleSourceFilterChange(selected || "all");
+                  }}
+                  items={[
+                    { key: "all", label: "All Sources" },
+                    { key: "Website", label: "Website" },
+                    { key: "File", label: "File" },
+                    { key: "Manual", label: "Manual" },
+                  ]}
+                >
+                  {(item: any) => (
+                    <SelectItem key={item.key}>{item.label}</SelectItem>
+                  )}
+                </Select>
+
+                <Select
+                  size="md"
+                  placeholder="All Status"
+                  className="w-40"
+                  selectedKeys={
+                    currentStatusFilter ? [currentStatusFilter] : []
+                  }
+                  isDisabled={isLoading}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as string;
+                    handleStatusFilterChange(selected || "all");
+                  }}
+                  items={[
+                    { key: "all", label: "All Status" },
+                    { key: "completed", label: "Completed" },
+                    { key: "processing", label: "Processing" },
+                    { key: "pending", label: "Pending" },
+                    { key: "failed", label: "Failed" },
+                  ]}
+                >
+                  {(item: any) => (
+                    <SelectItem key={item.key}>{item.label}</SelectItem>
+                  )}
+                </Select>
+              </div>
             </div>
-          </div>
 
-        </div>
-      </div>
-
-      {/* Results section */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="text-sm text-gray-600">
-            {onSearchChange ? (
-              // Server-side pagination
-              <>
-                Results: {displayData.length} of {totalItems}
-                {totalPages > 1 && ` (Page ${currentPage} of ${totalPages})`}
-              </>
-            ) : (
-              // Client-side filtering
-              <>
-                Results: {displayData.length}
-                {displayData.length !== data.length && ` (of ${data.length})`}
-              </>
+            {hasProcessingItems && (
+              <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
+                <div className="size-2 animate-pulse rounded-full bg-blue-500" />
+                <span className="text-sm font-medium text-blue-700">
+                  {(() => {
+                    const processingCount = data.filter((item) =>
+                      item.logs?.some(
+                        (log) =>
+                          log.message.includes("🔄 Processing") ||
+                          log.message.includes("⏳ Waiting"),
+                      ),
+                    ).length;
+                    return `${processingCount} item${processingCount > 1 ? "s" : ""} processing`;
+                  })()}
+                </span>
+              </div>
             )}
           </div>
-          {hasProcessingItems && (
-            <div className="flex items-center gap-2">
-              <div className="size-2 animate-pulse rounded-full bg-blue-500" />
-              <span className="text-sm text-blue-600">
-                {(() => {
-                  const processingCount = data.filter((item) =>
-                    item.logs?.some(
-                      (log) =>
-                        log.message.includes("🔄 Processing") ||
-                        log.message.includes("⏳ Waiting"),
-                    ),
-                  ).length;
-                  return `${processingCount} item${processingCount > 1 ? "s" : ""} processing...`;
-                })()}
-              </span>
-            </div>
-          )}
-        </div>
 
-        <div className="flex items-center gap-2">
-          {onRefresh && (
+          <div className="flex items-center gap-3">
+            {onRefresh && (
+              <Button
+                size="md"
+                variant="bordered"
+                startContent={<ArrowClockwise size={18} />}
+                onPress={onRefresh}
+                isLoading={isLoading}
+                className="border-gray-300 font-medium transition-colors hover:border-gray-400 hover:bg-gray-50"
+              >
+                Refresh
+              </Button>
+            )}
             <Button
-              size="sm"
-              variant="light"
-              startContent={<ArrowClockwise size={16} />}
-              onPress={onRefresh}
-              isLoading={isLoading}
+              size="md"
+              startContent={<Plus size={20} />}
+              color="primary"
+              onPress={onAddKnowledge}
+              className="from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 bg-gradient-to-r font-semibold shadow-md transition-shadow hover:shadow-lg"
             >
-              Refresh
+              Add Source
             </Button>
-          )}
-          <Button
-            size="sm"
-            startContent={<Plus size={20} />}
-            color="primary"
-            variant="light"
-            onPress={onAddKnowledge}
-          >
-            Add
-          </Button>
+          </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Data table - Flex-1 to take remaining space */}
-      <div className="min-h-0 flex-1">
+      {/* Enhanced Data table with modern styling */}
+      <div className="">
         <TableList
           data={displayData}
           columns={tableColumns}

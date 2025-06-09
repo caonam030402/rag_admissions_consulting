@@ -1,11 +1,10 @@
 "use client";
 
-import { Spacer } from "@heroui/spacer";
+import { Tab as TabItem, Tabs } from "@heroui/react";
 import React, { useCallback } from "react";
 
 import { ChatWidget } from "@/components/business/ChatbotWidget/ChatWidget";
 import Button from "@/components/common/Button";
-import Tab from "@/components/common/Tab";
 
 import UnsavedChangesModal from "./components/UnsavedChangesModal";
 import {
@@ -14,6 +13,7 @@ import {
 } from "./ConfigurationContext";
 import Appearance from "./tabs/Appearance";
 import BasicInfo from "./tabs/BasicInfo";
+import ContactInfo from "./tabs/ContactInfo";
 import HumanHandoff from "./tabs/HumanHandoff";
 import WelcomeSetting from "./tabs/WelcomeSetting";
 
@@ -32,7 +32,7 @@ const LayoutWithChatWidget = ({
         isOnScreen={false}
         styles={{
           shadow: "shadow-none",
-          height: "h-[75vh]",
+          height: "h-[calc(100vh-160px)]",
         }}
         isTransition={false}
       />
@@ -63,18 +63,27 @@ function ConfigurationContent() {
         </LayoutWithChatWidget>
       ),
     },
-    // {
-    //   title: "Welcome Settings",
-    //   key: 3,
-    //   content: (
-    //     <LayoutWithChatWidget>
-    //       <WelcomeSetting />
-    //     </LayoutWithChatWidget>
-    //   ),
-    // },
+    {
+      title: "Contact Info",
+      key: 3,
+      content: (
+        <LayoutWithChatWidget>
+          <ContactInfo />
+        </LayoutWithChatWidget>
+      ),
+    },
+    {
+      title: "Welcome Setting",
+      key: 4,
+      content: (
+        <LayoutWithChatWidget>
+          <WelcomeSetting />
+        </LayoutWithChatWidget>
+      ),
+    },
     {
       title: "Human Handoff",
-      key: 4,
+      key: 5,
       content: (
         <LayoutWithChatWidget>
           <HumanHandoff />
@@ -87,15 +96,27 @@ function ConfigurationContent() {
     await saveChanges();
   }, [saveChanges]);
 
+  const currentTab = listTab.find((tab) => tab.key === currentTabKey);
+
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="mb-1 text-xl font-bold">Configuration</div>
-          <div className="text-sm">
-            Adjust your Copilot behavior, appearance, and preferences for
-            optimal performance.
-          </div>
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex-1">
+          <Tabs
+            classNames={{
+              tabList:
+                "gap-6 w-full relative rounded-none p-0 border-b border-divider",
+              cursor: "w-full",
+              tab: "max-w-fit px-0 h-10",
+            }}
+            variant="underlined"
+            onSelectionChange={(key) => handleTabChange(Number(key))}
+            selectedKey={String(currentTabKey)}
+          >
+            {listTab.map((item) => (
+              <TabItem key={item.key} title={item.title} />
+            ))}
+          </Tabs>
         </div>
         <Button
           size="md"
@@ -106,12 +127,9 @@ function ConfigurationContent() {
           Save changes
         </Button>
       </div>
-      <Spacer y={2} />
-      <Tab
-        listTab={listTab}
-        onSelectionChange={(key) => handleTabChange(Number(key))}
-        selectedKey={String(currentTabKey)}
-      />
+
+      {currentTab && <div>{currentTab.content}</div>}
+
       <UnsavedChangesModal />
     </div>
   );

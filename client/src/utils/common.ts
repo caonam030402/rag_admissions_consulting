@@ -11,32 +11,35 @@ export const isEmpty = (content: string) => {
 };
 
 export const formatSurveyData = (data: SurveyFormData) => {
-  return `
-Hãy cho tôi biết nghề nghiệp nào phù hợp với dữ liệu khảo sát sau:
+  return `**🎯 KHẢO SÁT CHỌN NGHỀ NGHIỆP**
 
-- Sở thích (Interests):
-  - ${data.interests.join("\n  - ")}
+Vui lòng phân tích profile và đề xuất nghề nghiệp phù hợp:
 
-- Kỹ năng (Skills):
-  - ${data.skills.join("\n  - ")}
+**━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━**
 
-- Phong cách làm việc (Work Style): ${data.workStyle || "Không rõ"}
+**👤 THÔNG TIN CÁ NHÂN**
+▸ Sở thích: ${data.interests.join(" • ")}
+▸ Kỹ năng: ${data.skills.join(" • ")}  
+▸ Tính cách: ${data.personality.join(" • ")}
 
-- Mục tiêu nghề nghiệp (Career Goals): ${data.careerGoals}
+**⚡ NĂNG LỰC & ĐIỂM YẾU**
+▸ Thế mạnh: ${data.strengths.join(" • ")}
+▸ Cần cải thiện: ${data.weaknesses.join(" • ")}
 
-- Tính cách (Personality): ${data.personality.length ? data.personality.join(", ") : "Không có dữ liệu"}
+**🏢 MÔI TRƯỜNG LÀM VIỆC**
+▸ Phong cách: ${data.workStyle}
+▸ Môi trường: ${data.workEnvironment.join(" • ")}
+▸ Khả năng chịu áp lực: ${data.stressLevel}/5 ⭐
 
-- Thế mạnh (Strengths):
-  - ${data.strengths.join("\n  - ")}
+**📈 PHÁT TRIỂN & MỤC TIÊU**
+▸ Cách học: ${data.learningStyle}
+▸ Mục tiêu: ${data.careerGoals}
 
-- Điểm yếu (Weaknesses):
-  - ${data.weaknesses.join("\n  - ")}
+**━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━**
 
-- Môi trường làm việc mong muốn (Work Environment):
-  - ${data.workEnvironment.join("\n  - ")}
-
-- Mức độ căng thẳng (Stress Level): ${data.stressLevel}
-
-- Phong cách học tập (Learning Style): ${data.learningStyle}
-`.trim();
+**YÊU CẦU PHÂN TÍCH:**
+✓ Top 5 nghề nghiệp phù hợp (theo thứ tự ưu tiên)
+✓ Lý do phù hợp cho từng nghề  
+✓ Lộ trình phát triển cụ thể
+✓ Khuyến nghị cải thiện điểm yếu`.trim();
 };

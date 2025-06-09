@@ -1,9 +1,10 @@
 import {
+  ChartLine,
   ChartPieSlice,
+  ChatCircle,
   Database,
   SlidersHorizontal,
   Users,
-  ChatCircle,
 } from "@phosphor-icons/react";
 import React from "react";
 
@@ -12,11 +13,18 @@ import { PATH } from "@/constants";
 import SectionSideBar from "./SectionSideBar";
 
 export const listSidebarItems = [
+  // {
+  //   id: "0",
+  //   title: "Overview",
+  //   href: PATH.OVERVIEW,
+  //   icon: <ChartPieSlice size={25} />,
+  //   children: [],
+  // },
   {
-    id: "0",
-    title: "Overview",
-    href: PATH.OVERVIEW,
-    icon: <ChartPieSlice size={25} />,
+    id: "5",
+    title: "Analytics",
+    href: PATH.ANALYTICS,
+    icon: <ChartLine size={25} />,
     children: [],
   },
   {

@@ -7,6 +7,7 @@ import React from "react";
 import UserSetting from "@/components/business/UserSetting";
 import { userService } from "@/services/user";
 import { useChatStore } from "@/stores/chat";
+import Link from "next/link";
 
 export default function HeaderMainChat() {
   const { user } = userService.useProfile();
@@ -18,7 +19,7 @@ export default function HeaderMainChat() {
 
   return (
     <div className="flex items-center justify-between border-b border-white/20 bg-white/10 px-6 py-4 backdrop-blur-sm">
-      <div className="flex items-center gap-3">
+      <Link href="/" className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="text-2xl">🎓</div>
           <div>
@@ -38,7 +39,7 @@ export default function HeaderMainChat() {
             </div>
           </div>
         </div>
-      </div>
+      </Link>
 
       <div className="flex items-center gap-3">
         <Button

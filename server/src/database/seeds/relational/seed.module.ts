@@ -8,6 +8,7 @@ import { RoleSeedModule } from './role/role-seed.module';
 import { StatusSeedModule } from './status/status-seed.module';
 import { UserSeedModule } from './user/user-seed.module';
 import { ChatbotConfigSeedModule } from './chatbot-config/chatbot-config-seed.module';
+import { AnalyticsSeedModule } from './analytics/analytics-seed.module';
 import databaseConfig from '../../config/database.config';
 import appConfig from '../../../config/app.config';
 
@@ -17,6 +18,7 @@ import appConfig from '../../../config/app.config';
     StatusSeedModule,
     UserSeedModule,
     ChatbotConfigSeedModule,
+    AnalyticsSeedModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, appConfig],
@@ -30,4 +32,4 @@ import appConfig from '../../../config/app.config';
     }),
   ],
 })
-export class SeedModule {}
+export class SeedModule { }

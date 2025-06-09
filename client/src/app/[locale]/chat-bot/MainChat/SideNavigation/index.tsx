@@ -2,14 +2,13 @@
 
 import "dayjs/locale/vi";
 
-import { Button, Divider } from "@heroui/react";
+import { Button, Divider, Skeleton } from "@heroui/react";
 import {
   Books,
   Calculator,
   ChartBar,
   ChatCircle,
   Clock,
-  Gear,
   GraduationCap,
   House,
   LightbulbFilament,
@@ -17,7 +16,6 @@ import {
   PencilSimple,
   Plus,
   Trash,
-  User,
   X,
 } from "@phosphor-icons/react";
 import dayjs from "dayjs";
@@ -315,24 +313,36 @@ export default function SideNavigation() {
   );
 
   const renderLoadingState = () => (
-    <div className="space-y-2">
-      {/* Loading skeleton */}
-      {[...Array(3)].map((_, i) => (
-        <div key={i} className="animate-pulse">
-          <div className="flex items-start gap-2 p-2">
-            <div className="mt-0.5 size-3 rounded-full bg-gray-200" />
-            <div className="flex-1">
-              <div className="mb-1 h-3 w-3/4 rounded bg-gray-200" />
-              <div className="h-2 w-1/2 rounded bg-gray-200" />
+    <div className="space-y-3">
+      {/* Enhanced Loading skeleton using HeroUI */}
+      {[...Array(5)].map((_, i) => (
+        <div key={i}>
+          <div className="flex items-start gap-3 rounded-lg p-3">
+            {/* Chat icon skeleton */}
+            <Skeleton className="mt-0.5 size-4 shrink-0 rounded-full" />
+            <div className="flex-1 space-y-2">
+              {/* Title skeleton */}
+              <Skeleton className="h-3 w-4/5 rounded" />
+              {/* Subtitle skeleton */}
+              <Skeleton className="h-2 w-1/2 rounded" />
             </div>
           </div>
         </div>
       ))}
+
+      {/* Loading indicator */}
+      <div className="flex items-center justify-center py-4">
+        <div className="flex space-x-1">
+          <div className="size-2 animate-bounce rounded-full bg-blue-400" />
+          <div className="size-2 animate-bounce rounded-full bg-blue-500 delay-75" />
+          <div className="size-2 animate-bounce rounded-full bg-blue-600 delay-150" />
+        </div>
+      </div>
     </div>
   );
 
   const renderConversationsList = () => (
-    <div className="max-h-64 space-y-1 scroll">
+    <div className="scroll max-h-64 space-y-1">
       {conversations.slice(0, 10).map((conversation: any) => (
         <motion.div
           key={conversation.conversationId}
@@ -447,7 +457,8 @@ export default function SideNavigation() {
             {/* New Chat Button */}
             <div className="mb-4">
               <Button
-                className="from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 w-full justify-start bg-gradient-to-r text-white"
+                color="primary"
+                className="w-full"
                 startContent={<Plus size={16} />}
                 onClick={handleNewChat}
               >

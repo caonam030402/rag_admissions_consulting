@@ -1,20 +1,20 @@
 import {
   Controller,
-  Param,
-  Delete,
-  Query,
   Get,
   Post,
   Body,
   Put,
+  Param,
+  Delete,
+  Query,
 } from '@nestjs/common';
 import { chatbotsService } from './chatbots.service';
 import {
-  ApiOkResponse,
-  ApiParam,
   ApiTags,
-  ApiOperation,
   ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
 } from '@nestjs/swagger';
 import {
   InfinityPaginationResponse,
@@ -34,7 +34,7 @@ import { Public } from 'src/decorators/public.decorator';
   version: '1',
 })
 export class chatbotsController {
-  constructor(private readonly chatbotsService: chatbotsService) {}
+  constructor(private readonly chatbotsService: chatbotsService) { }
 
   @Get('history')
   @ApiOkResponse({ type: InfinityPaginationResponse(ChatbotHistory) })

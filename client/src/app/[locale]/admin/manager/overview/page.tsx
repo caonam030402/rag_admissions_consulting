@@ -27,12 +27,6 @@ export default function OverviewPage() {
 
   return (
     <div className="scroll h-[calc(100vh-80px)] space-y-4">
-      <div className="rounded-lg bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
-        <p className="mt-2 text-gray-500">
-          Comprehensive analytics for your chatbox system
-        </p>
-      </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">

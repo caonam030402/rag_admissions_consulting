@@ -35,7 +35,7 @@ import { ChatbotConfig } from './domain/chatbot-config';
   version: '1',
 })
 export class ChatbotConfigController {
-  constructor(private readonly configService: ChatbotConfigService) {}
+  constructor(private readonly configService: ChatbotConfigService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -275,6 +275,17 @@ export class ChatbotConfigController {
             address: { type: 'string' },
           },
         },
+        humanHandoff: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            triggerPattern: { type: 'string' },
+            timezone: { type: 'string' },
+            workingDays: { type: 'array', items: { type: 'string' } },
+            workingHours: { type: 'object' },
+            timeoutDuration: { type: 'number' },
+          },
+        },
         environment: { type: 'string' },
         debug: { type: 'boolean' },
       },
@@ -311,6 +322,14 @@ export class ChatbotConfigController {
         email: config.contactInfo.email,
         website: config.contactInfo.website,
         address: config.contactInfo.address,
+      },
+      humanHandoff: {
+        enabled: config.humanHandoff.enabled,
+        triggerKeywords: config.humanHandoff.triggerPattern,
+        timezone: config.humanHandoff.timezone,
+        workingDays: config.humanHandoff.workingDays,
+        workingHours: config.humanHandoff.workingHours,
+        timeoutDuration: config.humanHandoff.timeoutDuration,
       },
       environment: config.environment,
       debug: config.debug,
@@ -464,6 +483,40 @@ export class ChatbotConfigController {
     } else {
       return this.configService.updateAndReload(overrideConfig.id, {
         humanHandoff: updateData.humanHandoff as any,
+      });
+    }
+  }
+
+  @Patch('section/contact-info')
+  @ApiOkResponse({ type: ChatbotConfig })
+  @ApiOperation({ summary: 'Update only contact info section' })
+  @ApiBearerAuth()
+  @Roles(RoleEnum.admin)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  async updateContactInfo(
+    @Body()
+    updateData: {
+      contactInfo?: Partial<CreateChatbotConfigDto['contactInfo']>;
+    },
+  ): Promise<ChatbotConfig> {
+    const configs = await this.configService.findAll({
+      type: 'override' as any,
+    });
+    const overrideConfig = configs.find((c) => c.isActive);
+
+    if (!overrideConfig) {
+      const activeConfig = await this.configService.getActiveConfig();
+      const createDto: CreateChatbotConfigDto = {
+        ...activeConfig,
+        type: 'override' as any,
+        contactInfo: updateData.contactInfo
+          ? { ...activeConfig.contactInfo, ...updateData.contactInfo }
+          : activeConfig.contactInfo,
+      };
+      return this.configService.createAndReload(createDto);
+    } else {
+      return this.configService.updateAndReload(overrideConfig.id, {
+        contactInfo: updateData.contactInfo as any,
       });
     }
   }

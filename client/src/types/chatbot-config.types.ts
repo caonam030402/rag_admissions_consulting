@@ -64,8 +64,30 @@ export interface WelcomeSettings {
     suggestedQuestions?: string[];
 }
 
+export interface WorkingHours {
+    start: string; // HH:mm format
+    end: string; // HH:mm format
+    hours?: string; // calculated display value
+}
+
+export interface WorkingDaysConfig {
+    sunday?: WorkingHours;
+    monday?: WorkingHours;
+    tuesday?: WorkingHours;
+    wednesday?: WorkingHours;
+    thursday?: WorkingHours;
+    friday?: WorkingHours;
+    saturday?: WorkingHours;
+}
+
 export interface HumanHandoffConfig {
     enabled: boolean;
+    agentAlias: string;
+    triggerPattern: string;
+    timezone: string;
+    workingDays: string[];
+    workingHours: WorkingDaysConfig;
+    timeoutDuration: number;
     triggerKeywords?: string[];
     agentAvailableMessage?: string;
     agentUnavailableMessage?: string;

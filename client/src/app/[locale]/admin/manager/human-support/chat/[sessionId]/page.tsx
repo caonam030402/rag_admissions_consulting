@@ -47,7 +47,6 @@ export default function AdminChatPage() {
           timestamp: new Date(data.timestamp),
         };
         setMessages((prev) => [...prev, newMsg]);
-        toast.success("Tin nhắn mới từ người dùng");
       },
     });
 
@@ -148,7 +147,7 @@ export default function AdminChatPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-gray-50">
+    <div className="flex h-[calc(100vh-100px)] flex-col bg-gray-50">
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-white p-4 shadow-sm">
         <div className="flex items-center gap-3">

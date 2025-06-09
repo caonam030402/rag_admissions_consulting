@@ -17,6 +17,8 @@ import { IPaginationOptions } from '../../utils/types/pagination-options';
 import { HumanHandoffsGateway } from './human-handoffs.gateway';
 import { chatbotsService } from '../chatbots/chatbots.service';
 import { ChatbotRole } from '../../common/enums/chatbot.enum';
+import { ChatbotConfigService } from '../chatbots/chatbot-config.service';
+import { WorkingHoursUtil } from './utils/working-hours.util';
 
 @Injectable()
 export class HumanHandoffsService {
@@ -25,29 +27,60 @@ export class HumanHandoffsService {
     private readonly humanHandoffRepository: Repository<HumanHandoffEntity>,
     private readonly gateway: HumanHandoffsGateway,
     private readonly chatbotsService: chatbotsService,
-  ) {}
+    private readonly chatbotConfigService: ChatbotConfigService,
+  ) { }
+
+  private readonly workingHoursUtil = new WorkingHoursUtil();
 
   async create(createDto: CreateHumanHandoffDto): Promise<HumanHandoff> {
+    // Get current human handoff settings from config
+    const config = await this.chatbotConfigService.getActiveConfig();
+    const humanHandoffConfig = config.humanHandoff;
+
+    // Check if human handoff is enabled
+    if (!humanHandoffConfig.enabled) {
+      throw new BadRequestException(
+        'Hiện tại hệ thống không hoạt động. Vui lòng liên hệ admin để được hỗ trợ.',
+      );
+    }
+
+    // Check if we're in working hours
+    const isWorkingTime = this.workingHoursUtil.isWorkingTime(
+      humanHandoffConfig.timezone,
+      humanHandoffConfig.workingDays,
+      humanHandoffConfig.workingHours,
+    );
+
+    if (!isWorkingTime) {
+      const message = this.workingHoursUtil.getOutsideWorkingHoursMessage(
+        humanHandoffConfig.timezone,
+        humanHandoffConfig.workingDays,
+        humanHandoffConfig.workingHours,
+      );
+
+      throw new BadRequestException(message);
+    }
+
     // Check for existing active handoff for this user (not just conversation)
     const existingHandoff = await this.humanHandoffRepository.findOne({
       where: [
         // If user is authenticated, check by userId
         ...(createDto.userId
           ? [
-              {
-                userId: createDto.userId,
-                status: In(['waiting', 'connected']),
-              },
-            ]
+            {
+              userId: createDto.userId,
+              status: In(['waiting', 'connected']),
+            },
+          ]
           : []),
         // If guest user, check by guestId
         ...(createDto.guestId
           ? [
-              {
-                guestId: createDto.guestId,
-                status: In(['waiting', 'connected']),
-              },
-            ]
+            {
+              guestId: createDto.guestId,
+              status: In(['waiting', 'connected']),
+            },
+          ]
           : []),
       ],
     });

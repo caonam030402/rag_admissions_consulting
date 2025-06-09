@@ -1,11 +1,11 @@
 import { Navbar, NavbarBrand, NavbarContent } from "@heroui/react";
 
-import HumanHandoffNotification from "@/components/business/HumanHandoff/HumanHandoffNotification";
 import UserSetting from "@/components/business/UserSetting";
-
-
+import { userService } from "@/services/user";
+import { renderFullName } from "@/utils/helpers";
 
 export default function HeaderDsh() {
+  const {user} = userService.useProfile()
   return (
     <Navbar isBordered maxWidth="full">
       <NavbarBrand />
@@ -23,12 +23,13 @@ export default function HeaderDsh() {
         })} */}
       </NavbarContent>
       <NavbarContent justify="end">
-        <HumanHandoffNotification />
+        {/* <HumanHandoffNotification /> */}
         <UserSetting
           onlyAvatar={false}
           info={{
-            email: "caonam030402@gmail.com",
-            name: "caonam03042",
+            email: user?.email,
+            name: renderFullName(user?.firstName, user?.lastName),
+            avatar: user?.avatar,
           }}
         />
       </NavbarContent>

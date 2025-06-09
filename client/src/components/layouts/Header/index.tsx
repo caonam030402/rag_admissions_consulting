@@ -8,6 +8,8 @@ import {
 
 import Logo from "@/components/common/Logo";
 import { PATH } from "@/constants/common";
+import { userService } from "@/services/user";
+import UserSetting from "@/components/business/UserSetting";
 
 const listNav = [
   {
@@ -33,6 +35,7 @@ const listNav = [
 ];
 
 export default function Header() {
+  const {user} = userService.useProfile()
   return (
     <Navbar maxWidth="xl">
       <NavbarBrand>
@@ -54,9 +57,12 @@ export default function Header() {
         })}
       </NavbarContent>
       <NavbarContent justify="end">
-        <Button as={Link} color="primary">
-          Liên hệ trực tiếp
-        </Button>
+        <UserSetting info={
+          {avatar: user?.avatar,
+          email: user?.email,
+          
+          }
+        } />
       </NavbarContent>
     </Navbar>
   );

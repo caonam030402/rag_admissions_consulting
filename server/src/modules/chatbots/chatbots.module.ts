@@ -6,11 +6,13 @@ import { ChatbotConfigController } from './chatbot-config.controller';
 import { ChatbotConfigService } from './chatbot-config.service';
 import { ChatbotConfigEntity } from './infrastructure/persistence/relational/entities/chatbot-config.entity';
 import { RelationalchatbotPersistenceModule } from './infrastructure/persistence/relational/relational-persistence.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
   imports: [
     RelationalchatbotPersistenceModule,
     TypeOrmModule.forFeature([ChatbotConfigEntity]),
+    AnalyticsModule,
   ],
   controllers: [chatbotsController, ChatbotConfigController],
   providers: [chatbotsService, ChatbotConfigService],
@@ -20,4 +22,4 @@ import { RelationalchatbotPersistenceModule } from './infrastructure/persistence
     RelationalchatbotPersistenceModule,
   ],
 })
-export class ChatbotsModule {}
+export class ChatbotsModule { }

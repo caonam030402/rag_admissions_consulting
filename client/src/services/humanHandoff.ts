@@ -351,7 +351,7 @@ class SocketManager {
           msg.sender === messageData.sender &&
           Math.abs(
             new Date(msg.timestamp).getTime() -
-              new Date(messageData.timestamp).getTime()
+            new Date(messageData.timestamp).getTime()
           ) < 5000
       );
 
@@ -485,7 +485,7 @@ export const humanHandoffService = {
         toast.success("Đã gửi yêu cầu hỗ trợ. Vui lòng chờ trong giây lát...");
       },
       onError: () => {
-        toast.error("Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại.");
+        // toast.error("Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại.");
       },
     });
   },
@@ -742,9 +742,9 @@ export const humanHandoffService = {
       ...user,
       userProfile: userProfile
         ? {
-            name: userProfile.fullName || userProfile.firstName || "User",
-            email: userProfile.email,
-          }
+          name: userProfile.fullName || userProfile.firstName || "User",
+          email: userProfile.email,
+        }
         : undefined,
     };
   },

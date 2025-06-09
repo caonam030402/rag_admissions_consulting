@@ -24,6 +24,7 @@ export const listModel = [
 ];
 
 export const listTimezone = [
+  { value: "Asia/Ho_Chi_Minh", label: "Asia/Ho_Chi_Minh+07:00 (Vietnam)" },
   { value: "Asia/Kolkata+05:30", label: "Asia/Kolkata+05:30" },
   { value: "UTC+00:00", label: "UTC+00:00" },
   { value: "America/New_York-05:00", label: "America/New_York-05:00" },

@@ -40,12 +40,19 @@ class EmbeddingConfig:
 
 
 @dataclass
+class HumanHandoffConfig:
+    """Human handoff configuration"""
+
+    trigger_pattern: str = os.getenv("HUMAN_HANDOFF_TRIGGER_PATTERN", "")
+
+
+@dataclass
 class VectorStoreConfig:
     """Vector store configuration"""
 
     pinecone_api_key: str = os.getenv("PINECONE_API_KEY", "")
     pinecone_environment: str = os.getenv("PINECONE_ENVIRONMENT", "")
-    index_name: str = os.getenv("PINECONE_INDEX_NAME", "test11")
+    index_name: str = os.getenv("PINECONE_INDEX_NAME", "test222222")
     top_k: int = int(os.getenv("VECTOR_STORE_TOP_K", "5"))
 
 
@@ -56,7 +63,8 @@ class ChatConfig:
     max_context_length: int = int(os.getenv("MAX_CONTEXT_LENGTH", "20"))
     context_window_minutes: int = int(os.getenv("CONTEXT_WINDOW_MINUTES", "30"))
     max_response_tokens: int = int(os.getenv("MAX_RESPONSE_TOKENS", "1024"))
-    stream_delay_ms: int = int(os.getenv("STREAM_DELAY_MS", "50"))
+    stream_delay_ms: int = int(os.getenv("STREAM_DELAY_MS", "1"))
+    trigger_pattern: str = os.getenv("TRIGGER_PATTERN", "")
 
 
 @dataclass
@@ -109,6 +117,7 @@ class Settings:
         self.personality = PersonalityConfig()
         self.api = APIConfig()
         self.logging = LoggingConfig()
+        self.human_handoff = HumanHandoffConfig()
 
         # Environment
         self.environment = os.getenv("ENVIRONMENT", "development")
@@ -162,6 +171,12 @@ class Settings:
                 self.chat.stream_delay_ms = chat_config.get(
                     "streamDelayMs", self.chat.stream_delay_ms
                 )
+
+                if "humanHandoff" in backend_config:
+                    human_handoff_config = backend_config["humanHandoff"]
+                    self.human_handoff.trigger_pattern = human_handoff_config.get(
+                        "triggerKeywords", self.human_handoff.trigger_pattern
+                    )
 
             # Update Personality config if available
             if "personality" in backend_config:

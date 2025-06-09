@@ -23,7 +23,7 @@ export class DataSourcesService {
   constructor(
     private readonly dataSourceRepository: DataSourceRepository,
     private readonly dataSourcesGateway: DataSourcesGateway,
-  ) {}
+  ) { }
 
   create(createDataSourceDto: CreateDataSourceDto) {
     const dataSource = this.createDataSourceFromDto(createDataSourceDto);
@@ -266,6 +266,8 @@ export class DataSourcesService {
 
       // Map types to pipeline types
       let pipelineType: string;
+      let processedInput: string = input;
+
       if (type === 'crawl') {
         pipelineType = 'website';
       } else if (type === 'file') {
@@ -274,6 +276,21 @@ export class DataSourcesService {
         pipelineType = fileExtension === '.pdf' ? 'pdf' : 'csv';
       } else {
         pipelineType = 'manual';
+        // For manual input, encode JSON as base64 to handle Unicode characters
+        try {
+          // Ensure the input is valid JSON first
+          JSON.parse(input);
+          // Encode as base64 to safely pass through command line
+          processedInput = Buffer.from(input, 'utf8').toString('base64');
+          console.log(
+            'Manual input - Base64 encoded length:',
+            processedInput.length,
+          );
+        } catch (error) {
+          throw new Error(
+            `Invalid JSON input for manual processing: ${error.message}`,
+          );
+        }
       }
 
       // Emit pipeline type determined
@@ -287,7 +304,7 @@ export class DataSourcesService {
       });
 
       // Use the unified pipeline runner
-      const command = `cd "${pythonScriptPath}" && python scripts/run_data_pipeline.py "${dataSourceId}" "${pipelineType}" "${input}"`;
+      const command = `cd "${pythonScriptPath}" && python scripts/run_data_pipeline.py "${dataSourceId}" "${pipelineType}" "${processedInput}"`;
 
       // Emit command execution
       this.dataSourcesGateway.emitProcessingLog({

@@ -184,7 +184,7 @@ export default function Appearance() {
 
   return (
     <Card
-      className="h-[calc(100vh-210px)] overflow-y-auto"
+      className="scroll h-[calc(100vh-160px)]"
       header={
         <div className="flex w-full justify-between">
           <div>

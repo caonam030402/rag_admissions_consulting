@@ -37,10 +37,13 @@ import { MailModule } from './modules/mail/mail.module';
 import { ChatbotsModule } from './modules/chatbots/chatbots.module';
 import { DataSourcesModule } from './modules/data-sources/data-sources.module';
 import { HumanHandoffsModule } from './modules/human-handoffs/human-handoffs.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+
 @Module({
   imports: [
     OtpsModule,
     ChatbotsModule,
+    AnalyticsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [

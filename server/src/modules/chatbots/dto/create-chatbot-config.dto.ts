@@ -232,6 +232,93 @@ export class CreateHumanHandoffConfigDto {
   enabled: boolean = false;
 
   @ApiProperty({
+    description: 'Agent alias display name',
+    example: 'Agent',
+    default: 'Agent',
+  })
+  @IsString()
+  @IsOptional()
+  agentAlias?: string = 'Agent';
+
+  @ApiProperty({
+    description: 'Trigger pattern for human handoff (comma separated)',
+    example: 'support,help,agent',
+    default: 'support,help,agent',
+  })
+  @IsString()
+  @IsOptional()
+  triggerPattern?: string = 'support,help,agent';
+
+  @ApiProperty({
+    description: 'Timezone for working hours',
+    example: 'Asia/Ho_Chi_Minh',
+    default: 'Asia/Ho_Chi_Minh',
+  })
+  @IsString()
+  @IsOptional()
+  timezone?: string = 'Asia/Ho_Chi_Minh';
+
+  @ApiProperty({
+    type: Array,
+    description: 'Working days of the week',
+    example: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+    enum: [
+      'sunday',
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ],
+    isArray: true,
+    default: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+  })
+  @IsArray()
+  @IsOptional()
+  workingDays?: string[] = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+  ];
+
+  @ApiProperty({
+    type: 'object',
+    description: 'Working hours configuration for each day',
+    example: {
+      monday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+      tuesday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+      wednesday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+      thursday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+      friday: { start: '09:00', end: '18:00', hours: '9 hrs' },
+    },
+  })
+  @IsOptional()
+  workingHours?: {
+    sunday?: { start: string; end: string; hours?: string };
+    monday?: { start: string; end: string; hours?: string };
+    tuesday?: { start: string; end: string; hours?: string };
+    wednesday?: { start: string; end: string; hours?: string };
+    thursday?: { start: string; end: string; hours?: string };
+    friday?: { start: string; end: string; hours?: string };
+    saturday?: { start: string; end: string; hours?: string };
+  };
+
+  @ApiProperty({
+    description: 'Timeout duration in seconds',
+    minimum: 30,
+    maximum: 300,
+    default: 60,
+  })
+  @IsNumber()
+  @Min(30)
+  @Max(300)
+  @IsOptional()
+  timeoutDuration?: number = 60;
+
+  @ApiProperty({
     description: 'Trigger keywords for escalation',
     type: [String],
     required: false,

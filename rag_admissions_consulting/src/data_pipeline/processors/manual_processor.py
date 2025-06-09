@@ -11,6 +11,7 @@ import csv
 import re
 import base64
 import binascii
+import tempfile
 from loguru import logger
 
 # Add parent directory to path for imports
@@ -26,6 +27,26 @@ def update_backend_status(data_source_id: str, status: str, error_message: str =
             logger.error(f"Error: {error_message}")
     except Exception as e:
         logger.error(f"Failed to update backend status: {e}")
+
+
+def create_manual_input_file(input_data: dict, data_source_id: str) -> str:
+    """Create temporary file with manual input data and return file path"""
+    try:
+        # Create temp file with JSON data
+        temp_dir = "data_pipeline/temp"
+        os.makedirs(temp_dir, exist_ok=True)
+
+        temp_file_path = f"{temp_dir}/manual_input_{data_source_id}.json"
+
+        with open(temp_file_path, "w", encoding="utf-8") as f:
+            json.dump(input_data, f, ensure_ascii=False, indent=2)
+
+        logger.info(f"📄 Created temporary input file: {temp_file_path}")
+        return temp_file_path
+
+    except Exception as e:
+        logger.error(f"Error creating manual input file: {e}")
+        raise
 
 
 def process_manual_input(input_data: dict, data_source_id: str) -> str:
@@ -67,36 +88,122 @@ def process_manual_input(input_data: dict, data_source_id: str) -> str:
         raise
 
 
+def process_manual_input_from_file(file_path: str, data_source_id: str) -> str:
+    """Process manual input from JSON file"""
+    try:
+        logger.info(f"📝 Processing manual input from file: {file_path}")
+
+        with open(file_path, "r", encoding="utf-8") as f:
+            input_data = json.load(f)
+
+        logger.info(f"📝 Loaded data: {input_data}")
+
+        # Process the input
+        output_path = process_manual_input(input_data, data_source_id)
+
+        # Clean up temp file
+        try:
+            os.remove(file_path)
+            logger.info(f"🗑️ Cleaned up temp file: {file_path}")
+        except:
+            pass  # Ignore cleanup errors
+
+        return output_path
+
+    except Exception as e:
+        logger.error(f"Error processing manual input from file: {e}")
+        raise
+
+
 def main():
     """Main manual input processing function"""
-    if len(sys.argv) != 3:
-        print(
-            "Usage: python manual_processor.py <base64_encoded_json> <data_source_id>"
-        )
+    # Support multiple input methods:
+    # 1. From file: python manual_processor.py --file <json_file> <data_source_id>
+    # 2. From base64: python manual_processor.py <base64_encoded_json> <data_source_id>
+    # 3. From JSON string: python manual_processor.py --json <json_string> <data_source_id>
+
+    if len(sys.argv) < 3:
+        print("Usage:")
+        print("  python manual_processor.py --file <json_file> <data_source_id>")
+        print("  python manual_processor.py --json <json_string> <data_source_id>")
+        print("  python manual_processor.py <base64_encoded_json> <data_source_id>")
         sys.exit(1)
 
-    encoded_json = sys.argv[1]
-    data_source_id = sys.argv[2]
-
-    logger.info(f"📝 Starting manual input processing")
-    logger.info(f"📊 DataSource ID: {data_source_id}")
-    logger.info(f"📄 Base64 encoded JSON length: {len(encoded_json)}")
-
     try:
-        # Decode base64 and parse JSON
-        try:
-            decoded_json = base64.b64decode(encoded_json).decode("utf-8")
-            logger.info(f"📝 Decoded JSON: {decoded_json}")
-            input_data = json.loads(decoded_json)
-            logger.info(f"📝 Parsed JSON data: {input_data}")
-        except (base64.binascii.Error, json.JSONDecodeError, UnicodeDecodeError) as e:
-            raise Exception(f"Invalid base64 encoded JSON: {e}")
+        if sys.argv[1] == "--file":
+            # Process from file
+            if len(sys.argv) != 4:
+                print(
+                    "Usage: python manual_processor.py --file <json_file> <data_source_id>"
+                )
+                sys.exit(1)
 
-        # Update status to processing
-        update_backend_status(data_source_id, "processing")
+            json_file = sys.argv[2]
+            data_source_id = sys.argv[3]
 
-        # Process manual input
-        output_path = process_manual_input(input_data, data_source_id)
+            logger.info(f"📝 Starting manual input processing from file")
+            logger.info(f"📄 Input file: {json_file}")
+            logger.info(f"📊 DataSource ID: {data_source_id}")
+
+            # Update status to processing
+            update_backend_status(data_source_id, "processing")
+
+            # Process from file
+            output_path = process_manual_input_from_file(json_file, data_source_id)
+
+        elif sys.argv[1] == "--json":
+            # Process from JSON string
+            if len(sys.argv) != 4:
+                print(
+                    "Usage: python manual_processor.py --json <json_string> <data_source_id>"
+                )
+                sys.exit(1)
+
+            json_string = sys.argv[2]
+            data_source_id = sys.argv[3]
+
+            logger.info(f"📝 Starting manual input processing from JSON string")
+            logger.info(f"📊 DataSource ID: {data_source_id}")
+
+            try:
+                input_data = json.loads(json_string)
+                logger.info(f"📝 Parsed JSON data: {input_data}")
+            except json.JSONDecodeError as e:
+                raise Exception(f"Invalid JSON string: {e}")
+
+            # Update status to processing
+            update_backend_status(data_source_id, "processing")
+
+            # Process the input
+            output_path = process_manual_input(input_data, data_source_id)
+
+        else:
+            # Legacy: Process from base64 (fallback for existing code)
+            encoded_json = sys.argv[1]
+            data_source_id = sys.argv[2]
+
+            logger.info(f"📝 Starting manual input processing from base64")
+            logger.info(f"📊 DataSource ID: {data_source_id}")
+            logger.info(f"📄 Base64 encoded JSON length: {len(encoded_json)}")
+
+            # Decode base64 and parse JSON
+            try:
+                decoded_json = base64.b64decode(encoded_json).decode("utf-8")
+                logger.info(f"📝 Decoded JSON: {decoded_json}")
+                input_data = json.loads(decoded_json)
+                logger.info(f"📝 Parsed JSON data: {input_data}")
+            except (
+                base64.binascii.Error,
+                json.JSONDecodeError,
+                UnicodeDecodeError,
+            ) as e:
+                raise Exception(f"Invalid base64 encoded JSON: {e}")
+
+            # Update status to processing
+            update_backend_status(data_source_id, "processing")
+
+            # Process the input
+            output_path = process_manual_input(input_data, data_source_id)
 
         # Count processed documents (should be 1 for manual input)
         document_count = 1
@@ -111,6 +218,9 @@ def main():
     except Exception as e:
         error_msg = f"Manual input processing failed: {str(e)}"
         logger.error(error_msg)
+
+        # Get data_source_id for error reporting
+        data_source_id = sys.argv[-1] if len(sys.argv) >= 2 else "unknown"
         update_backend_status(data_source_id, "failed", error_msg)
         print(f"ERROR: {error_msg}")
         sys.exit(1)
@@ -118,4 +228,3 @@ def main():
 
 if __name__ == "__main__":
     main()
- 

@@ -1,7 +1,8 @@
+import { TimeInput } from "@heroui/date-input";
+import { Time } from "@internationalized/date";
 import React from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
-import Input from "@/components/common/Input";
 import { cn } from "@/libs/utils";
 import type { HumanHandoffFormValues } from "@/validations/humanHandoffValidation";
 
@@ -25,6 +26,17 @@ export default function WorkingHoursSelector({
   const { control } = useFormContext<HumanHandoffFormValues>();
   const workingDays = useWatch({ control, name: "workingDays" });
   const workingHours = useWatch({ control, name: "workingHours" });
+
+  // Convert string time to Time object
+  const stringToTime = (timeString: string): Time => {
+    const [hours, minutes] = timeString.split(":").map(Number);
+    return new Time(hours, minutes);
+  };
+
+  // Convert Time object to string
+  const timeToString = (time: Time): string => {
+    return `${time.hour.toString().padStart(2, "0")}:${time.minute.toString().padStart(2, "0")}`;
+  };
 
   // Tính toán số giờ giữa 2 thời điểm
   const calculateHours = (from: string, to: string): number => {
@@ -55,28 +67,32 @@ export default function WorkingHoursSelector({
               name={`workingHours.${index}.from`}
               control={control}
               render={({ field }) => (
-                <Input
-                  type="time"
-                  className="max-w-24"
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={!workingDays[index] || disabled}
+                <TimeInput
+                  value={stringToTime(field.value)}
+                  onChange={(time) => field.onChange(timeToString(time))}
+                  isDisabled={!workingDays[index] || disabled}
+                  variant="bordered"
+                  size="sm"
+                  hourCycle={24}
+                  className="max-w-32"
                 />
               )}
             />
 
-            <span className="mx-2">to</span>
+            <span className="mx-2 text-gray-500">to</span>
 
             <Controller
               name={`workingHours.${index}.to`}
               control={control}
               render={({ field }) => (
-                <Input
-                  type="time"
-                  className="max-w-24"
-                  value={field.value}
-                  onChange={field.onChange}
-                  disabled={!workingDays[index] || disabled}
+                <TimeInput
+                  value={stringToTime(field.value)}
+                  onChange={(time) => field.onChange(timeToString(time))}
+                  isDisabled={!workingDays[index] || disabled}
+                  variant="bordered"
+                  size="sm"
+                  hourCycle={24}
+                  className="max-w-32"
                 />
               )}
             />

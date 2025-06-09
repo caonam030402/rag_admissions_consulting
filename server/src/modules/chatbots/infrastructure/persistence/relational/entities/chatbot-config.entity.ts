@@ -86,6 +86,20 @@ export class ChatbotConfigEntity {
   @Column({ type: 'jsonb' })
   humanHandoff: {
     enabled: boolean;
+    agentAlias: string;
+    triggerPattern: string;
+    timezone: string;
+    workingDays: string[];
+    workingHours: {
+      sunday?: { start: string; end: string; hours?: string };
+      monday?: { start: string; end: string; hours?: string };
+      tuesday?: { start: string; end: string; hours?: string };
+      wednesday?: { start: string; end: string; hours?: string };
+      thursday?: { start: string; end: string; hours?: string };
+      friday?: { start: string; end: string; hours?: string };
+      saturday?: { start: string; end: string; hours?: string };
+    };
+    timeoutDuration: number;
     triggerKeywords?: string[];
     agentAvailableMessage?: string;
     agentUnavailableMessage?: string;
